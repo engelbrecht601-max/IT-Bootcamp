@@ -55,7 +55,8 @@ else {
 // Git
 if (!cmd("git", ["--version"])) fail("git nicht gefunden");
 else if (!cmd("git", ["-C", ROOT, "rev-parse", "--is-inside-work-tree"])) warn("kein Git-Checkout");
-else ok("git");
+else if (cmd("git", ["-C", ROOT, "config", "core.hooksPath"]) !== ".githooks") fail("Pre-Push-Gate nicht aktiv", "pnpm install (setzt core.hooksPath)");
+else ok("git, Pre-Push-Gate aktiv");
 
 // Contract
 try {

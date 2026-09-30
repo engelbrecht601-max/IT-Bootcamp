@@ -4,3 +4,4 @@ contracts/claim.schema.json
 dist/
 *.tsbuildinfo
 .DS_Store
+.claude/tmp/

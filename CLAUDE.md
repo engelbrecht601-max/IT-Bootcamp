@@ -1,0 +1,56 @@
+# IT-Bootcamp Track 1: agentic Coding am Schadenfall
+
+Workshop-Repo. Fünf Gruppen bauen gemeinsam eine Schadensabwicklung für die Gebäudehaftpflicht, als Mockup mit erfundenen Daten. Lernziel ist agentic Coding und Requirements Engineering mit Claude Code, nicht das Fertigwerden.
+
+**Ein Vorgang, vier Schreibtische:** Eine Schadenakte (Claim) wandert durch vier Stages. Jede Gruppe besitzt eine Stage, Gruppe 5 baut die Oberfläche.
+
+| Gruppe | Package | Stage | Übergibt an |
+|---|---|---|---|
+| 1 | `packages/stage1` | Schadenaufnahme | Deckungsprüfung |
+| 2 | `packages/stage2` | Deckungsprüfung | Schadenbewertung |
+| 3 | `packages/stage3` | Schadenbewertung | Regulierung |
+| 4 | `packages/stage4` | Regulierung | Endzustand |
+| 5 | `packages/ui` | Oberfläche | – |
+
+Jedes Package hat eine eigene `CLAUDE.md` mit den Regeln der Gruppe. Starte Claude Code immer im Repo-Root, sonst werden `/contract-change` und der Subagent `contract-guard` nicht geladen.
+
+## Befehle
+
+| Befehl | Wann |
+|---|---|
+| `pnpm run doctor` | Umgebung prüfen. `pnpm doctor` ohne `run` startet einen eingebauten pnpm-Befehl. |
+| `pnpm check` | Das Gate: Contract bauen, Fixtures validieren, Requirements prüfen, Tests, Typecheck. Läuft in Sekunden und automatisch vor jedem Push. |
+| `pnpm contracts:build` | baut `contracts/claim.schema.json` aus Basis plus Patches |
+| `pnpm test` | alle Tests (`node --test`, TypeScript über tsx) |
+| `/contract-change <ID> <Satz>` | fehlendes Feld im Contract beantragen |
+
+## Der Contract
+
+`contracts/claim.base.schema.json` ist das Basis-Schema (JSON Schema 2020-12). Freigegebene Änderungen liegen als Patches in `contracts/patches/`. `pnpm contracts:build` setzt beides zu `contracts/claim.schema.json` zusammen. Diese Datei wird nicht eingecheckt, maßgeblich ist immer die gebaute Version.
+
+Regeln mit Begründung:
+- **Jede Stage schreibt nur in ihren eigenen Block** (`stage1` … `stage4`), hängt genau einen `trace`-Eintrag an und löscht nie Felder. So gibt es keinen geteilten Schreibpfad und keine Absprachen zwischen Gruppen.
+- **`contracts/` ist schreibgeschützt.** Ein Hook blockiert direkte Edits. Fehlt ein Feld, stellt die Gruppe `/contract-change`. Ein Skript klassifiziert den Antrag, der Subagent `contract-guard` entscheidet die Grauzone, alles Weitere eskaliert an die Workshop-Leitung. Grund: Fünf Gruppen, die parallel ein Schema editieren, zerschießen es.
+- **`meta` gehört niemandem.** Änderungen daran entscheidet immer die Workshop-Leitung.
+- **Integration erst am Ende.** Bis dahin entwickelt jede Gruppe gegen die Musterakten in `fixtures/<von>-<nach>/` (Standardfall, Grenzfall, Ablehnungskandidat). Niemand wartet auf die Vorgänger-Gruppe.
+
+## Arbeitsweise
+
+1. **Anforderungen erheben:** Interview mit der Fachperson eurer Stage.
+2. **Aufschreiben** in `requirements.md` eures Packages, mit ID, User Story und Akzeptanzkriterien (Gegeben/Wenn/Dann). Ohne ID kein Code.
+3. **Spezifizieren, implementieren, verifizieren**, jeweils mit Claude Code. Die Akzeptanzkriterien werden zu Tests.
+4. **Fehlt ein Feld** im Contract: `/contract-change`.
+
+Konventionen:
+- **Domäne deutsch, Code englisch:** Feldnamen, Bezeichner und Commits englisch (camelCase). Fachbegriffe, Enum-Werte, Beschreibungen und Requirements deutsch.
+- **Traceability:** Die Requirement-ID steht im Code-Kommentar und im Testnamen (`test("[G2-REQ-003] …")`). `pnpm check` prüft, dass jede umgesetzte Anforderung einen Test hat.
+- **Tests sind die Wahrheit:** Eine Anforderung ist erst `verifiziert`, wenn ein Test sie prüft und jemand anderes als der Autor ihn laufen gesehen hat.
+- **Rote Tests werden behoben, nicht wiederholt.**
+
+## Git
+
+- Alle arbeiten auf `main` und pullen oft (`git pull --rebase`). Das trägt, weil die Ordner der Gruppen disjunkt sind.
+- Vor jedem Push läuft `pnpm check` als Pre-Push-Hook. Ist es rot, wird nicht gepusht. Grund: Ein roter Stand auf `main` trifft sofort alle fünf Gruppen.
+- Commits im Format Conventional Commits, auf Englisch: `feat(stage2): check policy period`.
+- Verboten und per Hook blockiert: Force-Push, `git reset --hard`, `--no-verify`.
+- Keine Secrets ins Repo. API-Keys kommen aus der Umgebung.
