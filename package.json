@@ -16,6 +16,7 @@
     "contracts:decide": "node scripts/contract-change.mjs decide",
     "check:requirements": "node scripts/check-requirements.mjs",
     "test": "node --import tsx --test \"scripts/**/*.test.mjs\" \"packages/*/src/**/*.test.ts\"",
+    "test:req": "node scripts/test-req.mjs",
     "typecheck": "pnpm -r typecheck",
     "mock-server": "node scripts/mock-server.mjs",
     "conformance": "node --import tsx scripts/conformance.mjs",
