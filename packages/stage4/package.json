@@ -1,0 +1,12 @@
+{
+  "name": "@bootcamp/stage4",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Stage 4: Regulierung",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test \"src/**/*.test.ts\""
+  }
+}

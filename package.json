@@ -1,0 +1,26 @@
+{
+  "name": "it-bootcamp-track1",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.12.3",
+  "engines": {
+    "node": ">=22.11.0 <23",
+    "pnpm": "9.12.3"
+  },
+  "scripts": {
+    "doctor": "node scripts/doctor.mjs",
+    "contracts:build": "node scripts/contracts-build.mjs",
+    "contracts:classify": "node scripts/contract-classify.mjs",
+    "mock-server": "node scripts/mock-server.mjs",
+    "conformance": "node scripts/conformance.mjs",
+    "typecheck": "pnpm -r typecheck",
+    "test": "node --test \"scripts/**/*.test.mjs\""
+  },
+  "devDependencies": {
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1",
+    "typescript": "5.6.3",
+    "@types/node": "22.9.0",
+    "tsx": "4.19.2"
+  }
+}

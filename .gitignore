@@ -1,0 +1,6 @@
+node_modules/
+.claude/settings.local.json
+contracts/claim.schema.json
+dist/
+*.tsbuildinfo
+.DS_Store
