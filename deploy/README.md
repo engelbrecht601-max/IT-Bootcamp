@@ -31,9 +31,9 @@ Dasselbe Dockerfile baut mit `--target base` das Image für den Devcontainer und
 ## Aufsetzen
 
 ```bash
-git clone https://github.com/engelbrecht601-max/IT-Bootcamp.git /srv/aifactory/repo
+# als root: Docker installieren, Repo klonen, .env mit fünf code-server-Passwörtern anlegen
+curl -fsSL https://raw.githubusercontent.com/engelbrecht601-max/IT-Bootcamp/main/deploy/bootstrap.sh | bash
 cd /srv/aifactory/repo/deploy
-./init-env.sh                         # legt .env an und erzeugt die fünf code-server-Passwörter
 $EDITOR .env                          # ACME_EMAIL, ANTHROPIC_API_KEY, ggf. GIT_PUSH_TOKEN
 
 # Personas aus dem privaten Lösungsrepo auf den Host legen (nie in dieses Repo)
