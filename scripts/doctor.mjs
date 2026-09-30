@@ -67,6 +67,12 @@ try {
 }
 if (!existsSync(join(ROOT, "contracts/claim.schema.json"))) warn("Contract noch nicht gebaut", "pnpm contracts:build");
 
+// Interview-Personas (liegen außerhalb des Repos, siehe scripts/install-personas.mjs)
+const { installed, PERSONAS } = await import("./install-personas.mjs");
+const personas = installed();
+if (personas.length === PERSONAS.length) ok("Interview-Personas eingespielt");
+else warn(`${personas.length} von ${PERSONAS.length} Interview-Personas eingespielt`, "pnpm personas:install <quelle> (Workshop-Leitung)");
+
 // Claude Code
 const claude = cmd("claude", ["--version"]);
 if (claude) ok(`Claude Code ${claude}`);

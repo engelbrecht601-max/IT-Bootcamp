@@ -8,17 +8,29 @@
     }
   },
   "containerEnv": {
-    "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0"
+    "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
+    "PERSONAS_SRC": "${localEnv:PERSONAS_SRC}"
   },
   "postCreateCommand": "npm install -g corepack@0.36.0 && corepack enable && corepack prepare pnpm@9.12.3 --activate && pnpm install --frozen-lockfile && npm install -g @anthropic-ai/claude-code && pnpm run doctor",
-  "forwardPorts": [4000, 5173],
+  "forwardPorts": [
+    4000,
+    5173
+  ],
   "portsAttributes": {
-    "4000": { "label": "Mock-Server" },
-    "5173": { "label": "UI" }
+    "4000": {
+      "label": "Mock-Server"
+    },
+    "5173": {
+      "label": "UI"
+    }
   },
   "customizations": {
     "vscode": {
-      "extensions": ["dbaeumer.vscode-eslint", "redhat.vscode-yaml"]
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "redhat.vscode-yaml"
+      ]
     }
-  }
+  },
+  "postStartCommand": "if [ -n \"$PERSONAS_SRC\" ]; then pnpm personas:install; fi"
 }

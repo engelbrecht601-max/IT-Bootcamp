@@ -20,6 +20,8 @@
     "typecheck": "pnpm -r typecheck",
     "mock-server": "node scripts/mock-server.mjs",
     "conformance": "node --import tsx scripts/conformance.mjs",
+    "interview": "node scripts/interview.mjs",
+    "personas:install": "node scripts/install-personas.mjs",
     "prepare": "git config core.hooksPath .githooks || true"
   },
   "devDependencies": {

@@ -25,6 +25,8 @@ Jedes Package hat eine eigene `CLAUDE.md` mit den Regeln der Gruppe. Starte Clau
 | `pnpm test:req <ID>` | nur die Tests einer Anforderung. Beim Bauen reicht dieser Ausschnitt. |
 | `pnpm mock-server` | liefert Musterakten und Contract per HTTP auf Port 4000 (`/claims`, `/claims/2-3/grenzfall`, `/claims/SCH-2026-00101`, `/schema`) |
 | `pnpm conformance [N]` | schickt die Eingangsakten durch `run()` der Stages und prüft die Envelope-Regeln. Für die Integration, nicht Teil des Gates. |
+| `pnpm interview <N>` | Gespräch mit der Fachperson eurer Gruppe (eigene Session, Ende mit `/exit`) |
+| `/interview <N> <Frage>` | Einzelfrage an die Fachperson, wird in `interview.md` protokolliert |
 | `/spec <ID>` | Anforderung auf Testbarkeit prüfen, Subagent `test-author` schreibt Tests nur aus den Akzeptanzkriterien |
 | `/implement <ID>` | umsetzen, bis die Tests grün sind. Die Tests selbst bleiben unverändert. |
 | `/verify <ID>` | Subagent `verifier` versucht die Umsetzung zu widerlegen und trägt das Ergebnis ein |
@@ -42,7 +44,7 @@ Regeln mit Begründung:
 
 ## Arbeitsweise
 
-1. **Anforderungen erheben:** Interview mit der Fachperson eurer Stage.
+1. **Anforderungen erheben:** Interview mit der Fachperson eurer Stage, am Stück mit `pnpm interview <N>` im zweiten Terminal oder als Einzelfrage mit `/interview <N> <Frage>`. Die Fachperson kennt ihr Fachgebiet, aber sie schreibt euch keine Anforderungen. Ihr müsst gezielt fragen.
 2. **Aufschreiben** in `requirements.md` eures Packages, mit ID, User Story und Akzeptanzkriterien (Gegeben/Wenn/Dann). Ohne ID kein Code.
 3. **Spezifizieren, implementieren, verifizieren:** `/spec`, `/implement` und `/verify` pro Anforderung. Die Akzeptanzkriterien werden zu Tests. Wer baut, verifiziert nicht selbst.
 4. **Fehlt ein Feld** im Contract: `/contract-change`.

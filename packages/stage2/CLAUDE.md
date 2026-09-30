@@ -17,7 +17,7 @@ Prüft, ob für den gemeldeten Schaden Versicherungsschutz besteht.
 
 ## Arbeitsweise
 
-1. Anforderungen im Interview mit der Fachperson erheben, nicht erfinden.
+1. Anforderungen im Interview mit der Fachperson erheben, nicht erfinden: `pnpm interview 2` im zweiten Terminal oder `/interview 2 <Frage>`.
 2. In `requirements.md` festhalten, nach der Vorlage dort.
 3. Pro Anforderung spezifizieren, implementieren und verifizieren. Tests liegen neben dem Code als `src/*.test.ts` und tragen die ID im Namen.
 4. Fehlt ein Feld im Contract: `/contract-change G2-REQ-NNN <was fehlt>`. Bis zur Entscheidung arbeitet ihr lokal weiter.
