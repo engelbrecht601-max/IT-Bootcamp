@@ -32,5 +32,7 @@ Oder im Devcontainer öffnen, dort läuft das automatisch.
 | `pnpm run doctor` | prüft, ob die Umgebung arbeitsfähig ist |
 | `pnpm contracts:build` | baut `contracts/claim.schema.json` und validiert alle Fixtures |
 | `pnpm contracts:classify <antrag.json>` | ordnet einen Änderungsantrag als approve, escalate oder reject ein |
+| `pnpm mock-server` | Musterakten und Contract per HTTP (Port 4000) |
+| `pnpm conformance [N]` | prüft, ob die Stages die Envelope-Regeln einhalten |
 | `pnpm test` | Tests der Skripte |
 | `pnpm typecheck` | Typprüfung aller Packages |

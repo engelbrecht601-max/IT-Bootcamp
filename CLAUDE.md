@@ -22,6 +22,8 @@ Jedes Package hat eine eigene `CLAUDE.md` mit den Regeln der Gruppe. Starte Clau
 | `pnpm check` | Das Gate: Contract bauen, Fixtures validieren, Requirements prüfen, Tests, Typecheck. Läuft in Sekunden und automatisch vor jedem Push. |
 | `pnpm contracts:build` | baut `contracts/claim.schema.json` aus Basis plus Patches |
 | `pnpm test` | alle Tests (`node --test`, TypeScript über tsx) |
+| `pnpm mock-server` | liefert Musterakten und Contract per HTTP auf Port 4000 (`/claims`, `/claims/2-3/grenzfall`, `/claims/SCH-2026-00101`, `/schema`) |
+| `pnpm conformance [N]` | schickt die Eingangsakten durch `run()` der Stages und prüft die Envelope-Regeln. Für die Integration, nicht Teil des Gates. |
 | `/contract-change <ID> <Satz>` | fehlendes Feld im Contract beantragen |
 
 ## Der Contract
