@@ -19,6 +19,7 @@ Jedes Package hat eine eigene `CLAUDE.md` mit den Regeln der Gruppe. Starte Clau
 | Befehl | Wann |
 |---|---|
 | `pnpm run doctor` | Umgebung prüfen. `pnpm doctor` ohne `run` startet einen eingebauten pnpm-Befehl. |
+| `pnpm group:setup <N>` | richtet den Arbeitsplatz einer Gruppe ein (Schreibschutz für fremde Packages, weniger Rückfragen). Auf dem Workshop-Server passiert das automatisch. |
 | `pnpm check` | Das Gate: Contract bauen, Fixtures validieren, Requirements prüfen, Tests, Typecheck. Läuft in Sekunden und automatisch vor jedem Push. |
 | `pnpm contracts:build` | baut `contracts/claim.schema.json` aus Basis plus Patches |
 | `pnpm test` | alle Tests (`node --test`, TypeScript über tsx) |

@@ -22,6 +22,7 @@
     "conformance": "node --import tsx scripts/conformance.mjs",
     "interview": "node scripts/interview.mjs",
     "personas:install": "node scripts/install-personas.mjs",
+    "group:setup": "node scripts/group-setup.mjs",
     "prepare": "git config core.hooksPath .githooks || true"
   },
   "devDependencies": {
