@@ -24,6 +24,7 @@ Oder im Devcontainer öffnen, dort läuft das automatisch.
 | `fixtures/<von>-<nach>/` | Musterakten je Stage-Grenze: Standardfall, Grenzfall, Ablehnungskandidat |
 | `packages/stage1` … `stage4`, `packages/ui` | je eine Gruppe |
 | `scripts/` | doctor, Contract-Build, Klassifikator |
+| `deploy/` | Workshop-Server: Dockerfile, Compose, Caddy (siehe `deploy/README.md`) |
 
 ## Befehle
 

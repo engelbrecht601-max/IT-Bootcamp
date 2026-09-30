@@ -1,18 +1,17 @@
 {
   "name": "IT-Bootcamp Track 1",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
-  "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "22.11.0",
-      "nodeGypDependencies": false
-    }
+  "build": {
+    "dockerfile": "../deploy/Dockerfile",
+    "context": "..",
+    "target": "base"
   },
+  "remoteUser": "node",
   "containerEnv": {
     "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
     "PERSONAS_SRC": "${localEnv:PERSONAS_SRC}",
     "BOOTCAMP_GROUP": "${localEnv:BOOTCAMP_GROUP}"
   },
-  "postCreateCommand": "npm install -g corepack@0.36.0 && corepack enable && corepack prepare pnpm@9.12.3 --activate && pnpm install --frozen-lockfile && npm install -g @anthropic-ai/claude-code && pnpm run doctor",
+  "postCreateCommand": "pnpm install --frozen-lockfile --prefer-offline && pnpm run doctor",
   "forwardPorts": [
     4000,
     5173
