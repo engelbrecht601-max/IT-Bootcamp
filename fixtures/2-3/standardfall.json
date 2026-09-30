@@ -1,0 +1,40 @@
+{
+  "claimId": "SCH-2026-00101",
+  "meta": {
+    "contractVersion": "1.0.0",
+    "createdAt": "2026-11-03T08:12:00Z",
+    "currentStage": 3,
+    "testCase": "Standardfall"
+  },
+  "trace": [
+    {
+      "stage": 1,
+      "at": "2026-11-03T08:40:00Z",
+      "action": "erfasst",
+      "note": "Meldung vollständig, Kostenvoranschlag der Werkstatt liegt vor."
+    },
+    {
+      "stage": 2,
+      "at": "2026-11-04T10:15:00Z",
+      "action": "geprüft",
+      "note": "Deckung bestätigt."
+    }
+  ],
+  "stage1": {
+    "completedAt": "2026-11-03T08:40:00Z",
+    "policyNumber": "GH-4711023",
+    "incidentDate": "2026-11-01",
+    "reportedAt": "2026-11-03T08:12:00Z",
+    "damageType": "Sachschaden",
+    "description": "Bei Sturm hat sich ein Dachziegel von unserem Mehrfamilienhaus gelöst und ist auf das geparkte Auto des Nachbarn gefallen. Die Motorhaube ist eingedellt, die Windschutzscheibe gesprungen.",
+    "claimant": {
+      "name": "Jonas Albers"
+    },
+    "claimedAmount": 2340.0
+  },
+  "stage2": {
+    "completedAt": "2026-11-04T10:15:00Z",
+    "coverageDecision": "gedeckt",
+    "reasoning": "Vertrag bestand am Schadentag. Ein vom Gebäude herabfallender Dachziegel ist ein typischer Gebäudehaftpflichtschaden gegenüber Dritten."
+  }
+}

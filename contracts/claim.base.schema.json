@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://it-bootcamp.local/contracts/claim.schema.json",
+  "title": "Claim-Envelope Gebäudehaftpflicht",
+  "description": "Ein Vorgang, vier Schreibtische: Die Schadenakte wandert durch Schadenaufnahme, Deckungsprüfung, Schadenbewertung und Regulierung. Jede Stage schreibt nur in ihren eigenen Block.",
+  "x-contractVersion": "1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "claimId",
+    "meta",
+    "trace"
+  ],
+  "properties": {
+    "claimId": {
+      "description": "Eindeutige Schadennummer im Format SCH-JJJJ-NNNNN.",
+      "type": "string",
+      "pattern": "^SCH-[0-9]{4}-[0-9]{5}$"
+    },
+    "meta": {
+      "description": "Verwaltungsdaten des Vorgangs. Gehört keiner Gruppe; Änderungen werden immer eskaliert.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contractVersion",
+        "createdAt",
+        "currentStage"
+      ],
+      "properties": {
+        "contractVersion": {
+          "description": "Contract-Version, mit der die Akte zuletzt geschrieben wurde (SemVer, Major 1).",
+          "type": "string",
+          "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+        },
+        "createdAt": {
+          "description": "Anlagezeitpunkt des Vorgangs.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "currentStage": {
+          "description": "Stage, die den Vorgang gerade bearbeitet: 1 Schadenaufnahme, 2 Deckungsprüfung, 3 Schadenbewertung, 4 Regulierung.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "testCase": {
+          "description": "Kennung des Testfalls, nur bei Fixtures gesetzt.",
+          "type": "string",
+          "enum": [
+            "Standardfall",
+            "Grenzfall",
+            "Ablehnungskandidat"
+          ]
+        }
+      }
+    },
+    "trace": {
+      "description": "Protokoll der Bearbeitung. Jede Stage hängt genau einen Eintrag an und ändert keine bestehenden.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/traceEntry"
+      }
+    },
+    "error": {
+      "description": "Fachlicher oder technischer Abbruch. Fehlt, solange die Akte regulär läuft.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "stage": {
+          "$ref": "#/$defs/stageNumber"
+        },
+        "code": {
+          "description": "Maschinenlesbarer Fehlercode, z. B. UNVOLLSTAENDIGE_AKTE.",
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "message": {
+          "description": "Fehlerbeschreibung für Sachbearbeitende.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "stage1": {
+      "description": "Schadenaufnahme (Gruppe 1): Meldung des Schadens und Grunddaten des Vorgangs.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "completedAt",
+        "policyNumber",
+        "incidentDate",
+        "reportedAt",
+        "damageType",
+        "description",
+        "claimant"
+      ],
+      "properties": {
+        "completedAt": {
+          "$ref": "#/$defs/completedAt"
+        },
+        "policyNumber": {
+          "description": "Versicherungsscheinnummer der Gebäudehaftpflicht.",
+          "type": "string",
+          "pattern": "^GH-[0-9]{7}$"
+        },
+        "incidentDate": {
+          "description": "Tag, an dem der Schaden eingetreten ist.",
+          "type": "string",
+          "format": "date"
+        },
+        "reportedAt": {
+          "description": "Zeitpunkt der Schadenmeldung.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "damageType": {
+          "description": "Art des Drittschadens.",
+          "type": "string",
+          "enum": [
+            "Personenschaden",
+            "Sachschaden",
+            "Vermögensschaden"
+          ]
+        },
+        "description": {
+          "description": "Schadenhergang in den Worten der meldenden Person.",
+          "type": "string",
+          "minLength": 1
+        },
+        "claimant": {
+          "description": "Anspruchsteller, also die geschädigte dritte Person.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "description": "Vor- und Nachname oder Firma.",
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "claimedAmount": {
+          "$ref": "#/$defs/amountEur",
+          "description": "Vom Anspruchsteller geforderter Betrag, falls bekannt."
+        }
+      }
+    },
+    "stage2": {
+      "description": "Deckungsprüfung (Gruppe 2): Besteht Versicherungsschutz für diesen Schaden?",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "completedAt",
+        "coverageDecision"
+      ],
+      "properties": {
+        "completedAt": {
+          "$ref": "#/$defs/completedAt"
+        },
+        "coverageDecision": {
+          "description": "Ergebnis der Deckungsprüfung.",
+          "type": "string",
+          "enum": [
+            "gedeckt",
+            "nicht gedeckt"
+          ]
+        },
+        "reasoning": {
+          "description": "Begründung der Entscheidung in wenigen Sätzen.",
+          "type": "string"
+        }
+      }
+    },
+    "stage3": {
+      "description": "Schadenbewertung (Gruppe 3): Wie hoch ist der ersatzfähige Schaden?",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "completedAt",
+        "assessedAmount"
+      ],
+      "properties": {
+        "completedAt": {
+          "$ref": "#/$defs/completedAt"
+        },
+        "assessedAmount": {
+          "$ref": "#/$defs/amountEur",
+          "description": "Ersatzfähiger Schaden nach Bewertung."
+        }
+      }
+    },
+    "stage4": {
+      "description": "Regulierung (Gruppe 4): Abschluss des Vorgangs gegenüber den Beteiligten.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "completedAt",
+        "settlementDecision"
+      ],
+      "properties": {
+        "completedAt": {
+          "$ref": "#/$defs/completedAt"
+        },
+        "settlementDecision": {
+          "description": "Wie der Vorgang abgeschlossen wird.",
+          "type": "string",
+          "enum": [
+            "Zahlung",
+            "Ablehnung"
+          ]
+        },
+        "payoutAmount": {
+          "$ref": "#/$defs/amountEur",
+          "description": "Ausgezahlter Betrag, nur bei Zahlung."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "stageNumber": {
+      "description": "Nummer der Stage (1 bis 4).",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "completedAt": {
+      "description": "Zeitpunkt, zu dem die Stage ihren Block abgeschlossen hat.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "traceEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage",
+        "at",
+        "action"
+      ],
+      "properties": {
+        "stage": {
+          "$ref": "#/$defs/stageNumber"
+        },
+        "at": {
+          "description": "Zeitpunkt des Eintrags.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "action": {
+          "description": "Was die Stage mit der Akte gemacht hat.",
+          "type": "string",
+          "enum": [
+            "erfasst",
+            "geprüft",
+            "bewertet",
+            "reguliert",
+            "abgebrochen"
+          ]
+        },
+        "note": {
+          "description": "Optionale Begründung in einem Satz.",
+          "type": "string"
+        }
+      }
+    },
+    "amountEur": {
+      "description": "Betrag in Euro.",
+      "type": "number",
+      "minimum": 0,
+      "multipleOf": 0.01
+    }
+  }
+}

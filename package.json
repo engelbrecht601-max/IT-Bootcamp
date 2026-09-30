@@ -1,0 +1,31 @@
+{
+  "name": "it-bootcamp-track1",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.12.3",
+  "engines": {
+    "node": ">=22.11.0 <23",
+    "pnpm": "9.12.3"
+  },
+  "scripts": {
+    "check": "pnpm contracts:build && pnpm check:requirements && pnpm test && pnpm typecheck",
+    "doctor": "node scripts/doctor.mjs",
+    "contracts:build": "node scripts/contracts-build.mjs",
+    "contracts:classify": "node scripts/contract-classify.mjs",
+    "contracts:request": "node scripts/contract-change.mjs request",
+    "contracts:decide": "node scripts/contract-change.mjs decide",
+    "check:requirements": "node scripts/check-requirements.mjs",
+    "test": "node --import tsx --test \"scripts/**/*.test.mjs\" \"packages/*/src/**/*.test.ts\"",
+    "typecheck": "pnpm -r typecheck",
+    "mock-server": "node scripts/mock-server.mjs",
+    "conformance": "node scripts/conformance.mjs",
+    "prepare": "git config core.hooksPath .githooks || true"
+  },
+  "devDependencies": {
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1",
+    "typescript": "5.6.3",
+    "@types/node": "22.9.0",
+    "tsx": "4.19.2"
+  }
+}

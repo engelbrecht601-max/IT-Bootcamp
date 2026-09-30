@@ -1,0 +1,11 @@
+{
+  "name": "@bootcamp/ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Gruppe 5: Oberfläche für Sachbearbeitende",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@bootcamp/stage2",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Stage 2: Deckungsprüfung",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

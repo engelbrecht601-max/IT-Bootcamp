@@ -1,0 +1,29 @@
+{
+  "claimId": "SCH-2026-00103",
+  "meta": {
+    "contractVersion": "1.0.0",
+    "createdAt": "2026-11-05T09:47:00Z",
+    "currentStage": 2,
+    "testCase": "Ablehnungskandidat"
+  },
+  "trace": [
+    {
+      "stage": 1,
+      "at": "2026-11-05T10:02:00Z",
+      "action": "erfasst",
+      "note": "Anspruchsteller ist der Versicherungsnehmer selbst."
+    }
+  ],
+  "stage1": {
+    "completedAt": "2026-11-05T10:02:00Z",
+    "policyNumber": "GH-4712390",
+    "incidentDate": "2026-10-28",
+    "reportedAt": "2026-11-05T09:47:00Z",
+    "damageType": "Sachschaden",
+    "description": "Durch einen Rohrbruch im Keller ist Wasser in die vom Eigentümer selbst genutzte Einliegerwohnung gelaufen. Parkett und Küche sind beschädigt.",
+    "claimant": {
+      "name": "Hausverwaltung Kramer & Söhne GbR"
+    },
+    "claimedAmount": 8900.0
+  }
+}
