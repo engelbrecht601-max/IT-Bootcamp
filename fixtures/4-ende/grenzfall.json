@@ -1,0 +1,60 @@
+{
+  "claimId": "SCH-2026-00102",
+  "meta": {
+    "contractVersion": "1.0.0",
+    "createdAt": "2026-11-04T14:05:00Z",
+    "currentStage": 4,
+    "testCase": "Grenzfall"
+  },
+  "trace": [
+    {
+      "stage": 1,
+      "at": "2026-11-04T14:30:00Z",
+      "action": "erfasst",
+      "note": "Meldung rund elf Monate nach dem Schaden, Forderungshöhe noch unbekannt."
+    },
+    {
+      "stage": 2,
+      "at": "2026-11-06T16:20:00Z",
+      "action": "geprüft",
+      "note": "Deckung mit Vorbehalt: späte Meldung, Winterdienst übertragen."
+    },
+    {
+      "stage": 3,
+      "at": "2026-11-12T11:00:00Z",
+      "action": "bewertet",
+      "note": "Schmerzensgeld und Verdienstausfall geschätzt; Mitverschulden der Mieter nicht abgezogen."
+    },
+    {
+      "stage": 4,
+      "at": "2026-11-13T15:30:00Z",
+      "action": "reguliert",
+      "note": "Zahlung angewiesen, Regress gegen die Mieter geprüft."
+    }
+  ],
+  "stage1": {
+    "completedAt": "2026-11-04T14:30:00Z",
+    "policyNumber": "GH-4711587",
+    "incidentDate": "2025-12-19",
+    "reportedAt": "2026-11-04T14:05:00Z",
+    "damageType": "Personenschaden",
+    "description": "Ein Paketzusteller ist im letzten Winter auf dem vereisten Gehweg vor dem Haus gestürzt und hat sich das Handgelenk gebrochen. Der Winterdienst war laut Mietvertrag an die Mieter im Erdgeschoss übertragen. Der Anwalt des Zustellers meldet sich erst jetzt.",
+    "claimant": {
+      "name": "Emre Yıldız"
+    }
+  },
+  "stage2": {
+    "completedAt": "2026-11-06T16:20:00Z",
+    "coverageDecision": "gedeckt",
+    "reasoning": "Vertrag bestand am Schadentag, die Meldung kam aber rund elf Monate später. Ob die Übertragung des Winterdienstes auf die Mieter den Versicherungsnehmer entlastet, ist offen und bei der Bewertung zu berücksichtigen."
+  },
+  "stage3": {
+    "completedAt": "2026-11-12T11:00:00Z",
+    "assessedAmount": 4750.0
+  },
+  "stage4": {
+    "completedAt": "2026-11-13T15:30:00Z",
+    "settlementDecision": "Zahlung",
+    "payoutAmount": 4750.0
+  }
+}
