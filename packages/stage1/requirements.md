@@ -41,10 +41,10 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
   1. Gegeben eine Meldung mit Versicherungsscheinnummer, Schadentag, Hergang, Name des Anspruchstellers und Name des Versicherungsnehmers, wenn Stage 1 sie verarbeitet, dann ist der Block `stage1` gefüllt, der neue Trace-Eintrag hat `action: "erfasst"` und `meta.currentStage` ist `2`.
   2. Gegeben eine Meldung, in der eine dieser fünf Angaben fehlt oder leer ist, wenn Stage 1 sie verarbeitet, dann hat der neue Trace-Eintrag `action: "abgebrochen"`, die Akte hat einen `error`-Block mit `stage: 1` und `code: "PFLICHTANGABE_FEHLT"`, `error.message` enthält den Feldnamen der fehlenden Angabe aus der Eingangsmeldung (z. B. `policyNumber`), und `meta.currentStage` bleibt `1`.
   3. Gegeben eine Meldung, in der mehrere Pflichtangaben fehlen, wenn Stage 1 sie verarbeitet, dann enthält `error.message` die Feldnamen aller fehlenden Angaben.
-- **Status:** umgesetzt
+- **Status:** verifiziert
 - **Quelle:** Interview vom 2026-10-01 (Fünf Pflichtangaben; „Fehlt eine davon, lege ich nichts an, sondern frage nach.“), Entscheidung der Gruppe vom 2026-10-01
 - **Umgesetzt in:** `src/validate.ts`, `src/index.ts`
-- **Verifiziert:** –
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-001` (18 Tests grün, davon 10 in req001.test.ts), `pnpm conformance 1` (3 Fixtures ✓), eigene Probe mit allen drei Eingangsmeldungen: Whitespace-only, null, leere Strings und mehrere fehlende Felder führen zu PFLICHTANGABE_FEHLT mit allen Feldnamen, currentStage 1, ein Trace-Eintrag, kein stage1, Eingangsakte unverändert. Lücken: Tests prüfen bei AC 1 nicht die Feldinhalte von stage1 (liegt bei G1-REQ-009); Whitespace-only und reportedAt-Fehlen haben keinen eigenen Test.
 
 > Auslegung: „Nachfragen“ bilden wir als Abbruch mit `error`-Block ab, weil der Contract keinen Wartezustand kennt. Wartefrist und Wiedervorlage sind offen (siehe Offene Fragen). Fehlercode und `meta.currentStage` bei Abbruch sind unser Vorschlag, noch nicht bestätigt. Fehlercodes folgen dem Contract-Format `^[A-Z][A-Z0-9_]*$` (z. B. `PFLICHTANGABE_FEHLT`).
 >
@@ -60,10 +60,10 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
   2. Gegeben die Versicherungsscheinnummer `gh 4711023`, wenn Stage 1 die Meldung verarbeitet, dann steht in `stage1.policyNumber` `GH-4711023`.
   3. Gegeben die Versicherungsscheinnummer `GH4711023` oder ` GH-4711023 ` (fehlender Bindestrich, Leerzeichen am Rand), wenn Stage 1 die Meldung verarbeitet, dann steht in `stage1.policyNumber` `GH-4711023`.
   4. Gegeben die Versicherungsscheinnummer `GH-471102` (sechs Ziffern) oder `XY-4711023`, wenn Stage 1 die Meldung verarbeitet, dann wird abgebrochen mit `error.code: "VERSICHERUNGSSCHEIN_UNGUELTIG"`.
-- **Status:** umgesetzt
+- **Status:** verifiziert
 - **Quelle:** Interview vom 2026-10-01, Antwort A1
 - **Umgesetzt in:** `src/normalize.ts`, `src/validate.ts`, `src/index.ts`
-- **Verifiziert:** –
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-002` (13 Tests grün, 5 davon REQ-002), `pnpm conformance 1` (3 Eingangsakten grün); normalize.ts per Review geprüft (Regex `^GH-?[0-9]{7}$` nach Entfernen aller Whitespaces und Uppercase; 6 Ziffern, XY und 8 Ziffern werden abgelehnt). Tests prüfen Ergebnis, Fehlercode, trace-Aktion und fehlenden stage1-Block. Lücken: Kriterium 3 testet `GH4711023` und ` GH-4711023 ` nur kombiniert als ` GH4711023 `; innere Leerzeichen wie `G H 4711023` werden ebenfalls akzeptiert (nicht spezifiziert).
 
 > Offen: Was passiert, wenn die Nummer formal stimmt, es den Vertrag aber nicht gibt? Gehört das überhaupt in Stage 1 oder in die Deckungsprüfung?
 
@@ -74,10 +74,10 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
   1. Gegeben Schadentag `2026-11-01` und Meldezeitpunkt `2026-11-03T08:12:00Z`, wenn Stage 1 die Meldung verarbeitet, dann steht in `stage1.incidentDate` `2026-11-01`.
   2. Gegeben Schadentag und Meldung am selben Tag, wenn Stage 1 die Meldung verarbeitet, dann wird der Vorgang erfasst.
   3. Gegeben Schadentag `2026-11-04` und Meldezeitpunkt `2026-11-03T08:12:00Z`, wenn Stage 1 die Meldung verarbeitet, dann wird abgebrochen mit `error.code: "SCHADENTAG_UNGUELTIG"`.
-- **Status:** umgesetzt
+- **Status:** verifiziert
 - **Quelle:** Interview vom 2026-10-01, Antwort A2
 - **Umgesetzt in:** `src/validate.ts`, `src/dates.ts`
-- **Verifiziert:** –
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-003` (11/11 grün, 3 Tests für REQ-003), `pnpm conformance 1` (3 Fixtures grün), Code `src/validate.ts`/`src/dates.ts` gelesen. Tests prüfen incidentDate, Trace-Aktion, error.code/stage, currentStage; Kriterien 1–3 abgedeckt. Lücken: Vergleich erfolgt auf UTC-Kalendertag, Zeitzonen-Offsets im Meldezeitpunkt (z. B. -02:00 nahe Mitternacht) sind nicht getestet; Kopfkommentar der Testdatei nennt noch den alten Code "schadentag-ungueltig".
 
 > Offen: Umgang mit ungefähren Angaben („Mitte Dezember“).
 
@@ -90,10 +90,10 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
   3. Gegeben eine Meldung ohne Schadenart, bei der kein Mensch verletzt, aber eine Sache beschädigt wurde, wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Sachschaden`.
   4. Gegeben eine Meldung ohne Schadenart, bei der weder ein Mensch verletzt noch eine Sache beschädigt wurde (z. B. entgangene Miete), wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Vermögensschaden`.
   5. Gegeben eine Meldung ohne Schadenart und ohne Angabe, ob ein Mensch verletzt oder eine Sache beschädigt wurde, wenn Stage 1 sie verarbeitet, dann wird abgebrochen mit `error.code: "SCHADENART_UNKLAR"`.
-- **Status:** umgesetzt
+- **Status:** verifiziert
 - **Quelle:** Interview vom 2026-10-01, Antwort A3; Entscheidung der Gruppe vom 2026-10-01 (Ableitung nur, wenn der Kunde die Schadenart nicht nennt)
 - **Umgesetzt in:** `src/classify.ts`, `src/index.ts`
-- **Verifiziert:** –
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-004` (19 Tests grün, 11 davon für REQ-004, jeder AK 1-5 abgedeckt mit Ergebnisprüfung), `pnpm conformance 1` (3 Fixtures grün; grenzfall leitet Personenschaden ab), Rangfolge in `src/classify.ts` gelesen. Lücken: Kundenangabe widerspricht Fakten wird übernommen (bereits als offen dokumentiert); ungültiger damageType-String wird still verworfen und abgeleitet, nicht getestet.
 
 > Auslegung: „Mensch verletzt“ und „Sache beschädigt“ kommen als Ja/Nein-Angaben in der Eingangsmeldung (`personInjured`, `propertyDamaged`, G1-REQ-009). Eine Ableitung aus dem Freitext des Hergangs bauen wir nicht.
 >
@@ -106,10 +106,10 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
   1. Gegeben eine Meldung mit Telefonnummer, aber ohne E-Mail-Adresse, wenn Stage 1 sie verarbeitet, dann wird der Vorgang erfasst und die Telefonnummer steht in `stage1.claimantPhone`.
   2. Gegeben eine Meldung mit E-Mail-Adresse, aber ohne Telefonnummer, wenn Stage 1 sie verarbeitet, dann wird der Vorgang erfasst und die E-Mail-Adresse steht in `stage1.claimantEmail`.
   3. Gegeben eine Meldung ohne Telefonnummer und ohne E-Mail-Adresse, wenn Stage 1 sie verarbeitet, dann wird abgebrochen mit `error.code: "KONTAKT_FEHLT"`.
-- **Status:** umgesetzt
+- **Status:** verifiziert
 - **Quelle:** Interview vom 2026-10-01 (Zusatz zu den Pflichtangaben, Antwort A6)
 - **Umgesetzt in:** `src/validate.ts`, `src/index.ts`, `src/claim.ts`
-- **Verifiziert:** –
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-005` (11/11 grün), `pnpm conformance 1` (3 Eingangsakten ok), Code in validate.ts/index.ts gelesen. Alle drei Kriterien haben je einen Test, der Ergebnis prüft (action, currentStage, Feldwert, error.code/stage, kein stage1). Whitespace-only zählt als fehlend. Lücken: kein Test für leere Strings/Whitespace, und keiner für Vorrang des Codes, wenn zusätzlich eine Pflichtangabe fehlt.
 
 > Contract: Mit G1-CR-001 (freigegeben, Contract 1.1.0) gibt es `stage1.claimantPhone` und `stage1.claimantEmail`.
 
@@ -120,10 +120,10 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
   1. Gegeben Schadentag `2025-12-19` und Meldezeitpunkt `2026-11-04T14:05:00Z`, wenn Stage 1 die Meldung verarbeitet, dann wird der Vorgang erfasst und die `note` des neuen Trace-Eintrags enthält `Spätmeldung`.
   2. Gegeben Schadentag `2026-01-15` und Meldung am `2026-07-15` (genau sechs Monate), wenn Stage 1 die Meldung verarbeitet, dann enthält die `note` des neuen Trace-Eintrags nicht `Spätmeldung`.
   3. Gegeben Schadentag `2026-01-15` und Meldung am `2026-07-16`, wenn Stage 1 die Meldung verarbeitet, dann enthält die `note` des neuen Trace-Eintrags `Spätmeldung`.
-- **Status:** umgesetzt
+- **Status:** verifiziert
 - **Quelle:** Interview vom 2026-10-01, Antworten C11 und C12
 - **Umgesetzt in:** `src/flags.ts`, `src/dates.ts`
-- **Verifiziert:** –
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-006` (grün, 3 Tests je ein Kriterium, prüfen note), `pnpm conformance 1` (3/3 ok), manuelle Grenzfälle via tsx (31.08.+6M = 28.02.; 28.02. nicht spät, 01.03. spät; 15.07. 23:59Z nicht spät; Zeitzone -05:00 wird auf UTC-Tag normiert). Lücken: Monatsende- und Zeitzonenfälle nicht durch Tests abgedeckt; Ablageort nur in note (offene Frage mit Gruppe 2).
 
 > Offen: Wo steht die Markierung? Bisher gibt es nur die Freitext-`note` im Trace-Eintrag. Ein eigenes Feld bräuchte einen Änderungsantrag. Mit Gruppe 2 klären, was sie lesen kann.
 
@@ -137,10 +137,10 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
   1. Gegeben eine Meldung mit `claimantName` gleich `policyholderName` (Groß-/Kleinschreibung und Leerzeichen am Rand egal), wenn Stage 1 sie verarbeitet, dann wird der Vorgang trotzdem erfasst und die `note` des neuen Trace-Eintrags enthält `möglicher Eigenschaden`.
   2. Gegeben eine Meldung mit `claimantName` gleich `propertyManagerName`, wenn Stage 1 sie verarbeitet, dann wird der Vorgang erfasst und die `note` des neuen Trace-Eintrags enthält `möglicher Eigenschaden`.
   3. Gegeben eine Meldung, deren `claimantName` weder `policyholderName` noch `propertyManagerName` entspricht, wenn Stage 1 sie verarbeitet, dann enthält die `note` des neuen Trace-Eintrags nicht `möglicher Eigenschaden`.
-- **Status:** umgesetzt
+- **Status:** verifiziert
 - **Quelle:** Interview vom 2026-10-01, Antworten C11 und C13
 - **Umgesetzt in:** `src/flags.ts`
-- **Verifiziert:** –
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-007` (3 Tests grün, je einer pro Kriterium, prüfen note und Trace-Länge), `pnpm conformance 1` (3 Fixtures grün), Code-Review `src/flags.ts`: Treffer bei Versicherungsnehmer und Hausverwaltung, Groß-/Kleinschreibung und Randleerzeichen egal, leerer Name löst nichts aus. Lücken: Innenleerzeichen und Firmenzusätze nicht normalisiert (laut Kriterien nicht gefordert), Fixtures enthalten keinen Eigenschaden-Fall.
 
 > Entscheidung der Gruppe (2026-10-01): Name des Versicherungsnehmers und gegebenenfalls seiner Hausverwaltung nennt der Kunde in der Meldung (G1-REQ-009).
 >
@@ -154,10 +154,10 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
   2. Gegeben eine Akte mit n Trace-Einträgen, wenn Stage 1 sie verarbeitet, dann hat sie danach genau n+1 Einträge, der letzte hat `stage: 1`, und kein bestehender Eintrag ist verändert.
   3. Gegeben eine vollständige Meldung, wenn Stage 1 sie verarbeitet, dann sind `stage1.completedAt` und `at` des neuen Trace-Eintrags gesetzt und gleich.
   4. Gegeben eine Akte, wenn Stage 1 sie verarbeitet, dann sind alle Felder außerhalb von `stage1`, `trace`, `error` und `meta.currentStage` unverändert.
-- **Status:** umgesetzt
+- **Status:** verifiziert
 - **Quelle:** Package-CLAUDE.md (Übergaberegeln), Interview vom 2026-10-01 (Risiko: unvollständige Übergabe)
 - **Umgesetzt in:** `src/index.ts`
-- **Verifiziert:** –
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-008` (13 Tests grün, 6 davon zu REQ-008), `pnpm conformance 1` (3 Eingangsfälle grün), Gegenprobe mit Ajv gegen `contracts/claim.schema.json`: gebaute Akte valide, nach Löschen von `stage1.policyNumber` invalide. Der überarbeitete Test validiert jetzt alle drei Fixtures per Ajv, prüft n+1 Trace mit 0/1/2 Altbestand, completedAt gleich at gleich `now`, Fremdblock `stage2` unverändert und Nicht-Mutation. Lücken: Der Test mit Ajv liegt noch uncommitted im Arbeitsbaum; Kriterium 4 prüft meta-Felder einzeln statt per Gesamtvergleich; `date-time`-Formate werden in der Validierung ignoriert (Warnung von Ajv).
 
 > Auslegung beim Bauen: Ohne Markierungen lautet die `note` „Meldung vollständig.“, mit Markierungen stehen sie durch „; “ getrennt in der `note`. Der Zeitpunkt `now` ist optionaler dritter Parameter von `run`.
 
@@ -191,10 +191,10 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
   2. Gegeben die Musterakten in `fixtures/1-2/`, dann gibt es zu jeder eine Eingangsmeldung unter `packages/stage1/fixtures/eingang/` mit gleichem Dateinamen (`standardfall.json`, `grenzfall.json`, `ablehnungskandidat.json`).
   3. Gegeben eine dieser Eingangsmeldungen, wenn Stage 1 sie verarbeitet, dann stimmen `policyNumber`, `incidentDate`, `reportedAt`, `damageType`, `description`, `claimant.name` und `claimedAmount` im Block `stage1` mit der zugehörigen Musterakte in `fixtures/1-2/` überein.
   4. Gegeben die Eingangsmeldung `standardfall.json`, dann enthält sie mindestens eine Abweichung, die Stage 1 korrigieren muss, z. B. `policyNumber: "gh 4711023"`.
-- **Status:** umgesetzt
+- **Status:** verifiziert
 - **Quelle:** Interview vom 2026-10-01 (Eingangswege; fünf Pflichtangaben plus Kontakt), Entscheidung der Gruppe vom 2026-10-01, Contract `stage1`, Musterakten `fixtures/1-2/`
 - **Umgesetzt in:** `src/claim.ts` (Typ `Report`), `fixtures/eingang/`
-- **Verifiziert:** –
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-009` (14 Tests grün, davon 5 in req009.test.ts), `pnpm conformance 1` (3 Fixtures ✓); alle drei Eingangsmeldungen existieren, liefern stage1-Felder gleich der Musterakte, standardfall enthält `gh 4711023` und wird zu `GH-4711023` korrigiert. Lücken: AK 1 (Feldtabelle) wird nur durch einen Positivtest mit allen Feldern gestützt, Pflicht/Typ-Angaben nicht einzeln geprüft; Tabelle sagt „jeweils als Text“, `Report` typisiert aber `personInjured` als boolean und `claimedAmount` als number (Doku-Unschärfe).
 
 > Auslegung: Feldnamen und Struktur sind unser Vorschlag. Nur die Inhalte stammen aus dem Interview. Telefon und E-Mail stehen nicht in den Musterakten und werden für die Eingangsmeldungen erfunden.
 >
