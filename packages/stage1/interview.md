@@ -134,3 +134,37 @@ C. Unvollständig oder auffällig
 13. Was als Meldezeitpunkt zählt, müsste ich klären. Sicher ist nur: Der Schadentag darf nicht nach dem Tag der Meldung liegen. Und spät ist eine Meldung, wenn zwischen Schadentag und Meldung mehr als sechs Monate liegen.
 
 Bei sehr vielen Punkten steht bei mir also noch „klären“. Das solltet ihr in euren Anforderungen als offene Punkte festhalten und nicht einfach selbst festlegen. Soll ich bei einem Punkt genauer werden, zum Beispiel bei der Spätmeldung mit einem Rechenbeispiel?
+
+**Gruppe:** Wir gehen jetzt alle Fälle durch, in denen du einen Vorgang nicht anlegst. Bei jedem Fall wollen wir wissen: Fragst du beim Kunden nach und wartest (Rückfrage), oder ist die Meldung damit erledigt (Ablehnung)? Und was genau sagst oder schreibst du dem Kunden bzw. was notierst du?
+
+1. Eine Pflichtangabe fehlt: Versicherungsscheinnummer, Schadentag, Hergang oder Name des Anspruchstellers. Rückfrage oder Ablehnung? Ist das bei allen vier gleich?
+2. Der Name des Versicherungsnehmers fehlt. Legst du den Vorgang trotzdem an, oder fragst du nach?
+3. Es gibt keinen Meldezeitpunkt, z. B. weil im Formular kein Eingangsdatum steht. Nimmst du dann einfach den Zeitpunkt, an dem die Meldung bei dir ankommt, oder fragst du nach?
+4. Weder Telefonnummer noch E-Mail-Adresse. Wie fragst du nach, wenn du den Anspruchsteller gar nicht erreichen kannst?
+5. Die Versicherungsscheinnummer ist auch nach deiner Korrektur ungültig, z. B. nur sechs Ziffern. Rückfrage oder Ablehnung?
+6. Der Schadentag liegt nach dem Tag der Meldung. Ist das für dich ein Tippfehler, bei dem du nachfragst, oder eine Ablehnung?
+7. Der Kunde nennt keine Schadenart, und aus seinen Angaben geht nicht hervor, ob ein Mensch verletzt oder eine Sache beschädigt wurde. Fragst du nach, oder ordnest du selbst ein, z. B. anhand des Hergangs?
+8. Wenn mehrere Dinge gleichzeitig fehlen oder falsch sind: Fragst du alles auf einmal nach, oder gibt es eine Reihenfolge?
+9. Gibt es Fälle, in denen du einen Vorgang trotz fehlender Angaben anlegst und nur markierst, so wie bei der Spätmeldung?
+
+**Fachperson:** Das ist eine ganze Reihe, ich gehe sie der Reihe nach durch. Vorweg: Das Wort "Ablehnung" benutze ich bei meiner Arbeit nicht für fehlende Angaben. Bei mir gilt: Fehlt etwas Nötiges, lege ich nichts an und frage nach. Ob es Fälle gibt, die ich endgültig nicht anlege, müsste ich klären.
+
+1. Fehlt eine der vier Pflichtangaben (Versicherungsscheinnummer, Schadentag, Hergang, Name des Anspruchstellers), lege ich nichts an und frage nach. Die Meldung gilt dann als unvollständig. Das ist bei allen vier gleich. Den genauen Wortlaut, den ich dem Kunden sage oder schreibe, und was ich dazu notiere, müsste ich klären.
+
+2. Der Name des Versicherungsnehmers gehört nicht zu den Angaben, die ich zwingend brauche. Ob ich ohne ihn anlege oder nachfrage, müsste ich klären. Gebraucht wird er nur, um einen möglichen Eigenschaden zu erkennen, also wenn der Anspruchsteller der Versicherungsnehmer selbst oder dessen Hausverwaltung ist.
+
+3. Was als Meldezeitpunkt zählt und was ich bei fehlendem Eingangsdatum mache, müsste ich klären. Sicher ist nur, dass der Schadentag nicht nach dem Tag der Meldung liegen darf.
+
+4. Ich brauche eine Telefonnummer oder eine E-Mail-Adresse des Anspruchstellers, sonst kann später niemand nachfragen. Fehlt beides, lege ich nichts an. Wie ich nachfrage, wenn ich ihn gar nicht erreiche, müsste ich klären.
+
+5. Ist die Nummer nach meiner Korrektur nicht "GH-" plus sieben Ziffern, ist sie ungültig. Ob ich dann nachfrage oder anders vorgehe, müsste ich klären.
+
+6. Der Schadentag darf nicht nach dem Tag der Meldung liegen. Ob ich das als Tippfehler behandle und nachfrage oder anders vorgehe, müsste ich klären.
+
+7. Die Art des Schadens ist eine meiner fünf Pflichtangaben. Fehlt sie, frage ich nach. Entscheidend sind dabei die Fakten: Wurde ein Mensch verletzt, ist es ein Personenschaden, und der hat Vorrang. Ob ich bei fehlender Angabe selbst aus dem Hergang einordne, müsste ich klären.
+
+8. Ob ich mehrere fehlende Angaben auf einmal erfrage und ob es eine Reihenfolge gibt, müsste ich klären.
+
+9. Bei den Pflichtangaben gibt es das nicht. Fehlt eine, lege ich nicht an. Nur markieren, aber trotzdem anlegen, tue ich bei zwei Dingen: Spätmeldung (mehr als sechs Monate zwischen Schadentag und Meldung) und möglicher Eigenschaden. Ob es weitere Fälle gibt, müsste ich klären.
+
+Viele Punkte stehen bei mir also noch auf "klären". Haltet sie in euren Anforderungen als offene Punkte fest und legt sie nicht selbst fest. Soll ich bei einem Punkt genauer werden, zum Beispiel bei einem Beispiel für die Rückfrage bei einer unvollständigen Meldung?
