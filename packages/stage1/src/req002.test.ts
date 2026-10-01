@@ -137,3 +137,21 @@ test("[G1-REQ-002] Ungültiges Präfix: XY statt GH", () => {
   );
   assert.ok(!result.stage1, "stage1-Block darf nicht vorhanden sein");
 });
+
+test("[G1-REQ-002] Leerzeichen mitten in der Nummer entfernen", () => {
+  const claim = createBaseClaim();
+  const report: Report = {
+    ...createBaseReport(),
+    policyNumber: "G H 4711023",
+  };
+
+  const result = run(claim, report, new Date("2026-11-03T08:40:00Z"));
+
+  assert.ok(result.stage1, "stage1-Block muss vorhanden sein");
+  assert.equal(
+    result.stage1.policyNumber,
+    "GH-4711023",
+    "Innere Leerzeichen müssen entfernt und Format normalisiert werden"
+  );
+  assert.equal(result.trace[result.trace.length - 1].action, "erfasst");
+});

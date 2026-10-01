@@ -60,12 +60,13 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
   2. Gegeben die Versicherungsscheinnummer `gh 4711023`, wenn Stage 1 die Meldung verarbeitet, dann steht in `stage1.policyNumber` `GH-4711023`.
   3. Gegeben die Versicherungsscheinnummer `GH4711023` oder ` GH-4711023 ` (fehlender Bindestrich, Leerzeichen am Rand), wenn Stage 1 die Meldung verarbeitet, dann steht in `stage1.policyNumber` `GH-4711023`.
   4. Gegeben die Versicherungsscheinnummer `GH-471102` (sechs Ziffern) oder `XY-4711023`, wenn Stage 1 die Meldung verarbeitet, dann wird abgebrochen mit `error.code: "VERSICHERUNGSSCHEIN_UNGUELTIG"`.
+  5. Gegeben die Versicherungsscheinnummer `G H 4711023` (Leerzeichen mitten in der Nummer), wenn Stage 1 die Meldung verarbeitet, dann steht in `stage1.policyNumber` `GH-4711023`.
 - **Status:** verifiziert
-- **Quelle:** Interview vom 2026-10-01, Antwort A1
+- **Quelle:** Interview vom 2026-10-01, Antwort A1; Interview vom 2026-10-01 (offene Fragen), Antwort 2
 - **Umgesetzt in:** `src/normalize.ts`, `src/validate.ts`, `src/index.ts`
-- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-002` (13 Tests grün, 5 davon REQ-002), `pnpm conformance 1` (3 Eingangsakten grün); normalize.ts per Review geprüft (Regex `^GH-?[0-9]{7}$` nach Entfernen aller Whitespaces und Uppercase; 6 Ziffern, XY und 8 Ziffern werden abgelehnt). Tests prüfen Ergebnis, Fehlercode, trace-Aktion und fehlenden stage1-Block. Lücken: Kriterium 3 testet `GH4711023` und ` GH-4711023 ` nur kombiniert als ` GH4711023 `; innere Leerzeichen wie `G H 4711023` werden ebenfalls akzeptiert (nicht spezifiziert).
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-002` (alle Tests der Datei grün, 6 REQ-002-Tests), `pnpm conformance 1` (3 Eingangsakten grün); normalize.ts gelesen (Whitespace entfernen, Uppercase, Regex `^GH-?[0-9]{7}$`). Tests prüfen policyNumber, Trace-Aktion, error.code/stage und fehlenden stage1-Block bei Abbruch; Kriterien 1, 2, 4, 5 direkt abgedeckt. Lücken: Kriterium 3 nur kombiniert als ` GH4711023 ` getestet, `GH4711023` und ` GH-4711023 ` nicht einzeln.
 
-> Offen: Was passiert, wenn die Nummer formal stimmt, es den Vertrag aber nicht gibt? Gehört das überhaupt in Stage 1 oder in die Deckungsprüfung?
+> Offen (Sabine: „müsste ich klären“): Was passiert, wenn die Nummer formal stimmt, es den Vertrag aber nicht gibt? Gehört das überhaupt in Stage 1 oder in die Deckungsprüfung?
 
 ### G1-REQ-003: Schadentag plausibel
 
@@ -83,21 +84,25 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
 
 ### G1-REQ-004: Schadenart einordnen
 
-- **User Story:** Als Sachbearbeiter:in möchte ich, dass die Schadenart übernommen wird, wenn der Kunde sie nennt, und sonst nach einer festen Rangfolge abgeleitet wird, damit gleiche Fälle immer gleich eingeordnet werden.
+- **User Story:** Als Sachbearbeiter:in möchte ich, dass die Schadenart nach den Fakten und einer festen Rangfolge bestimmt wird und die Angabe des Kunden nur zählt, wenn die Fakten fehlen, damit gleiche Fälle immer gleich eingeordnet werden.
 - **Akzeptanzkriterien:**
-  1. Gegeben eine Meldung mit `damageType: "Sachschaden"` vom Kunden, wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Sachschaden`, unabhängig von den übrigen Angaben.
-  2. Gegeben eine Meldung ohne Schadenart, bei der ein Mensch verletzt wurde, wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Personenschaden`, auch wenn zusätzlich eine Sache beschädigt wurde.
-  3. Gegeben eine Meldung ohne Schadenart, bei der kein Mensch verletzt, aber eine Sache beschädigt wurde, wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Sachschaden`.
-  4. Gegeben eine Meldung ohne Schadenart, bei der weder ein Mensch verletzt noch eine Sache beschädigt wurde (z. B. entgangene Miete), wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Vermögensschaden`.
+  1. Gegeben eine Meldung mit `damageType: "Sachschaden"` vom Kunden und ohne `personInjured` und `propertyDamaged`, wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Sachschaden`.
+  2. Gegeben eine Meldung, bei der ein Mensch verletzt wurde (`personInjured: true`), egal welche Schadenart der Kunde nennt (z. B. `damageType: "Sachschaden"`) und auch wenn zusätzlich eine Sache beschädigt wurde, wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Personenschaden`.
+  3. Gegeben eine Meldung, bei der kein Mensch verletzt, aber eine Sache beschädigt wurde (`personInjured: false`, `propertyDamaged: true`), egal welche Schadenart der Kunde nennt (z. B. `damageType: "Personenschaden"`), wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Sachschaden`.
+  4. Gegeben eine Meldung, bei der weder ein Mensch verletzt noch eine Sache beschädigt wurde (`personInjured: false`, `propertyDamaged: false`, z. B. entgangene Miete), egal welche Schadenart der Kunde nennt, wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Vermögensschaden`.
   5. Gegeben eine Meldung ohne Schadenart und ohne Angabe, ob ein Mensch verletzt oder eine Sache beschädigt wurde, wenn Stage 1 sie verarbeitet, dann wird abgebrochen mit `error.code: "SCHADENART_UNKLAR"`.
 - **Status:** verifiziert
-- **Quelle:** Interview vom 2026-10-01, Antwort A3; Entscheidung der Gruppe vom 2026-10-01 (Ableitung nur, wenn der Kunde die Schadenart nicht nennt)
+- **Quelle:** Interview vom 2026-10-01, Antwort A3; Interview vom 2026-10-01 (offene Fragen), Antwort 7 („Entscheidend sind die Fakten, nicht, was der Kunde nennt.“); Entscheidung der Gruppe vom 2026-10-01 (Kunde nennt die Schadenart, wenn Fakten fehlen)
 - **Umgesetzt in:** `src/classify.ts`, `src/index.ts`
-- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-004` (19 Tests grün, 11 davon für REQ-004, jeder AK 1-5 abgedeckt mit Ergebnisprüfung), `pnpm conformance 1` (3 Fixtures grün; grenzfall leitet Personenschaden ab), Rangfolge in `src/classify.ts` gelesen. Lücken: Kundenangabe widerspricht Fakten wird übernommen (bereits als offen dokumentiert); ungültiger damageType-String wird still verworfen und abgeleitet, nicht getestet.
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-004` (19 Tests grün, 11 für REQ-004), `pnpm conformance 1` (3 Eingangsakten ok), `src/classify.ts` gelesen (Rangfolge Person, Sache, beide false = Vermögen, sonst Kundenangabe, sonst null/SCHADENART_UNKLAR). Jedes AK 1-5 hat Tests mit Ergebnisprüfung (damageType, error.code/stage, currentStage, ein Trace-Eintrag, kein stage1 bei Abbruch). Lücken: AK 4 testet Kundenangabe nur mit Sachschaden; Teilfakten (eine Angabe false, andere fehlt) mit Kundenangabe sind ungetestet (Kundenangabe zählt dann laut Code); ungültiger damageType-String ungetestet.
 
 > Auslegung: „Mensch verletzt“ und „Sache beschädigt“ kommen als Ja/Nein-Angaben in der Eingangsmeldung (`personInjured`, `propertyDamaged`, G1-REQ-009). Eine Ableitung aus dem Freitext des Hergangs bauen wir nicht.
 >
-> Offen: Was gilt, wenn die Angabe des Kunden den Fakten widerspricht, z. B. „Sachschaden“, obwohl ein Mensch verletzt wurde? AK 1 übernimmt vorerst die Angabe des Kunden.
+> Geklärt (Interview, Antwort 7): Widerspricht die Angabe des Kunden den Fakten, gelten die Fakten. Personenschaden hat Vorrang.
+>
+> Auslegung: „Fakten liegen vor“ heißt `personInjured: true`, `propertyDamaged: true` oder beide `false`. Sonst zählt die Angabe des Kunden.
+>
+> Offen (Sabine: „müsste ich klären“): Was gilt, wenn der Kunde etwas nennt, das keine der drei Schadenarten ist? Bisher wird die Angabe verworfen und abgeleitet.
 
 ### G1-REQ-005: Kontaktangabe des Anspruchstellers
 
@@ -166,7 +171,7 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
 
 - **User Story:** Als Sachbearbeiter:in möchte ich, dass jede Meldung, ob per Telefon oder Formular, in derselben Form bei Stage 1 ankommt, damit die Prüfungen für beide Wege gleich laufen.
 - **Akzeptanzkriterien:**
-  1. Gegeben eine Eingangsmeldung, dann hat sie folgende Angaben, jeweils als Text so, wie der Kunde sie geliefert hat (noch nicht geprüft oder korrigiert):
+  1. Gegeben eine Eingangsmeldung, dann hat sie folgende Angaben, so wie der Kunde sie geliefert hat (noch nicht geprüft oder korrigiert): Texte als Zeichenkette, `personInjured` und `propertyDamaged` als Ja/Nein-Wert, `claimedAmount` als Zahl:
 
      | Feld | Bedeutung | Pflicht | Quelle |
      |---|---|---|---|
@@ -202,19 +207,20 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
 
 ## Offene Fragen an die Fachperson
 
-- Eingangsformat: Welche Angaben liefern Telefon und Formular genau, und wie sind sie benannt (z. B. „Person verletzt ja/nein“ für die Schadenart)?
-- Was gilt, wenn die Schadenart des Kunden den Fakten widerspricht? (G1-REQ-004)
-- Wie lange wartest du auf fehlende Angaben, und wann wird ein Vorgang abgebrochen? (C10)
-- Was tust du, wenn die Versicherungsscheinnummer formal stimmt, es sie aber nicht gibt? (A1)
-- Wie gehst du mit einem ungefähren Schadentag um („Mitte Dezember“)? (A2)
-- Was muss mindestens im Hergang stehen? Reicht „Wasserschaden“? (A4)
-- Macht es einen Unterschied, ob der Anspruchsteller eine Person oder eine Firma ist? (A5)
-- Prüfst du, ob Telefonnummer oder E-Mail-Adresse gültig aussehen? (A6)
-- Woran erkennst du, dass der Anspruchsteller der Versicherungsnehmer oder dessen Hausverwaltung ist? (C13)
-- Gibt es außer Spätmeldung und möglichem Eigenschaden weitere Hinweise für die Deckungsprüfung? (C11)
-- Gibt es Fälle, die du gar nicht erst anlegst, z. B. fremde Sparte oder Scherz? (C14)
-- Fragst du nach der Forderungshöhe? Was, wenn sie noch unbekannt ist?
-- Was zählt als Meldezeitpunkt: Anruf, Formulareingang oder Anlage des Vorgangs?
+Stand nach dem Interview vom 2026-10-01 (offene Fragen). Bei allen sagt Sabine „müsste ich klären“; wir legen sie nicht selbst fest.
+
+- Versicherungsscheinnummer formal gültig, aber kein Vertrag vorhanden: was tun? (G1-REQ-002)
+- Ungefährer Schadentag („Mitte Dezember“): was tun? (G1-REQ-003)
+- Was muss mindestens im Hergang stehen? Reicht „Wasserschaden“? (G1-REQ-001)
+- Macht es einen Unterschied, ob der Anspruchsteller eine Person oder eine Firma ist?
+- Werden Telefonnummer oder E-Mail-Adresse auf Gültigkeit geprüft? (G1-REQ-005)
+- Schadenart, die keine der drei Arten ist: was tun? (G1-REQ-004)
+- Wie lange wird auf fehlende Angaben gewartet, und wann wird ein Vorgang abgebrochen? (G1-REQ-001)
+- Wann gelten zwei Namen beim möglichen Eigenschaden als gleich? (G1-REQ-007)
+- Gibt es außer Spätmeldung und möglichem Eigenschaden weitere Hinweise für die Deckungsprüfung? (G1-REQ-006, G1-REQ-007)
+- Gibt es Fälle, die gar nicht erst angelegt werden (fremde Sparte, Scherz)?
+- Wird aktiv nach der Forderungshöhe gefragt? (Geklärt: genannter Betrag wird übernommen, sonst bleibt das Feld leer, nie schätzen.)
+- Was zählt als Meldezeitpunkt: Anruf, Formulareingang oder Anlage des Vorgangs? (G1-REQ-003, G1-REQ-006)
 
 ## Offene Fragen an Gruppe 2 (Deckungsprüfung)
 
