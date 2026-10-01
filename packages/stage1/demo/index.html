@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gruppe 1 · Schadenaufnahme</title>
+<style>
+  :root { --bg:#f6f5f2; --card:#fff; --ink:#1d1d1b; --muted:#6b6a66; --line:#e3e1db; --ok:#1f7a4d; --okbg:#e5f3ec; --bad:#b3261e; --badbg:#fbe9e7; --warn:#8a5a00; --warnbg:#fdf1d8; --accent:#2f4f8f; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 system-ui, sans-serif; padding:24px 16px 48px; }
+  main { max-width:1180px; margin:0 auto; }
+  h1 { font-size:22px; margin:0 0 4px; } h2 { font-size:16px; margin:28px 0 10px; }
+  .sub { color:var(--muted); margin:0 0 20px; }
+  .flow { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+  .flow span { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:4px 10px; font-size:12px; }
+  .flow b { color:var(--muted); align-self:center; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; min-width:0; }
+  .card h3 { margin:0 0 6px; font-size:15px; display:flex; justify-content:space-between; gap:8px; align-items:center; }
+  .pill { font-size:11px; padding:2px 8px; border-radius:99px; font-weight:600; white-space:nowrap; }
+  .ok { background:var(--okbg); color:var(--ok); } .bad { background:var(--badbg); color:var(--bad); } .warn { background:var(--warnbg); color:var(--warn); } .neutral { background:#eceae4; color:var(--muted); }
+  .flags { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 10px; }
+  textarea { width:100%; min-height:220px; font:12px/1.4 ui-monospace, monospace; border:1px solid var(--line); border-radius:6px; padding:8px; background:#fbfaf8; }
+  pre { margin:0; font:12px/1.4 ui-monospace, monospace; background:#fbfaf8; border:1px solid var(--line); border-radius:6px; padding:8px; overflow-x:auto; max-height:260px; }
+  button { font:inherit; border:1px solid var(--accent); background:var(--accent); color:#fff; border-radius:6px; padding:5px 12px; cursor:pointer; }
+  button.ghost { background:transparent; color:var(--accent); }
+  table { border-collapse:collapse; width:100%; font-size:13px; }
+  th, td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  .scroll { overflow-x:auto; }
+  .muted { color:var(--muted); } .row { display:flex; gap:8px; align-items:center; margin:8px 0; flex-wrap:wrap; }
+  details summary { cursor:pointer; color:var(--accent); margin:8px 0 4px; }
+  .x { color:var(--bad); } .y { color:var(--ok); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Gruppe 1 · Schadenaufnahme</h1>
+  <p class="sub">Eingangsmeldung → <code>run()</code> → Akte für die Deckungsprüfung. Werte live aus dem Code, Contract und den Musterakten.</p>
+  <div class="flow"><span>1 Normalisieren</span><b>→</b><span>2 Prüfen</span><b>→</b><span>3 Einordnen</span><b>→</b><span>4 Markieren</span><b>→</b><span>5 Übergeben</span></div>
+
+  <h2>Musterfälle</h2>
+  <p class="muted">Jede Meldung ist editierbar. „Ausführen“ schickt sie durch Stage 1 und prüft das Ergebnis gegen den Contract und die Musterakte in <code>fixtures/1-2/</code>.</p>
+  <div class="grid" id="cases"></div>
+
+  <h2>Anforderungen und Tests</h2>
+  <div class="row"><button class="ghost" id="runTests">Tests ausführen</button><span class="muted" id="testSummary"></span></div>
+  <div class="card scroll"><table id="reqs"><thead><tr><th>ID</th><th>Anforderung</th><th>Status</th><th>Tests</th></tr></thead><tbody></tbody></table></div>
+</main>
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (v) => String(v ?? "–").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+let testResults = [];
+
+function render(card, data) {
+  const out = data.output, last = out?.trace?.at(-1);
+  const status = data.failure ? `<span class="pill bad">Fehler</span>`
+    : out.error ? `<span class="pill bad">abgebrochen · ${esc(out.error.code)}</span>`
+    : `<span class="pill ok">erfasst → Stage ${out.meta.currentStage}</span>`;
+  const flags = !data.failure && last?.note ? last.note.split("; ").map((n) => `<span class="pill ${/Spät|Eigen/.test(n) ? "warn" : "neutral"}">${esc(n)}</span>`).join("") : "";
+  const diff = (data.diff ?? []).map((d) => `<tr><td><code>${d.field}</code></td><td>${esc(d.actual)}</td><td class="${d.same ? "y" : "x"}">${d.same ? "✓" : "≠ " + esc(d.expected)}</td></tr>`).join("");
+  $(".result", card).innerHTML = data.failure ? `<pre>${esc(data.failure)}</pre>` : `
+    <div class="flags">${status}<span class="pill ${data.valid ? "ok" : "bad"}">${data.valid ? "Contract valide" : "Contract verletzt"}</span>${flags}</div>
+    ${out.error ? `<p>${esc(out.error.message)}</p>` : ""}
+    ${diff ? `<div class="scroll"><table><thead><tr><th>Feld</th><th>Ergebnis</th><th>vs. Musterakte</th></tr></thead><tbody>${diff}</tbody></table></div>` : ""}
+    ${data.valid ? "" : `<pre>${esc(JSON.stringify(data.errors, null, 2))}</pre>`}
+    <details><summary>Ausgabe-Akte (JSON)</summary><pre>${esc(JSON.stringify(out, null, 2))}</pre></details>`;
+}
+
+async function loadCases() {
+  const cases = await (await fetch("api/cases")).json();
+  $("#cases").innerHTML = "";
+  for (const c of cases) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<h3>${esc(c.name)}</h3>
+      <details><summary>Eingangsmeldung bearbeiten</summary><textarea spellcheck="false">${esc(JSON.stringify(c.report, null, 2))}</textarea>
+      <div class="row"><button class="go">Ausführen</button><button class="ghost reset">Zurücksetzen</button></div></details>
+      <div class="result"></div>`;
+    const original = JSON.stringify(c.report, null, 2);
+    $(".go", card).onclick = async () => {
+      let report;
+      try { report = JSON.parse($("textarea", card).value); } catch (e) { return render(card, { failure: "Kein gültiges JSON: " + e.message }); }
+      render(card, await (await fetch("api/run", { method: "POST", body: JSON.stringify({ name: c.name, report }) })).json());
+    };
+    $(".reset", card).onclick = () => { $("textarea", card).value = original; render(card, c); };
+    render(card, c);
+    $("#cases").append(card);
+  }
+}
+
+async function loadReqs() {
+  const reqs = await (await fetch("api/requirements")).json();
+  const cls = { verifiziert: "ok", umgesetzt: "ok", spezifiziert: "warn", offen: "neutral", gestrichen: "neutral" };
+  $("#reqs tbody").innerHTML = reqs.map((r) => {
+    const t = testResults.filter((x) => x.name.startsWith(`[${r.id}]`));
+    const ok = t.filter((x) => x.ok).length;
+    const cell = !testResults.length ? `<span class="muted">–</span>` : t.length ? `<span class="pill ${ok === t.length ? "ok" : "bad"}">${ok}/${t.length} grün</span>` : `<span class="pill neutral">keine</span>`;
+    return `<tr><td><code>${r.id}</code></td><td>${esc(r.title)}</td><td><span class="pill ${cls[r.status] ?? "neutral"}">${esc(r.status)}</span></td><td>${cell}</td></tr>`;
+  }).join("");
+}
+
+$("#runTests").onclick = async () => {
+  $("#testSummary").textContent = "läuft …";
+  const t = await (await fetch("api/tests")).json();
+  testResults = t.results;
+  $("#testSummary").textContent = `${t.pass} grün, ${t.fail} rot`;
+  loadReqs();
+};
+
+loadCases(); loadReqs(); $("#runTests").click();
+</script>
+</body>
+</html>
