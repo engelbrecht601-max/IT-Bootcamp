@@ -36,15 +36,17 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
 
 - **User Story:** Als Sachbearbeiter:in in der Schadenaufnahme möchte ich, dass ein Vorgang nur angelegt wird, wenn alle Pflichtangaben vorliegen, damit keine unvollständige Akte bei der Deckungsprüfung landet.
 - **Akzeptanzkriterien:**
-  1. Gegeben eine Meldung mit Versicherungsscheinnummer, Schadentag, Hergang, Name des Anspruchstellers und Schadenart, wenn Stage 1 sie verarbeitet, dann ist der Block `stage1` mit diesen fünf Angaben gefüllt, der neue Trace-Eintrag hat `action: "erfasst"` und `meta.currentStage` ist `2`.
+  1. Gegeben eine Meldung mit Versicherungsscheinnummer, Schadentag, Hergang, Name des Anspruchstellers und Name des Versicherungsnehmers, wenn Stage 1 sie verarbeitet, dann ist der Block `stage1` gefüllt, der neue Trace-Eintrag hat `action: "erfasst"` und `meta.currentStage` ist `2`.
   2. Gegeben eine Meldung, in der eine dieser fünf Angaben fehlt oder leer ist, wenn Stage 1 sie verarbeitet, dann hat der neue Trace-Eintrag `action: "abgebrochen"`, die Akte hat einen `error`-Block mit `stage: 1` und `code: "pflichtangabe-fehlt"`, `message` nennt die fehlende Angabe, und `meta.currentStage` bleibt `1`.
   3. Gegeben eine Meldung, in der mehrere Pflichtangaben fehlen, wenn Stage 1 sie verarbeitet, dann nennt `error.message` alle fehlenden Angaben.
 - **Status:** offen
-- **Quelle:** Interview vom 2026-10-01 (Fünf Pflichtangaben; „Fehlt eine davon, lege ich nichts an, sondern frage nach.“)
+- **Quelle:** Interview vom 2026-10-01 (Fünf Pflichtangaben; „Fehlt eine davon, lege ich nichts an, sondern frage nach.“), Entscheidung der Gruppe vom 2026-10-01
 - **Umgesetzt in:** –
 - **Verifiziert:** –
 
 > Auslegung: „Nachfragen“ bilden wir als Abbruch mit `error`-Block ab, weil der Contract keinen Wartezustand kennt. Wartefrist und Wiedervorlage sind offen (siehe Offene Fragen). Fehlercode und `meta.currentStage` bei Abbruch sind unser Vorschlag, noch nicht bestätigt.
+>
+> Entscheidung der Gruppe (2026-10-01): Abweichend von Sabines Liste ist die Schadenart keine Pflichtangabe des Kunden, weil Sabine sie ableitet, wenn der Kunde sie nicht nennt (G1-REQ-004). Dafür muss der Kunde den Versicherungsnehmer nennen (G1-REQ-009).
 
 ### G1-REQ-002: Versicherungsscheinnummer prüfen und normalisieren
 
@@ -77,17 +79,21 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
 
 ### G1-REQ-004: Schadenart einordnen
 
-- **User Story:** Als Sachbearbeiter:in möchte ich, dass die Schadenart nach einer festen Rangfolge bestimmt wird, damit gleiche Fälle immer gleich eingeordnet werden.
+- **User Story:** Als Sachbearbeiter:in möchte ich, dass die Schadenart übernommen wird, wenn der Kunde sie nennt, und sonst nach einer festen Rangfolge abgeleitet wird, damit gleiche Fälle immer gleich eingeordnet werden.
 - **Akzeptanzkriterien:**
-  1. Gegeben eine Meldung, bei der ein Mensch verletzt wurde, wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Personenschaden`, auch wenn zusätzlich eine Sache beschädigt wurde.
-  2. Gegeben eine Meldung, bei der kein Mensch verletzt, aber eine Sache beschädigt wurde, wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Sachschaden`.
-  3. Gegeben eine Meldung, bei der weder ein Mensch verletzt noch eine Sache beschädigt wurde (z. B. entgangene Miete), wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Vermögensschaden`.
+  1. Gegeben eine Meldung mit `damageType: "Sachschaden"` vom Kunden, wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Sachschaden`, unabhängig von den übrigen Angaben.
+  2. Gegeben eine Meldung ohne Schadenart, bei der ein Mensch verletzt wurde, wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Personenschaden`, auch wenn zusätzlich eine Sache beschädigt wurde.
+  3. Gegeben eine Meldung ohne Schadenart, bei der kein Mensch verletzt, aber eine Sache beschädigt wurde, wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Sachschaden`.
+  4. Gegeben eine Meldung ohne Schadenart, bei der weder ein Mensch verletzt noch eine Sache beschädigt wurde (z. B. entgangene Miete), wenn Stage 1 sie verarbeitet, dann ist `stage1.damageType` `Vermögensschaden`.
+  5. Gegeben eine Meldung ohne Schadenart und ohne Angabe, ob ein Mensch verletzt oder eine Sache beschädigt wurde, wenn Stage 1 sie verarbeitet, dann wird abgebrochen mit `error.code: "schadenart-unklar"`.
 - **Status:** offen
-- **Quelle:** Interview vom 2026-10-01, Antwort A3
+- **Quelle:** Interview vom 2026-10-01, Antwort A3; Entscheidung der Gruppe vom 2026-10-01 (Ableitung nur, wenn der Kunde die Schadenart nicht nennt)
 - **Umgesetzt in:** –
 - **Verifiziert:** –
 
-> Offen: In welcher Form die Meldung „Mensch verletzt“ / „Sache beschädigt“ liefert, ist noch nicht geklärt (siehe Offene Fragen, Eingangsformat).
+> Auslegung: „Mensch verletzt“ und „Sache beschädigt“ kommen als Ja/Nein-Angaben in der Eingangsmeldung (`personInjured`, `propertyDamaged`, G1-REQ-009). Eine Ableitung aus dem Freitext des Hergangs bauen wir nicht.
+>
+> Offen: Was gilt, wenn die Angabe des Kunden den Fakten widerspricht, z. B. „Sachschaden“, obwohl ein Mensch verletzt wurde? AK 1 übernimmt vorerst die Angabe des Kunden.
 
 ### G1-REQ-005: Kontaktangabe des Anspruchstellers
 
@@ -129,7 +135,9 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
 - **Umgesetzt in:** –
 - **Verifiziert:** –
 
-> Offen: Woran erkennt Stage 1, dass der Anspruchsteller der Versicherungsnehmer oder dessen Hausverwaltung ist? Name und Hausverwaltung des Versicherungsnehmers stehen nicht im Contract. Ablageort der Markierung wie bei G1-REQ-006.
+> Entscheidung der Gruppe (2026-10-01): Name des Versicherungsnehmers und gegebenenfalls seiner Hausverwaltung nennt der Kunde in der Meldung (G1-REQ-009).
+>
+> Offen: Wann gelten zwei Namen als gleich (Groß-/Kleinschreibung, Leerzeichen, Firmenzusatz)? Name und Hausverwaltung des Versicherungsnehmers stehen nicht im Contract; ob Gruppe 2 sie braucht, ist zu klären. Ablageort der Markierung wie bei G1-REQ-006.
 
 ### G1-REQ-008: Übergabe an die Deckungsprüfung
 
@@ -144,9 +152,48 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
 - **Umgesetzt in:** –
 - **Verifiziert:** –
 
+### G1-REQ-009: Eingangsmeldung (Rohmeldung)
+
+- **User Story:** Als Sachbearbeiter:in möchte ich, dass jede Meldung, ob per Telefon oder Formular, in derselben Form bei Stage 1 ankommt, damit die Prüfungen für beide Wege gleich laufen.
+- **Akzeptanzkriterien:**
+  1. Gegeben eine Eingangsmeldung, dann hat sie folgende Angaben, jeweils als Text so, wie der Kunde sie geliefert hat (noch nicht geprüft oder korrigiert):
+
+     | Feld | Bedeutung | Pflicht | Quelle |
+     |---|---|---|---|
+     | `channel` | Eingangsweg, `Telefon` oder `Formular` | ja | Interview |
+     | `policyNumber` | Versicherungsscheinnummer, wie angegeben (z. B. `gh 4711023`) | ja¹ | Interview |
+     | `incidentDate` | Schadentag, vom Kunden genannt | ja¹ | Interview, Gruppenentscheidung |
+     | `description` | Hergang in den Worten des Kunden | ja¹ | Interview |
+     | `claimantName` | Name des Anspruchstellers, Person oder Firma | ja¹ | Interview |
+     | `damageType` | Art des Schadens laut Kunde | nein² | Interview, Gruppenentscheidung |
+     | `personInjured` | Wurde ein Mensch verletzt? (ja/nein) | nein² | Interview A3 |
+     | `propertyDamaged` | Wurde eine Sache beschädigt? (ja/nein) | nein² | Interview A3 |
+     | `policyholderName` | Name des Versicherungsnehmers | ja¹ | Gruppenentscheidung |
+     | `propertyManagerName` | Hausverwaltung des Versicherungsnehmers, falls vorhanden | nein | Interview C13, Gruppenentscheidung |
+     | `claimantPhone` | Telefonnummer des Anspruchstellers | eins von beiden¹ | Interview |
+     | `claimantEmail` | E-Mail-Adresse des Anspruchstellers | eins von beiden¹ | Interview |
+     | `reportedAt` | Zeitpunkt der Meldung | ja | Contract (`stage1.reportedAt`) |
+     | `claimedAmount` | geforderter Betrag in Euro, falls bekannt | nein | Contract und Musterakten |
+
+     ¹ „Pflicht“ heißt: Fehlt die Angabe, bricht Stage 1 ab (G1-REQ-001, G1-REQ-005). Die Eingangsmeldung selbst darf unvollständig sein, sonst ließe sich der Abbruchpfad nicht testen.
+
+     ² Nennt der Kunde keine Schadenart, leitet Stage 1 sie aus `personInjured` und `propertyDamaged` ab (G1-REQ-004).
+  2. Gegeben die Musterakten in `fixtures/1-2/`, dann gibt es zu jeder eine Eingangsmeldung unter `packages/stage1/fixtures/eingang/` mit gleichem Dateinamen (`standardfall.json`, `grenzfall.json`, `ablehnungskandidat.json`).
+  3. Gegeben eine dieser Eingangsmeldungen, wenn Stage 1 sie verarbeitet, dann stimmen `policyNumber`, `incidentDate`, `reportedAt`, `damageType`, `description`, `claimant.name` und `claimedAmount` im Block `stage1` mit der zugehörigen Musterakte in `fixtures/1-2/` überein.
+  4. Gegeben die Eingangsmeldung `standardfall.json`, dann enthält sie mindestens eine Abweichung, die Stage 1 korrigieren muss, z. B. `policyNumber: "gh 4711023"`.
+- **Status:** offen
+- **Quelle:** Interview vom 2026-10-01 (Eingangswege; fünf Pflichtangaben plus Kontakt), Entscheidung der Gruppe vom 2026-10-01, Contract `stage1`, Musterakten `fixtures/1-2/`
+- **Umgesetzt in:** –
+- **Verifiziert:** –
+
+> Auslegung: Feldnamen und Struktur sind unser Vorschlag. Nur die Inhalte stammen aus dem Interview. Telefon und E-Mail stehen nicht in den Musterakten und werden für die Eingangsmeldungen erfunden.
+>
+> Nicht Teil dieser Anforderung: Wie die Eingangsmeldung in `run(claim)` gelangt (Transport). Das klären wir später mit der Workshop-Leitung (siehe `umsetzung.md`, Abschnitt 6).
+
 ## Offene Fragen an die Fachperson
 
 - Eingangsformat: Welche Angaben liefern Telefon und Formular genau, und wie sind sie benannt (z. B. „Person verletzt ja/nein“ für die Schadenart)?
+- Was gilt, wenn die Schadenart des Kunden den Fakten widerspricht? (G1-REQ-004)
 - Wie lange wartest du auf fehlende Angaben, und wann wird ein Vorgang abgebrochen? (C10)
 - Was tust du, wenn die Versicherungsscheinnummer formal stimmt, es sie aber nicht gibt? (A1)
 - Wie gehst du mit einem ungefähren Schadentag um („Mitte Dezember“)? (A2)
