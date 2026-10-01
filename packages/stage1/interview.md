@@ -168,3 +168,30 @@ Bei sehr vielen Punkten steht bei mir also noch „klären“. Das solltet ihr i
 9. Bei den Pflichtangaben gibt es das nicht. Fehlt eine, lege ich nicht an. Nur markieren, aber trotzdem anlegen, tue ich bei zwei Dingen: Spätmeldung (mehr als sechs Monate zwischen Schadentag und Meldung) und möglicher Eigenschaden. Ob es weitere Fälle gibt, müsste ich klären.
 
 Viele Punkte stehen bei mir also noch auf "klären". Haltet sie in euren Anforderungen als offene Punkte fest und legt sie nicht selbst fest. Soll ich bei einem Punkt genauer werden, zum Beispiel bei einem Beispiel für die Rückfrage bei einer unvollständigen Meldung?
+
+**Gruppe:** Du hast angeboten, uns ein Beispiel zu zeigen. Uns helfen konkrete Fälle aus deinem Alltag mehr als Regeln. Erzähl uns bitte, wie es bei dir wirklich gelaufen ist:
+
+1. Eine typische Rückfrage: Ein Kunde meldet einen Schaden, aber der Hergang fehlt. Was sagst du ihm am Telefon, bzw. was schreibst du ihm? Gern wörtlich, so wie du es machst.
+2. Ein Fall, bei dem der Kunde den Schadentag nicht genau wusste, z. B. „irgendwann Mitte Dezember“. Was hast du da konkret gemacht?
+3. Ein Hergang, der dir zu dünn war. Wie sah er aus, und was hast du nachgefragt?
+4. Ein Fall, bei dem der Name des Anspruchstellers und des Versicherungsnehmers ähnlich, aber nicht gleich waren. Wie hast du entschieden?
+5. Ein Fall, den du am Ende gar nicht angelegt hast. Was war da los?
+6. Wie lange hast du schon mal auf eine Antwort eines Kunden gewartet, und was ist dann passiert?
+
+Wenn du zu einem Punkt keinen Fall kennst, sag das einfach.
+
+**Fachperson:** Ihr wollt Fälle aus meinem Alltag. Ich sage euch ehrlich, wo ich keinen konkreten Fall habe. Ich erfinde hier nichts, nur damit es schön klingt.
+
+1. Rückfrage bei fehlendem Hergang: Den genauen Wortlaut, den ich dem Kunden sage oder schreibe, müsste ich klären. Sinngemäß ist klar, was ich tue: Ich lege nichts an und frage nach, was passiert ist, und zwar in den eigenen Worten des Kunden. Mehr als diesen Sinn kann ich euch nicht wörtlich mitgeben.
+
+2. "Mitte Dezember": Dazu habe ich keinen konkreten Fall parat. Wie ich mit einem ungenauen Schadentag umgehe, müsste ich klären. Fest steht nur: Der Schadentag ist Pflichtangabe und darf nicht nach dem Tag der Meldung liegen.
+
+3. Zu dünner Hergang: Dazu kenne ich keinen konkreten Fall. Was als Mindestinhalt reicht, müsste ich klären.
+
+4. Ähnliche Namen bei Anspruchsteller und Versicherungsnehmer: Dazu habe ich keinen Fall. Fest steht nur: Ist der Anspruchsteller der Versicherungsnehmer selbst oder dessen Hausverwaltung, nehme ich die Meldung auf und markiere "möglicher Eigenschaden". Wie ich bei bloß ähnlichen Namen entscheide, müsste ich klären.
+
+5. Ein Fall, den ich gar nicht angelegt habe: Einen endgültig nicht angelegten Fall kenne ich nicht. Ob es solche Fälle gibt, müsste ich klären. Bei mir heißt es: Fehlt etwas Nötiges, lege ich noch nichts an und frage nach.
+
+6. Wartezeit auf eine Kundenantwort: Dazu kann ich euch keine Zahl nennen, und was danach passiert, müsste ich klären.
+
+Einen echten Fall aus dem letzten Winter kann ich euch dafür erzählen, auch wenn er nicht zu euren sechs Punkten passt: Ein Paketzusteller ist vor einem Haus ausgerutscht. Der Anwalt hat sich erst elf Monate später gemeldet. Das war eine klassische Spätmeldung, mehr als sechs Monate zwischen Schadentag und Meldung. Ich habe sie angelegt und für die Deckungsprüfung deutlich markiert. Ob das dem Kunden schadet, entscheide ich nicht, das tun die Kollegen.

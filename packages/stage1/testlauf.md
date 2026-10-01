@@ -48,11 +48,12 @@ Stand 2026-10-01. Gruppe 1 hat Stage 1 (Schadenaufnahme) im Testlauf einmal komp
 ### 7. Die Persona sagt sehr oft „müsste ich klären“
 - **Befund:** Von gut 30 Einzelfragen blieben über 20 ganz oder teilweise offen: Wortlaut der Rückfrage, Wartefrist, ungefährer Schadentag, Mindestinhalt des Hergangs, Namensgleichheit, fremde Sparte und weitere. Klar beantwortet wurden Format der Nummer, Schadenarten und Rangfolge, Sechs-Monats-Grenze, Eigenschaden, Kontaktpflicht und Forderung.
 - **Auswirkung:** Gut für das Lernziel „nicht erfinden“. Ohne eine Regel wie „im Zweifel nachfragen“ (G1-REQ-010) bleiben Gruppen aber stecken.
+- **Nachtrag:** Auch die Technik „nach konkreten Fällen statt nach Regeln fragen“ brachte nichts Neues. Die Persona sagt ausdrücklich, dass sie keine Fälle erfindet, und kennt nur den Paketzusteller-Fall. Ihr Wissen ist also bewusst auf wenige Regeln begrenzt.
 - **Vorschlag:** Bewusst entscheiden, ob das so gewollt ist. Falls ja, den Gruppen den Umgang damit als Technik mitgeben: Grundregeln statt Einzelfälle, Annahmen markieren. Falls nein, der Persona mehr Detailwissen zu Randfällen geben.
 
 ### 8. Das Interview-Protokoll ist nicht immer wörtlich
 - **Befund:** Der Subagent gab Antworten einmal als Paraphrase zurück („Sabine hat auf Deutsch geantwortet, aber der Inhalt folgt hier“), eine Schlussfrage kam nur sinngemäß. Für jede Frage muss das ganze bisherige Protokoll in den Aufruf, das wird lang.
-- **Vorschlag:** Die Persona soll ihre Antwort in einem festen Rahmen zurückgeben (z. B. `ANTWORT_START … ANTWORT_ENDE`). Für lange Gespräche eher `pnpm interview <N>` empfehlen.
+- **Vorschlag:** Die Persona soll ihre Antwort in einem festen Rahmen zurückgeben (z. B. `ANTWORT_START … ANTWORT_ENDE`). Im letzten Interview ausprobiert: Die Antwort kam vollständig und ohne Kommentar zurück. Für lange Gespräche eher `pnpm interview <N>` empfehlen.
 
 ### 9. Die Vorlage in `requirements.md` trägt eine echte ID
 - **Befund:** Die Vorlage im Codeblock heißt `### G1-REQ-001: Kurzer Titel`. Ein Skript, das nach der ersten Fundstelle von `G1-REQ-001` sucht, trifft die Vorlage statt der Anforderung. Das ist uns passiert, der Status landete in der Vorlage.
