@@ -73,7 +73,12 @@ dieses Dockerfile).
 
 ## Lokal ausprobieren
 
-Mit `DOMAIN=localhost` in `.env` stellt Caddy selbst signierte Zertifikate aus:
+Mit `DOMAIN=localhost` in `.env` stellt Caddy selbst signierte Zertifikate aus, `ACME_EMAIL` darf
+dann ein Platzhalter sein. Solange #1 bis #4 nicht auf `main` liegen, `REPO_BRANCH=claude/server-setup`
+setzen und `PERSONAS_DIR=./personas` (Ordner ist ignoriert).
+
+Unter Windows ist Port 80 oft vom System belegt. Dann in `.env` `HTTP_PORT=8080` und `HTTPS_PORT=8443`
+setzen und `https://gruppe1.localhost:8443` im Browser öffnen (`*.localhost` löst Chrome/Edge selbst auf).
 
 ```bash
 curl -k --resolve gruppe1.localhost:443:127.0.0.1 https://gruppe1.localhost/
