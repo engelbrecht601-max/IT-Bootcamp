@@ -9,6 +9,11 @@ import { dirname, join } from "node:path";
 import Ajv from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { run, type Claim, type Report } from "../src/index.js";
+import { normalizePolicyNumber } from "../src/normalize.js";
+import { validate as validateReport } from "../src/validate.js";
+import { classifyDamage } from "../src/classify.js";
+import { isLateReport, isPossibleOwnDamage } from "../src/flags.js";
+import { addMonths, dayOf } from "../src/dates.js";
 
 const PKG = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT = join(PKG, "..", "..");
@@ -40,6 +45,72 @@ function process1(name: string, report: Report) {
     : [];
   return { output, valid, errors: validate.errors ?? [], diff };
 }
+
+type Step = { title: string; state: "ok" | "warn" | "bad" | "skip"; lines: string[] };
+
+// Erklärt für den Spielplatz, was jeder Schritt von run() mit der Meldung macht.
+// Nutzt dieselben Funktionen wie run(), damit Erklärung und Ergebnis nicht auseinanderlaufen.
+function explain(report: Report, output: Claim): Step[] {
+  const steps: Step[] = [];
+  const raw = report.policyNumber;
+  const normalized = typeof raw === "string" && raw.trim() ? normalizePolicyNumber(raw) : null;
+  steps.push({
+    title: "1 Normalisieren",
+    state: !raw?.trim() ? "skip" : normalized ? (normalized === raw ? "ok" : "warn") : "bad",
+    lines: !raw?.trim() ? ["Keine Versicherungsscheinnummer angegeben."]
+      : normalized === raw ? [`„${raw}“ ist bereits korrekt.`]
+      : normalized ? [`„${raw}“ → „${normalized}“ (stillschweigend korrigiert, G1-REQ-002)`]
+      : [`„${raw}“ ist auch nach Korrektur nicht GH- plus sieben Ziffern.`],
+  });
+
+  const problems = validateReport(report);
+  steps.push({
+    title: "2 Prüfen",
+    state: problems.length ? "bad" : "ok",
+    lines: problems.length ? problems.map((p) => `${p.code}: ${p.message}`) : ["Pflichtangaben, Kontakt, Versicherungsschein und Schadentag in Ordnung."],
+  });
+
+  const damageType = classifyDamage(report);
+  const facts = report.personInjured === true || report.propertyDamaged === true || (report.personInjured === false && report.propertyDamaged === false);
+  const overridden = facts && report.damageType && report.damageType !== damageType;
+  steps.push({
+    title: "3 Einordnen",
+    state: damageType === null ? "bad" : overridden ? "warn" : "ok",
+    lines: damageType === null ? ["SCHADENART_UNKLAR: weder Schadenart vom Kunden noch Fakten (Person verletzt / Sache beschädigt)."]
+      : facts ? [`${damageType}, abgeleitet aus den Fakten (Person verletzt: ${fmt(report.personInjured)}, Sache beschädigt: ${fmt(report.propertyDamaged)}).`,
+          ...(overridden ? [`Kundenangabe „${report.damageType}“ überstimmt: die Fakten entscheiden (G1-REQ-004).`] : [])]
+      : [`${damageType}, so wie vom Kunden genannt (keine Fakten angegeben).`],
+  });
+
+  const lines: string[] = [];
+  let late = false, own = false;
+  if (report.incidentDate && report.reportedAt && dayOf(report.reportedAt) && /^\d{4}-\d{2}-\d{2}$/.test(report.incidentDate)) {
+    late = isLateReport(report.incidentDate, report.reportedAt);
+    lines.push(`Spätmeldung: ${late ? "ja" : "nein"}. Grenze ${addMonths(report.incidentDate, 6)}, gemeldet am ${dayOf(report.reportedAt)}.`);
+  } else lines.push("Spätmeldung: nicht prüfbar (Schadentag oder Meldezeitpunkt fehlt).");
+  own = isPossibleOwnDamage(report);
+  lines.push(own ? `Möglicher Eigenschaden: ja, Anspruchsteller „${report.claimantName}“ ist Versicherungsnehmer oder Hausverwaltung.`
+    : "Möglicher Eigenschaden: nein.");
+  steps.push({ title: "4 Markieren", state: late || own ? "warn" : "ok", lines });
+
+  const last = output.trace.at(-1)!;
+  steps.push({
+    title: "5 Übergeben",
+    state: output.error ? "bad" : "ok",
+    lines: output.error
+      ? [`Abgebrochen mit ${output.error.code}. Kein Block stage1, currentStage bleibt ${output.meta.currentStage}.`]
+      : [`Erfasst, Übergabe an Stage ${output.meta.currentStage}. Trace-note: „${last.note ?? ""}“`],
+  });
+  // run() bricht nach Schritt 2 bzw. 3 ab; die späteren Schritte zeigen wir nur zur Information.
+  const skipped = problems.length ? steps.slice(2, 4) : damageType === null ? steps.slice(3, 4) : [];
+  for (const s of skipped) {
+    s.state = "skip";
+    s.lines.unshift("Nicht ausgeführt, weil vorher abgebrochen wurde. Nur zur Info:");
+  }
+  return steps;
+}
+
+const fmt = (v: boolean | undefined) => (v === undefined ? "–" : v ? "ja" : "nein");
 
 function requirements() {
   const text = readFileSync(join(PKG, "requirements.md"), "utf8").replace(/```[\s\S]*?```/g, ""); // Vorlage im Codeblock ignorieren
@@ -82,6 +153,21 @@ createServer((req, res) => {
         try {
           const { name, report } = JSON.parse(body);
           send({ name, report, ...process1(CASES.includes(name) ? name : "standardfall", report) });
+        } catch (e) {
+          send({ failure: String(e) });
+        }
+      });
+      return;
+    }
+    if (url.pathname.endsWith("/api/play") && req.method === "POST") {
+      let body = "";
+      req.on("data", (c) => (body += c));
+      req.on("end", () => {
+        try {
+          const { report } = JSON.parse(body);
+          const validate = validator();
+          const output = run(inputClaim("standardfall"), report);
+          send({ output, valid: validate(output), errors: validate.errors ?? [], steps: explain(report, output) });
         } catch (e) {
           send({ failure: String(e) });
         }

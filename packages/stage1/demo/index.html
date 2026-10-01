@@ -31,6 +31,22 @@
   .muted { color:var(--muted); } .row { display:flex; gap:8px; align-items:center; margin:8px 0; flex-wrap:wrap; }
   details summary { cursor:pointer; color:var(--accent); margin:8px 0 4px; }
   .x { color:var(--bad); } .y { color:var(--ok); }
+  .play { display:grid; grid-template-columns:minmax(300px,420px) 1fr; gap:14px; align-items:start; }
+  @media (max-width:820px) { .play { grid-template-columns:1fr; } }
+  .form label { display:block; font-size:12px; color:var(--muted); margin:8px 0 2px; }
+  .form label small { color:var(--muted); font-weight:400; }
+  .form input, .form select, .form textarea { width:100%; font:inherit; font-size:13px; border:1px solid var(--line); border-radius:6px; padding:5px 8px; background:#fff; color:var(--ink); }
+  .form textarea { min-height:70px; font-family:inherit; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .steps { display:flex; flex-direction:column; gap:8px; }
+  .step { border:1px solid var(--line); border-left:4px solid var(--line); border-radius:8px; padding:8px 10px; background:var(--card); }
+  .step.ok { border-left-color:var(--ok); background:var(--card); } .step.warn { border-left-color:#d79a1c; background:var(--card); }
+  .step.bad { border-left-color:var(--bad); background:var(--card); } .step.skip { opacity:.55; background:var(--card); }
+  .step b { display:block; font-size:13px; margin-bottom:2px; color:var(--ink); }
+  .step div { font-size:13px; color:var(--ink); }
+  .saved { display:flex; gap:6px; flex-wrap:wrap; }
+  .saved span { display:inline-flex; gap:4px; align-items:center; border:1px solid var(--line); border-radius:99px; padding:2px 4px 2px 10px; font-size:12px; background:var(--card); }
+  .saved button { padding:0 6px; font-size:11px; }
 </style>
 </head>
 <body>
@@ -38,6 +54,48 @@
   <h1>Gruppe 1 · Schadenaufnahme</h1>
   <p class="sub">Eingangsmeldung → <code>run()</code> → Akte für die Deckungsprüfung. Werte live aus dem Code, Contract und den Musterakten.</p>
   <div class="flow"><span>1 Normalisieren</span><b>→</b><span>2 Prüfen</span><b>→</b><span>3 Einordnen</span><b>→</b><span>4 Markieren</span><b>→</b><span>5 Übergeben</span></div>
+
+  <h2>Spielplatz: eigener Fall</h2>
+  <p class="muted">Vorlage wählen oder Felder frei ausfüllen. Jede Änderung läuft sofort durch <code>run()</code>. Rechts seht ihr, was jeder Schritt mit der Meldung macht.</p>
+  <div class="play">
+    <div class="card form" id="form">
+      <div class="row"><select id="preset" style="flex:1"></select><button class="ghost" id="save">Fall speichern</button></div>
+      <div class="saved" id="saved"></div>
+      <div class="two">
+        <div><label>Eingangsweg</label><select data-f="channel"><option value="">–</option><option>Telefon</option><option>Formular</option></select></div>
+        <div><label>Versicherungsscheinnr.</label><input data-f="policyNumber" placeholder="GH-4711023"></div>
+      </div>
+      <div class="two">
+        <div><label>Schadentag</label><input data-f="incidentDate" placeholder="JJJJ-MM-TT"></div>
+        <div><label>Meldezeitpunkt</label><input data-f="reportedAt" placeholder="2026-11-03T08:12:00Z"></div>
+      </div>
+      <label>Hergang</label><textarea data-f="description"></textarea>
+      <div class="two">
+        <div><label>Anspruchsteller</label><input data-f="claimantName"></div>
+        <div><label>Forderung in € <small>(optional)</small></label><input data-f="claimedAmount" type="number" step="0.01"></div>
+      </div>
+      <div class="two">
+        <div><label>Telefon</label><input data-f="claimantPhone"></div>
+        <div><label>E-Mail</label><input data-f="claimantEmail"></div>
+      </div>
+      <div class="two">
+        <div><label>Versicherungsnehmer</label><input data-f="policyholderName"></div>
+        <div><label>Hausverwaltung <small>(optional)</small></label><input data-f="propertyManagerName"></div>
+      </div>
+      <label>Schadenart laut Kunde</label>
+      <select data-f="damageType"><option value="">– nicht genannt –</option><option>Personenschaden</option><option>Sachschaden</option><option>Vermögensschaden</option></select>
+      <div class="two">
+        <div><label>Person verletzt?</label><select data-f="personInjured" data-bool><option value="">– unbekannt –</option><option value="true">ja</option><option value="false">nein</option></select></div>
+        <div><label>Sache beschädigt?</label><select data-f="propertyDamaged" data-bool><option value="">– unbekannt –</option><option value="true">ja</option><option value="false">nein</option></select></div>
+      </div>
+      <details><summary>Als JSON ansehen</summary><pre id="reportJson"></pre></details>
+    </div>
+    <div>
+      <div class="flags" id="playStatus"></div>
+      <div class="steps" id="steps"></div>
+      <details><summary>Ausgabe-Akte (JSON)</summary><pre id="playOut"></pre></details>
+    </div>
+  </div>
 
   <h2>Musterfälle</h2>
   <p class="muted">Jede Meldung ist editierbar. „Ausführen“ schickt sie durch Stage 1 und prüft das Ergebnis gegen den Contract und die Musterakte in <code>fixtures/1-2/</code>.</p>
@@ -107,6 +165,95 @@ $("#runTests").onclick = async () => {
   $("#testSummary").textContent = `${t.pass} grün, ${t.fail} rot`;
   loadReqs();
 };
+
+// ---------- Spielplatz ----------
+const PRESETS = {
+  "Standardfall (Dachziegel)": null, "Grenzfall (Spätmeldung)": null, "Ablehnungskandidat (Eigenschaden)": null,
+  "Leere Meldung": {},
+  "Pflichtangabe fehlt (kein Hergang)": { from: "standardfall", set: { description: "" } },
+  "Kein Kontakt": { from: "standardfall", set: { claimantPhone: "" } },
+  "Versicherungsschein ungültig (6 Ziffern)": { from: "standardfall", set: { policyNumber: "GH-471102" } },
+  "Schadentag nach Meldung": { from: "standardfall", set: { incidentDate: "2026-11-05" } },
+  "Kunde sagt Sachschaden, Person verletzt": { from: "standardfall", set: { personInjured: true, propertyDamaged: true } },
+  "Schadenart unklar": { from: "grenzfall", set: { personInjured: undefined, propertyDamaged: undefined } },
+  "Genau 6 Monate (keine Spätmeldung)": { from: "standardfall", set: { incidentDate: "2026-05-03", reportedAt: "2026-11-03T08:12:00Z" } },
+  "6 Monate + 1 Tag (Spätmeldung)": { from: "standardfall", set: { incidentDate: "2026-05-02", reportedAt: "2026-11-03T08:12:00Z" } },
+};
+let musterReports = {}, playTimer;
+
+function store(key, value) { try { if (value === undefined) return JSON.parse(localStorage.getItem(key) || "null"); localStorage.setItem(key, JSON.stringify(value)); } catch { return null; } }
+
+function readForm() {
+  const r = {};
+  for (const el of document.querySelectorAll("#form [data-f]")) {
+    const v = el.value.trim();
+    if (v === "") continue;
+    r[el.dataset.f] = el.hasAttribute("data-bool") ? v === "true" : el.type === "number" ? Number(v) : el.value;
+  }
+  return r;
+}
+function writeForm(r) {
+  for (const el of document.querySelectorAll("#form [data-f]")) {
+    const v = r[el.dataset.f];
+    el.value = v === undefined || v === null ? "" : String(v);
+  }
+  play();
+}
+function presetReport(name) {
+  const p = PRESETS[name];
+  if (name.startsWith("Standardfall")) return structuredClone(musterReports.standardfall);
+  if (name.startsWith("Grenzfall")) return structuredClone(musterReports.grenzfall);
+  if (name.startsWith("Ablehnungskandidat")) return structuredClone(musterReports.ablehnungskandidat);
+  if (!p.from) return {};
+  const r = structuredClone(musterReports[p.from]);
+  for (const [k, v] of Object.entries(p.set)) { if (v === undefined) delete r[k]; else r[k] = v; }
+  return r;
+}
+function fillPresets() {
+  const own = store("g1-cases") || {};
+  $("#preset").innerHTML = `<optgroup label="Vorlagen">${Object.keys(PRESETS).map((n) => `<option>${esc(n)}</option>`).join("")}</optgroup>`
+    + (Object.keys(own).length ? `<optgroup label="Eigene Fälle">${Object.keys(own).map((n) => `<option value="own:${esc(n)}">${esc(n)}</option>`).join("")}</optgroup>` : "");
+  $("#saved").innerHTML = Object.keys(own).map((n) => `<span>${esc(n)}<button class="ghost" data-del="${esc(n)}" title="Löschen">×</button></span>`).join("");
+  for (const b of document.querySelectorAll("[data-del]")) b.onclick = () => { const o = store("g1-cases") || {}; delete o[b.dataset.del]; store("g1-cases", o); fillPresets(); };
+}
+$("#preset").onchange = () => {
+  const v = $("#preset").value;
+  writeForm(v.startsWith("own:") ? (store("g1-cases") || {})[v.slice(4)] || {} : presetReport(v));
+};
+$("#save").onclick = () => {
+  const box = $("#saved");
+  const name = (document.getElementById("saveName")?.value || "").trim();
+  if (!document.getElementById("saveName")) {
+    box.insertAdjacentHTML("afterbegin", `<span><input id="saveName" placeholder="Name des Falls" style="border:0;padding:2px;width:150px"><button class="ghost" id="saveOk">OK</button></span>`);
+    $("#saveName").focus();
+    $("#saveOk").onclick = () => $("#save").click();
+    $("#saveName").onkeydown = (e) => { if (e.key === "Enter") $("#save").click(); };
+    return;
+  }
+  if (!name) return;
+  const o = store("g1-cases") || {}; o[name] = readForm(); store("g1-cases", o); fillPresets();
+  $("#preset").value = "own:" + name;
+};
+for (const el of document.querySelectorAll("#form [data-f]")) el.addEventListener("input", () => { clearTimeout(playTimer); playTimer = setTimeout(play, 200); });
+
+async function play() {
+  const report = readForm();
+  $("#reportJson").textContent = JSON.stringify(report, null, 2);
+  const data = await (await fetch("api/play", { method: "POST", body: JSON.stringify({ report }) })).json();
+  if (data.failure) { $("#steps").innerHTML = `<pre>${esc(data.failure)}</pre>`; return; }
+  const out = data.output;
+  $("#playStatus").innerHTML = (out.error ? `<span class="pill bad">abgebrochen · ${esc(out.error.code)}</span>` : `<span class="pill ok">erfasst → Stage ${out.meta.currentStage}</span>`)
+    + `<span class="pill ${data.valid ? "ok" : "bad"}">${data.valid ? "Contract valide" : "Contract verletzt"}</span>`;
+  $("#steps").innerHTML = data.steps.map((s) => `<div class="step ${s.state}"><b>${esc(s.title)}</b>${s.lines.map((l) => `<div>${esc(l)}</div>`).join("")}</div>`).join("");
+  $("#playOut").textContent = JSON.stringify(out, null, 2);
+}
+
+(async () => {
+  const cases = await (await fetch("api/cases")).json();
+  for (const c of cases) musterReports[c.name] = c.report;
+  fillPresets();
+  writeForm(presetReport("Standardfall (Dachziegel)"));
+})();
 
 loadCases(); loadReqs(); $("#runTests").click();
 </script>
