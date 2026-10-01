@@ -71,6 +71,17 @@ docker compose down                             # alles stoppen, Volumes bleiben
 Fallback: Snapshot der VM nach dem Testlauf, dazu Codespaces aus demselben Repo (Devcontainer nutzt
 dieses Dockerfile).
 
+## Vor dem Workshop (finales Setup)
+
+Aus den Testläufen bleiben persönliche Logins und Testarbeit in den Volumes und auf GitHub liegen.
+
+- [ ] Persönliche Logins aus den Arbeitsplätzen entfernen: `/logout` in Claude Code, GitHub-Anmeldung
+      in code-server abmelden. Sicherer: Volumes frisch anlegen (`docker compose down -v`, dann `up -d`).
+- [ ] Testbranches wie `gruppe1` auf GitHub löschen oder bewusst als Beispiel behalten.
+- [ ] Push-Frage entscheiden: `GIT_PUSH_TOKEN` setzen oder Gruppen ohne Push arbeiten lassen.
+- [ ] Workshop-API-Key mit Spend Cap in `.env` eintragen, nach dem Workshop widerrufen.
+- [ ] Nach dem Merge der PRs `REPO_BRANCH=main` setzen.
+
 ## Lokal ausprobieren
 
 Mit `DOMAIN=localhost` in `.env` stellt Caddy selbst signierte Zertifikate aus, `ACME_EMAIL` darf
