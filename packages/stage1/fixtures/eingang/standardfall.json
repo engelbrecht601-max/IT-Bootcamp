@@ -1,0 +1,12 @@
+{
+  "channel": "Telefon",
+  "policyNumber": "gh 4711023",
+  "incidentDate": "2026-11-01",
+  "reportedAt": "2026-11-03T08:12:00Z",
+  "description": "Bei Sturm hat sich ein Dachziegel von unserem Mehrfamilienhaus gelöst und ist auf das geparkte Auto des Nachbarn gefallen. Die Motorhaube ist eingedellt, die Windschutzscheibe gesprungen.",
+  "claimantName": "Jonas Albers",
+  "claimantPhone": "0171 2345678",
+  "damageType": "Sachschaden",
+  "policyholderName": "Eigentümergemeinschaft Lindenstraße 12",
+  "claimedAmount": 2340.0
+}

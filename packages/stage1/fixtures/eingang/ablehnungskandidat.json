@@ -1,0 +1,14 @@
+{
+  "channel": "Formular",
+  "policyNumber": "GH-4712390",
+  "incidentDate": "2026-10-28",
+  "reportedAt": "2026-11-05T09:47:00Z",
+  "description": "Durch einen Rohrbruch im Keller ist Wasser in die vom Eigentümer selbst genutzte Einliegerwohnung gelaufen. Parkett und Küche sind beschädigt.",
+  "claimantName": "Hausverwaltung Kramer & Söhne GbR",
+  "claimantPhone": "040 98765432",
+  "claimantEmail": "info@kramer-soehne.example",
+  "damageType": "Sachschaden",
+  "policyholderName": "Dieter Kramer",
+  "propertyManagerName": "Hausverwaltung Kramer & Söhne GbR",
+  "claimedAmount": 8900.0
+}
