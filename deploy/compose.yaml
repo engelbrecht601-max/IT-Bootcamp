@@ -1,0 +1,111 @@
+# Workshop-Server: Caddy plus fünf Arbeitsplätze, einer pro Gruppe.
+#   cd deploy && ./init-env.sh && docker compose up -d --build
+# Secrets stehen nur in deploy/.env (nicht versioniert), siehe .env.example.
+name: aifactory
+
+x-workspace: &workspace
+  image: aifactory-workspace:latest
+  restart: unless-stopped
+  networks: [internal]
+  deploy:
+    resources:
+      limits:
+        cpus: "${WORKSPACE_CPUS:-2.5}"
+        memory: "${WORKSPACE_MEMORY:-8g}"
+
+x-env: &env
+  REPO_URL: ${REPO_URL:?REPO_URL in .env setzen}
+  REPO_BRANCH: ${REPO_BRANCH:-main}
+  DOMAIN: ${DOMAIN:?DOMAIN in .env setzen}
+  GIT_PUSH_TOKEN: ${GIT_PUSH_TOKEN:-}
+
+services:
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTPS_PORT:-443}:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL in .env setzen}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./www:/srv/www:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [internal]
+    depends_on: [gruppe1, gruppe2, gruppe3, gruppe4, gruppe5]
+
+  gruppe1:
+    <<: *workspace
+    build: { context: .., dockerfile: deploy/Dockerfile, target: workspace }
+    environment:
+      <<: *env
+      BOOTCAMP_GROUP: "1"
+      PASSWORD: ${GRUPPE1_PASSWORD:?GRUPPE1_PASSWORD in .env setzen}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE1:-${ANTHROPIC_API_KEY:-}}
+    volumes:
+      - home1:/home/node
+      - ${PERSONAS_DIR:-./personas}:/opt/personas:ro
+
+  gruppe2:
+    <<: *workspace
+    environment:
+      <<: *env
+      BOOTCAMP_GROUP: "2"
+      PASSWORD: ${GRUPPE2_PASSWORD:?GRUPPE2_PASSWORD in .env setzen}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE2:-${ANTHROPIC_API_KEY:-}}
+    volumes:
+      - home2:/home/node
+      - ${PERSONAS_DIR:-./personas}:/opt/personas:ro
+    depends_on: [gruppe1]
+
+  gruppe3:
+    <<: *workspace
+    environment:
+      <<: *env
+      BOOTCAMP_GROUP: "3"
+      PASSWORD: ${GRUPPE3_PASSWORD:?GRUPPE3_PASSWORD in .env setzen}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE3:-${ANTHROPIC_API_KEY:-}}
+    volumes:
+      - home3:/home/node
+      - ${PERSONAS_DIR:-./personas}:/opt/personas:ro
+    depends_on: [gruppe1]
+
+  gruppe4:
+    <<: *workspace
+    environment:
+      <<: *env
+      BOOTCAMP_GROUP: "4"
+      PASSWORD: ${GRUPPE4_PASSWORD:?GRUPPE4_PASSWORD in .env setzen}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE4:-${ANTHROPIC_API_KEY:-}}
+    volumes:
+      - home4:/home/node
+      - ${PERSONAS_DIR:-./personas}:/opt/personas:ro
+    depends_on: [gruppe1]
+
+  gruppe5:
+    <<: *workspace
+    environment:
+      <<: *env
+      BOOTCAMP_GROUP: "5"
+      PASSWORD: ${GRUPPE5_PASSWORD:?GRUPPE5_PASSWORD in .env setzen}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE5:-${ANTHROPIC_API_KEY:-}}
+    volumes:
+      - home5:/home/node
+      - ${PERSONAS_DIR:-./personas}:/opt/personas:ro
+    depends_on: [gruppe1]
+
+networks:
+  internal:
+
+volumes:
+  caddy_data:
+  caddy_config:
+  home1:
+  home2:
+  home3:
+  home4:
+  home5:

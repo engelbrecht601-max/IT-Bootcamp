@@ -1,0 +1,31 @@
+# Eine Subdomain pro Gruppe für code-server, eine zweite für die App der Gruppe (UI-Port 5173,
+# Mock-Server unter /mock). Zertifikate holt Caddy einzeln per HTTP-01, dafür reicht Wildcard-DNS
+# ohne API-Zugang zum DNS-Anbieter.
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	root * /srv/www
+	file_server
+}
+
+(gruppe) {
+	gruppe{args[0]}.{$DOMAIN} {
+		reverse_proxy gruppe{args[0]}:8080
+	}
+	app-gruppe{args[0]}.{$DOMAIN} {
+		handle_path /mock/* {
+			reverse_proxy gruppe{args[0]}:4000
+		}
+		handle {
+			reverse_proxy gruppe{args[0]}:5173
+		}
+	}
+}
+
+import gruppe 1
+import gruppe 2
+import gruppe 3
+import gruppe 4
+import gruppe 5
