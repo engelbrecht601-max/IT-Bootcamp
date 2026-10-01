@@ -88,3 +88,49 @@ C. Unvollständig oder auffällig
 14. Ob es Fälle gibt, die ich gar nicht erst anlege, etwa eine fremde Sparte oder einen Scherz, müsste ich klären.
 
 *(Abschlussfrage, sinngemäß übermittelt: Sabine fragt, ob ihr bei einem Punkt tiefer einsteigen wollt, zum Beispiel bei der Forderung oder beim Schadentag.)*
+
+**Gruppe:** Wir haben noch offene Punkte, bei denen du gesagt hast „müsste ich klären“, und ein paar neue:
+
+1. Die Versicherungsscheinnummer stimmt formal (GH- und sieben Ziffern), aber es gibt den Vertrag nicht. Was tust du dann?
+2. Leerzeichen mitten in der Nummer, z. B. „G H 4711023“: korrigierst du das auch stillschweigend, oder ist das ungültig?
+3. Der Kunde kennt den Schadentag nur ungefähr („Mitte Dezember“). Was tust du?
+4. Was muss mindestens im Hergang stehen? Reicht „Wasserschaden“?
+5. Macht es einen Unterschied, ob der Anspruchsteller eine Person oder eine Firma ist?
+6. Prüfst du, ob Telefonnummer oder E-Mail-Adresse gültig aussehen?
+7. Der Kunde nennt eine Schadenart, die den Fakten widerspricht, z. B. „Sachschaden“, obwohl jemand verletzt wurde. Was gilt dann? Und was, wenn er etwas nennt, das gar keine der drei Schadenarten ist?
+8. Wie lange wartest du auf fehlende Angaben, und wann wird ein Vorgang abgebrochen?
+9. Beim möglichen Eigenschaden: Wann sind zwei Namen für dich „gleich“, z. B. „Kramer & Söhne GbR“ und „Hausverwaltung Kramer und Söhne“?
+10. Gibt es außer Spätmeldung und möglichem Eigenschaden weitere Hinweise, die die Deckungsprüfung sofort sehen muss?
+11. Gibt es Fälle, die du gar nicht erst anlegst, z. B. eine fremde Sparte oder einen offensichtlichen Scherz?
+12. Fragst du nach der Forderungshöhe? Was, wenn sie noch unbekannt ist?
+13. Was zählt als Meldezeitpunkt: der Anruf, der Formulareingang oder die Anlage des Vorgangs?
+
+**Fachperson:** Das sind einige Fragen auf einmal. Ich gehe sie der Reihe nach durch.
+
+1. Wenn die Nummer formal stimmt, es den Vertrag aber nicht gibt: Das müsste ich klären.
+
+2. Leerzeichen korrigiere ich stillschweigend. Bei „G H 4711023“ nehme ich sie raus, es wird „GH-4711023“. Ungültig wird es erst, wenn danach nicht „GH-“ und sieben Ziffern dastehen.
+
+3. „Mitte Dezember“: Wie ich damit umgehe, müsste ich klären. Ich brauche aber einen Schadentag, sonst ist die Meldung unvollständig.
+
+4. Was der Hergang mindestens enthalten muss und ob „Wasserschaden“ reicht, müsste ich klären. Er muss in den eigenen Worten des Kunden vorliegen.
+
+5. Ob Person oder Firma für mich einen Unterschied macht, müsste ich klären. Den Namen des Anspruchstellers brauche ich in jedem Fall.
+
+6. Ob ich Telefonnummer oder E-Mail auf Gültigkeit prüfe, müsste ich klären. Ich brauche eine von beiden.
+
+7. Entscheidend sind die Fakten, nicht, was der Kunde nennt. Wurde ein Mensch verletzt, ist es Personenschaden, auch wenn er „Sachschaden“ sagt. Personenschaden hat Vorrang. Wenn der Kunde etwas nennt, das keine der drei Arten ist, müsste ich klären.
+
+8. Wie lange ich auf fehlende Angaben warte und ob ein Vorgang abgebrochen wird, müsste ich klären. Solange etwas fehlt, lege ich nichts an.
+
+9. Wann zwei Namen für mich „gleich“ sind, müsste ich klären. Ich markiere „möglicher Eigenschaden“, wenn der Anspruchsteller der Versicherungsnehmer selbst oder dessen Hausverwaltung ist.
+
+10. Was ich euch sicher sagen kann, sind Spätmeldung und möglicher Eigenschaden. Ob es weitere Hinweise gibt, müsste ich klären.
+
+11. Ob es Fälle gibt, die ich gar nicht erst anlege, etwa eine fremde Sparte oder einen Scherz, müsste ich klären.
+
+12. Nennt der Anspruchsteller einen Betrag, übernehme ich ihn. Nennt er keinen, bleibt das leer. Ich schätze nie selbst. Ob ich aktiv nach der Höhe frage, müsste ich klären.
+
+13. Was als Meldezeitpunkt zählt, müsste ich klären. Sicher ist nur: Der Schadentag darf nicht nach dem Tag der Meldung liegen. Und spät ist eine Meldung, wenn zwischen Schadentag und Meldung mehr als sechs Monate liegen.
+
+Bei sehr vielen Punkten steht bei mir also noch „klären“. Das solltet ihr in euren Anforderungen als offene Punkte festhalten und nicht einfach selbst festlegen. Soll ich bei einem Punkt genauer werden, zum Beispiel bei der Spätmeldung mit einem Rechenbeispiel?
