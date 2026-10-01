@@ -83,7 +83,7 @@
         <div><label>Hausverwaltung <small>(optional)</small></label><input data-f="propertyManagerName"></div>
       </div>
       <label>Schadenart laut Kunde</label>
-      <select data-f="damageType"><option value="">– nicht genannt –</option><option>Personenschaden</option><option>Sachschaden</option><option>Vermögensschaden</option></select>
+      <input data-f="damageType" list="damageTypes" placeholder="– nicht genannt –"><datalist id="damageTypes"><option>Personenschaden</option><option>Sachschaden</option><option>Vermögensschaden</option></datalist>
       <div class="two">
         <div><label>Person verletzt?</label><select data-f="personInjured" data-bool><option value="">– unbekannt –</option><option value="true">ja</option><option value="false">nein</option></select></div>
         <div><label>Sache beschädigt?</label><select data-f="propertyDamaged" data-bool><option value="">– unbekannt –</option><option value="true">ja</option><option value="false">nein</option></select></div>
@@ -115,7 +115,7 @@ function render(card, data) {
   const status = data.failure ? `<span class="pill bad">Fehler</span>`
     : out.error ? `<span class="pill bad">abgebrochen · ${esc(out.error.code)}</span>`
     : `<span class="pill ok">erfasst → Stage ${out.meta.currentStage}</span>`;
-  const flags = !data.failure && last?.note ? last.note.split("; ").map((n) => `<span class="pill ${/Spät|Eigen/.test(n) ? "warn" : "neutral"}">${esc(n)}</span>`).join("") : "";
+  const flags = !data.failure && !out.error && last?.note ? last.note.split("; ").map((n) => `<span class="pill ${/Spät|Eigen|unbekannt/.test(n) ? "warn" : "neutral"}">${esc(n)}</span>`).join("") : "";
   const diff = (data.diff ?? []).map((d) => `<tr><td><code>${d.field}</code></td><td>${esc(d.actual)}</td><td class="${d.same ? "y" : "x"}">${d.same ? "✓" : "≠ " + esc(d.expected)}</td></tr>`).join("");
   $(".result", card).innerHTML = data.failure ? `<pre>${esc(data.failure)}</pre>` : `
     <div class="flags">${status}<span class="pill ${data.valid ? "ok" : "bad"}">${data.valid ? "Contract valide" : "Contract verletzt"}</span>${flags}</div>
@@ -176,6 +176,11 @@ const PRESETS = {
   "Schadentag nach Meldung": { from: "standardfall", set: { incidentDate: "2026-11-05" } },
   "Kunde sagt Sachschaden, Person verletzt": { from: "standardfall", set: { personInjured: true, propertyDamaged: true } },
   "Schadenart unklar": { from: "grenzfall", set: { personInjured: undefined, propertyDamaged: undefined } },
+  "Ohne Versicherungsnehmer": { from: "standardfall", set: { policyholderName: undefined } },
+  "Schadentag „Mitte Dezember“": { from: "standardfall", set: { incidentDate: "Mitte Dezember" } },
+  "Meldezeitpunkt „gestern“": { from: "standardfall", set: { reportedAt: "gestern" } },
+  "Unbekannte Schadenart, Person verletzt": { from: "grenzfall", set: { damageType: "Unfall" } },
+  "Unbekannte Schadenart, keine Fakten": { from: "standardfall", set: { damageType: "Unfall" } },
   "Genau 6 Monate (keine Spätmeldung)": { from: "standardfall", set: { incidentDate: "2026-05-03", reportedAt: "2026-11-03T08:12:00Z" } },
   "6 Monate + 1 Tag (Spätmeldung)": { from: "standardfall", set: { incidentDate: "2026-05-02", reportedAt: "2026-11-03T08:12:00Z" } },
 };

@@ -11,8 +11,8 @@ import addFormats from "ajv-formats";
 import { run, type Claim, type Report } from "../src/index.js";
 import { normalizePolicyNumber } from "../src/normalize.js";
 import { validate as validateReport } from "../src/validate.js";
-import { classifyDamage } from "../src/classify.js";
-import { isLateReport, isPossibleOwnDamage } from "../src/flags.js";
+import { classifyDamage, isUnknownDamageType } from "../src/classify.js";
+import { isLateReport, ownDamageFlag, POSSIBLE_OWN_DAMAGE } from "../src/flags.js";
 import { addMonths, dayOf } from "../src/dates.js";
 
 const PKG = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -65,20 +65,22 @@ function explain(report: Report, output: Claim): Step[] {
 
   const problems = validateReport(report);
   steps.push({
-    title: "2 Prüfen",
+    title: "2 Prüfen (Rückfrage, falls etwas fehlt)",
     state: problems.length ? "bad" : "ok",
     lines: problems.length ? problems.map((p) => `${p.code}: ${p.message}`) : ["Pflichtangaben, Kontakt, Versicherungsschein und Schadentag in Ordnung."],
   });
 
   const damageType = classifyDamage(report);
   const facts = report.personInjured === true || report.propertyDamaged === true || (report.personInjured === false && report.propertyDamaged === false);
-  const overridden = facts && report.damageType && report.damageType !== damageType;
+  const unknown = isUnknownDamageType(report);
+  const overridden = facts && report.damageType && !unknown && report.damageType !== damageType;
   steps.push({
     title: "3 Einordnen",
-    state: damageType === null ? "bad" : overridden ? "warn" : "ok",
+    state: damageType === null ? "bad" : overridden || unknown ? "warn" : "ok",
     lines: damageType === null ? ["SCHADENART_UNKLAR: weder Schadenart vom Kunden noch Fakten (Person verletzt / Sache beschädigt)."]
       : facts ? [`${damageType}, abgeleitet aus den Fakten (Person verletzt: ${fmt(report.personInjured)}, Sache beschädigt: ${fmt(report.propertyDamaged)}).`,
-          ...(overridden ? [`Kundenangabe „${report.damageType}“ überstimmt: die Fakten entscheiden (G1-REQ-004).`] : [])]
+          ...(overridden ? [`Kundenangabe „${report.damageType}“ überstimmt: die Fakten entscheiden (G1-REQ-004).`] : []),
+          ...(unknown ? [`Kundenangabe „${report.damageType}“ ist keine der drei Schadenarten: Hinweis in der note (G1-REQ-010, Regel 2).`] : [])]
       : [`${damageType}, so wie vom Kunden genannt (keine Fakten angegeben).`],
   });
 
@@ -88,8 +90,10 @@ function explain(report: Report, output: Claim): Step[] {
     late = isLateReport(report.incidentDate, report.reportedAt);
     lines.push(`Spätmeldung: ${late ? "ja" : "nein"}. Grenze ${addMonths(report.incidentDate, 6)}, gemeldet am ${dayOf(report.reportedAt)}.`);
   } else lines.push("Spätmeldung: nicht prüfbar (Schadentag oder Meldezeitpunkt fehlt).");
-  own = isPossibleOwnDamage(report);
-  lines.push(own ? `Möglicher Eigenschaden: ja, Anspruchsteller „${report.claimantName}“ ist Versicherungsnehmer oder Hausverwaltung.`
+  const ownFlag = ownDamageFlag(report);
+  own = ownFlag !== null;
+  lines.push(ownFlag === POSSIBLE_OWN_DAMAGE ? `Möglicher Eigenschaden: ja, Anspruchsteller „${report.claimantName}“ ist Versicherungsnehmer oder Hausverwaltung.`
+    : ownFlag ? "Eigenschaden nicht prüfbar: kein Versicherungsnehmer angegeben (G1-REQ-007, Variante B)."
     : "Möglicher Eigenschaden: nein.");
   steps.push({ title: "4 Markieren", state: late || own ? "warn" : "ok", lines });
 
