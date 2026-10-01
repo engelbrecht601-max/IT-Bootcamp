@@ -32,23 +32,27 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
 
 ## Anforderungen
 
-**Gemeinsame Ausgangslage für alle Kriterien:** Stage 1 wird aufgerufen als `run(claim, report, now)`. `claim` ist die Eingangsakte: `fixtures/1-2/standardfall.json` ohne Block `stage1`, mit leerem `trace` und `meta.currentStage: 1`. `report` ist die Eingangsmeldung nach G1-REQ-009, standardmäßig `packages/stage1/fixtures/eingang/standardfall.json`. „Eine Meldung mit X“ heißt: diese Eingangsmeldung, nur X ist geändert. Abgebrochen heißt immer: neuer Trace-Eintrag `action: "abgebrochen"`, `error.stage: 1`, `meta.currentStage` bleibt `1`, kein Block `stage1`.
+**Gemeinsame Ausgangslage für alle Kriterien:** Stage 1 wird aufgerufen als `run(claim, report, now)`. `claim` ist die Eingangsakte: `fixtures/1-2/standardfall.json` ohne Block `stage1`, mit leerem `trace` und `meta.currentStage: 1`. `report` ist die Eingangsmeldung nach G1-REQ-009, standardmäßig `packages/stage1/fixtures/eingang/standardfall.json`. „Eine Meldung mit X“ heißt: diese Eingangsmeldung, nur X ist geändert. Abgebrochen heißt immer: neuer Trace-Eintrag `action: "abgebrochen"`, `error.stage: 1`, `meta.currentStage` bleibt `1`, kein Block `stage1`. Fachlich ist jeder Abbruch eine Rückfrage beim Kunden (G1-REQ-010).
 
 ### G1-REQ-001: Pflichtangaben vollständig
 
 - **User Story:** Als Sachbearbeiter:in in der Schadenaufnahme möchte ich, dass ein Vorgang nur angelegt wird, wenn alle Pflichtangaben vorliegen, damit keine unvollständige Akte bei der Deckungsprüfung landet.
 - **Akzeptanzkriterien:**
-  1. Gegeben eine Meldung mit Versicherungsscheinnummer, Schadentag, Hergang, Name des Anspruchstellers und Name des Versicherungsnehmers, wenn Stage 1 sie verarbeitet, dann ist der Block `stage1` gefüllt, der neue Trace-Eintrag hat `action: "erfasst"` und `meta.currentStage` ist `2`.
-  2. Gegeben eine Meldung, in der eine dieser fünf Angaben fehlt oder leer ist, wenn Stage 1 sie verarbeitet, dann hat der neue Trace-Eintrag `action: "abgebrochen"`, die Akte hat einen `error`-Block mit `stage: 1` und `code: "PFLICHTANGABE_FEHLT"`, `error.message` enthält den Feldnamen der fehlenden Angabe aus der Eingangsmeldung (z. B. `policyNumber`), und `meta.currentStage` bleibt `1`.
+  1. Gegeben eine Meldung mit Versicherungsscheinnummer, Schadentag, Hergang und Name des Anspruchstellers, wenn Stage 1 sie verarbeitet, dann ist der Block `stage1` gefüllt, der neue Trace-Eintrag hat `action: "erfasst"` und `meta.currentStage` ist `2`.
+  2. Gegeben eine Meldung, in der eine dieser vier Angaben fehlt oder leer ist, wenn Stage 1 sie verarbeitet, dann hat der neue Trace-Eintrag `action: "abgebrochen"`, die Akte hat einen `error`-Block mit `stage: 1` und `code: "PFLICHTANGABE_FEHLT"`, `error.message` enthält den Feldnamen der fehlenden Angabe aus der Eingangsmeldung (z. B. `policyNumber`), und `meta.currentStage` bleibt `1`.
   3. Gegeben eine Meldung, in der mehrere Pflichtangaben fehlen, wenn Stage 1 sie verarbeitet, dann enthält `error.message` die Feldnamen aller fehlenden Angaben.
 - **Status:** verifiziert
 - **Quelle:** Interview vom 2026-10-01 (Fünf Pflichtangaben; „Fehlt eine davon, lege ich nichts an, sondern frage nach.“), Entscheidung der Gruppe vom 2026-10-01
 - **Umgesetzt in:** `src/validate.ts`, `src/index.ts`
-- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-001` (18 Tests grün, davon 10 in req001.test.ts), `pnpm conformance 1` (3 Fixtures ✓), eigene Probe mit allen drei Eingangsmeldungen: Whitespace-only, null, leere Strings und mehrere fehlende Felder führen zu PFLICHTANGABE_FEHLT mit allen Feldnamen, currentStage 1, ein Trace-Eintrag, kein stage1, Eingangsakte unverändert. Lücken: Tests prüfen bei AC 1 nicht die Feldinhalte von stage1 (liegt bei G1-REQ-009); Whitespace-only und reportedAt-Fehlen haben keinen eigenen Test.
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-001` (20 Tests grün, 11 davon in req001.test.ts), `pnpm conformance 1` (3 Eingangsmeldungen ✓), eigene Probe: Whitespace-only, null, leerer String, Zahl statt String, fehlendes reportedAt und fehlender report führen zu PFLICHTANGABE_FEHLT mit allen Feldnamen, currentStage 1, ein Trace-Eintrag `abgebrochen`, kein stage1, Eingangsakte unverändert. Lücken: AC 1 prüft nur Truthiness der stage1-Felder, nicht deren Werte (G1-REQ-009); Whitespace-only und reportedAt-Fehlen haben keinen eigenen Test; Code verlangt zusätzlich reportedAt (dokumentierte Auslegung).
 
 > Auslegung: „Nachfragen“ bilden wir als Abbruch mit `error`-Block ab, weil der Contract keinen Wartezustand kennt. Wartefrist und Wiedervorlage sind offen (siehe Offene Fragen). Fehlercode und `meta.currentStage` bei Abbruch sind unser Vorschlag, noch nicht bestätigt. Fehlercodes folgen dem Contract-Format `^[A-Z][A-Z0-9_]*$` (z. B. `PFLICHTANGABE_FEHLT`).
 >
-> Entscheidung der Gruppe (2026-10-01): Abweichend von Sabines Liste ist die Schadenart keine Pflichtangabe des Kunden, weil Sabine sie ableitet, wenn der Kunde sie nicht nennt (G1-REQ-004). Dafür muss der Kunde den Versicherungsnehmer nennen (G1-REQ-009).
+> Entscheidung der Gruppe (2026-10-01): Die Schadenart wird nicht hier, sondern in G1-REQ-004 geprüft: Sie muss genannt oder aus den Fakten ableitbar sein, sonst Rückfrage (`SCHADENART_UNKLAR`).
+>
+> Geändert (Interview Abbruchfälle, Antwort 2; Gruppenentscheidung B): Der Versicherungsnehmer ist keine Pflichtangabe mehr. Fehlt er, wird erfasst und „Eigenschaden nicht prüfbar“ vermerkt (G1-REQ-007).
+>
+> Geklärt (Interview Abbruchfälle, Antwort 1): Bei allen vier Pflichtangaben gleich: nichts anlegen, nachfragen.
 >
 > Auslegung beim Bauen: Auch ein fehlendes `reportedAt` führt zum Abbruch, sonst wäre die Akte nicht contract-konform. Bei mehreren Problemen gibt es einen `error`-Block: `code` vom ersten Problem (Reihenfolge: Pflichtangaben, Kontakt, Versicherungsschein, Schadentag, Schadenart), `message` nennt alle. Die `note` des Trace-Eintrags wiederholt die `message`.
 
@@ -141,13 +145,17 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
 - **Akzeptanzkriterien:**
   1. Gegeben eine Meldung mit `claimantName` gleich `policyholderName` (Groß-/Kleinschreibung und Leerzeichen am Rand egal), wenn Stage 1 sie verarbeitet, dann wird der Vorgang trotzdem erfasst und die `note` des neuen Trace-Eintrags enthält `möglicher Eigenschaden`.
   2. Gegeben eine Meldung mit `claimantName` gleich `propertyManagerName`, wenn Stage 1 sie verarbeitet, dann wird der Vorgang erfasst und die `note` des neuen Trace-Eintrags enthält `möglicher Eigenschaden`.
-  3. Gegeben eine Meldung, deren `claimantName` weder `policyholderName` noch `propertyManagerName` entspricht, wenn Stage 1 sie verarbeitet, dann enthält die `note` des neuen Trace-Eintrags nicht `möglicher Eigenschaden`.
+  3. Gegeben eine Meldung, deren `claimantName` weder `policyholderName` noch `propertyManagerName` entspricht, wenn Stage 1 sie verarbeitet, dann enthält die `note` des neuen Trace-Eintrags weder `möglicher Eigenschaden` noch `Eigenschaden nicht prüfbar`.
+  4. Gegeben eine Meldung ohne `policyholderName` und ohne `propertyManagerName`, wenn Stage 1 sie verarbeitet, dann wird der Vorgang erfasst und die `note` des neuen Trace-Eintrags enthält `Eigenschaden nicht prüfbar`.
+  5. Gegeben eine Meldung ohne `policyholderName`, deren `claimantName` gleich `propertyManagerName` ist, wenn Stage 1 sie verarbeitet, dann enthält die `note` des neuen Trace-Eintrags `möglicher Eigenschaden` und nicht `Eigenschaden nicht prüfbar`.
 - **Status:** verifiziert
-- **Quelle:** Interview vom 2026-10-01, Antworten C11 und C13
-- **Umgesetzt in:** `src/flags.ts`
-- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-007` (3 Tests grün, je einer pro Kriterium, prüfen note und Trace-Länge), `pnpm conformance 1` (3 Fixtures grün), Code-Review `src/flags.ts`: Treffer bei Versicherungsnehmer und Hausverwaltung, Groß-/Kleinschreibung und Randleerzeichen egal, leerer Name löst nichts aus. Lücken: Innenleerzeichen und Firmenzusätze nicht normalisiert (laut Kriterien nicht gefordert), Fixtures enthalten keinen Eigenschaden-Fall.
+- **Quelle:** Interview vom 2026-10-01, Antworten C11 und C13; Interview Abbruchfälle, Antwort 2; Gruppenentscheidung B vom 2026-10-01
+- **Umgesetzt in:** `src/flags.ts`, `src/index.ts`
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-007` (alle 14 Tests grün, 5 REQ-007-Tests, je einer pro Kriterium 1 bis 5, prüfen Erfassung, currentStage 2, genau ein Trace-Eintrag, note-Inhalt), `pnpm conformance 1` (3 Eingangsakten grün); `src/flags.ts` und `src/index.ts` gelesen: Treffer bei Versicherungsnehmer und Hausverwaltung (trim, lowercase), Hausverwaltungs-Treffer ohne Versicherungsnehmer liefert nur `möglicher Eigenschaden`, fehlender Versicherungsnehmer ohne Treffer liefert `Eigenschaden nicht prüfbar`. Lücken: Innenleerzeichen und Firmenzusätze nicht normalisiert (nicht gefordert); fehlt nur der Versicherungsnehmer und die Hausverwaltung ist vorhanden, aber ungleich, wird ebenfalls `nicht prüfbar` vermerkt (von Kriterium 4 nicht abgedeckt, ungetestet); Fixtures enthalten keinen Eigenschaden-Fall.
 
 > Entscheidung der Gruppe (2026-10-01): Name des Versicherungsnehmers und gegebenenfalls seiner Hausverwaltung nennt der Kunde in der Meldung (G1-REQ-009).
+>
+> Entscheidung der Gruppe B (2026-10-01): Sabine braucht den Versicherungsnehmer nicht zwingend. Fehlt er, wird trotzdem erfasst; der Hinweis „Eigenschaden nicht prüfbar“ ist unsere Erweiterung, damit die Deckungsprüfung weiß, dass nicht geprüft wurde.
 >
 > Offen: Wann gelten zwei Namen als gleich (Groß-/Kleinschreibung, Leerzeichen, Firmenzusatz)? Name und Hausverwaltung des Versicherungsnehmers stehen nicht im Contract; ob Gruppe 2 sie braucht, ist zu klären. Ablageort der Markierung wie bei G1-REQ-006.
 
@@ -183,7 +191,7 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
      | `damageType` | Art des Schadens laut Kunde | nein² | Interview, Gruppenentscheidung |
      | `personInjured` | Wurde ein Mensch verletzt? (ja/nein) | nein² | Interview A3 |
      | `propertyDamaged` | Wurde eine Sache beschädigt? (ja/nein) | nein² | Interview A3 |
-     | `policyholderName` | Name des Versicherungsnehmers | ja¹ | Gruppenentscheidung |
+     | `policyholderName` | Name des Versicherungsnehmers, für die Prüfung auf Eigenschaden | nein³ | Gruppenentscheidung, Interview Abbruchfälle 2 |
      | `propertyManagerName` | Hausverwaltung des Versicherungsnehmers, falls vorhanden | nein | Interview C13, Gruppenentscheidung |
      | `claimantPhone` | Telefonnummer des Anspruchstellers | eins von beiden¹ | Interview |
      | `claimantEmail` | E-Mail-Adresse des Anspruchstellers | eins von beiden¹ | Interview |
@@ -192,18 +200,43 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
 
      ¹ „Pflicht“ heißt: Fehlt die Angabe, bricht Stage 1 ab (G1-REQ-001, G1-REQ-005). Die Eingangsmeldung selbst darf unvollständig sein, sonst ließe sich der Abbruchpfad nicht testen.
 
-     ² Nennt der Kunde keine Schadenart, leitet Stage 1 sie aus `personInjured` und `propertyDamaged` ab (G1-REQ-004).
+     ² Liegen `personInjured`/`propertyDamaged` vor, entscheiden sie; sonst zählt `damageType` des Kunden (G1-REQ-004).
+
+     ³ Fehlt der Versicherungsnehmer, wird erfasst und „Eigenschaden nicht prüfbar“ vermerkt (G1-REQ-007).
   2. Gegeben die Musterakten in `fixtures/1-2/`, dann gibt es zu jeder eine Eingangsmeldung unter `packages/stage1/fixtures/eingang/` mit gleichem Dateinamen (`standardfall.json`, `grenzfall.json`, `ablehnungskandidat.json`).
   3. Gegeben eine dieser Eingangsmeldungen, wenn Stage 1 sie verarbeitet, dann stimmen `policyNumber`, `incidentDate`, `reportedAt`, `damageType`, `description`, `claimant.name` und `claimedAmount` im Block `stage1` mit der zugehörigen Musterakte in `fixtures/1-2/` überein.
   4. Gegeben die Eingangsmeldung `standardfall.json`, dann enthält sie mindestens eine Abweichung, die Stage 1 korrigieren muss, z. B. `policyNumber: "gh 4711023"`.
 - **Status:** verifiziert
 - **Quelle:** Interview vom 2026-10-01 (Eingangswege; fünf Pflichtangaben plus Kontakt), Entscheidung der Gruppe vom 2026-10-01, Contract `stage1`, Musterakten `fixtures/1-2/`
 - **Umgesetzt in:** `src/claim.ts` (Typ `Report`), `fixtures/eingang/`
-- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-009` (14 Tests grün, davon 5 in req009.test.ts), `pnpm conformance 1` (3 Fixtures ✓); alle drei Eingangsmeldungen existieren, liefern stage1-Felder gleich der Musterakte, standardfall enthält `gh 4711023` und wird zu `GH-4711023` korrigiert. Lücken: AK 1 (Feldtabelle) wird nur durch einen Positivtest mit allen Feldern gestützt, Pflicht/Typ-Angaben nicht einzeln geprüft; Tabelle sagt „jeweils als Text“, `Report` typisiert aber `personInjured` als boolean und `claimedAmount` als number (Doku-Unschärfe).
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-009` (17/17 grün, 7 in req009.test.ts), `pnpm conformance 1` (3 Eingangsmeldungen ok), `pnpm check` grün (inkl. tsc). Fixtures und Report-Typ gegen Feldtabelle gelesen: alle 14 Felder im Typ, Fixtures typrichtig, standardfall enthält `gh 4711023` und wird zu `GH-4711023`; AK 2, 3, 4 direkt mit Ergebnisvergleich gegen Musterakten abgedeckt. Lücken: AK 1 Test ist weitgehend tautologisch (typeof auf selbst gebautem Literal, Typprüfung nur durch tsc); Fixtures werden nicht gegen die Feldtabelle (Typen, channel-Enum) validiert; fehlender `channel` hat keinen Test.
 
 > Auslegung: Feldnamen und Struktur sind unser Vorschlag. Nur die Inhalte stammen aus dem Interview. Telefon und E-Mail stehen nicht in den Musterakten und werden für die Eingangsmeldungen erfunden.
 >
 > Nicht Teil dieser Anforderung: Wie die Eingangsmeldung in `run(claim)` gelangt (Transport). Das klären wir später mit der Workshop-Leitung (siehe `umsetzung.md`, Abschnitt 6).
+
+### G1-REQ-010: Grundregeln bei fehlenden oder unklaren Angaben
+
+- **User Story:** Als Sachbearbeiter:in möchte ich, dass jede fehlende oder unklare Angabe nach festen Grundregeln behandelt wird, damit kein unklarer Fall unbemerkt an die Deckungsprüfung geht und nicht jeder Sonderfall einzeln geregelt werden muss.
+- **Grundregeln:**
+  - **Regel 1, Rückfrage:** Fehlt eine Pflichtangabe oder ist sie eindeutig ungültig, wird nichts angelegt. Die Meldung sagt, wonach gefragt werden muss.
+  - **Regel 2, Erfassen mit Hinweis:** Fehlt eine optionale Angabe oder ist sie unklar, während die Pflichtangaben ausreichen, wird erfasst und ein Hinweis in die `note` geschrieben.
+  - **Regel 3, im Zweifel Rückfrage:** Was keine der beiden Regeln eindeutig abdeckt, wird wie Regel 1 behandelt.
+- **Akzeptanzkriterien:**
+  1. Gegeben eine Meldung ohne `description`, wenn Stage 1 sie verarbeitet, dann wird abgebrochen und `error.message` beginnt mit `Bitte nachfragen:`.
+  2. Gegeben eine Meldung ohne `description` und ohne `claimantPhone` und `claimantEmail`, wenn Stage 1 sie verarbeitet, dann beginnt `error.message` mit `Bitte nachfragen:` und enthält `description` und `claimantPhone`.
+  3. Gegeben eine Meldung mit `incidentDate: "Mitte Dezember"`, wenn Stage 1 sie verarbeitet, dann wird abgebrochen mit `error.code: "SCHADENTAG_UNGUELTIG"`.
+  4. Gegeben eine Meldung mit `reportedAt: "gestern"`, wenn Stage 1 sie verarbeitet, dann wird abgebrochen mit `error.code: "MELDEZEITPUNKT_UNGUELTIG"`.
+  5. Gegeben eine Meldung mit `personInjured: true` und einer Schadenart des Kunden, die keine der drei Schadenarten ist (z. B. `damageType: "Unfall"`), wenn Stage 1 sie verarbeitet, dann wird erfasst mit `stage1.damageType: "Personenschaden"` und die `note` des neuen Trace-Eintrags enthält `Schadenart laut Kunde unbekannt`.
+  6. Gegeben eine Meldung ohne `personInjured` und `propertyDamaged` und mit `damageType: "Unfall"`, wenn Stage 1 sie verarbeitet, dann wird abgebrochen mit `error.code: "SCHADENART_UNKLAR"`.
+- **Status:** verifiziert
+- **Quelle:** Interview Abbruchfälle vom 2026-10-01 („Fehlt etwas Nötiges, lege ich nichts an und frage nach.“; Ablehnung gibt es bei fehlenden Angaben nicht); Interview vom 2026-10-01 (Risiko: unvollständige Übergabe); Entscheidung der Gruppe vom 2026-10-01 (Regeln 2 und 3)
+- **Umgesetzt in:** `src/validate.ts`, `src/classify.ts`, `src/index.ts`
+- **Verifiziert:** 2026-10-01, `pnpm test:req G1-REQ-010` (15 Tests grün, 6 in req010.test.ts, je Kriterium einer, prüfen Trace-Aktion, error.stage/code/message-Präfix, currentStage 1, kein stage1, bei AC5 damageType und note), `pnpm conformance 1` (3 Fixtures ✓); eigene Proben: Whitespace-only description, Kombination mehrerer Fehler, damageType Unfall mit propertyDamaged liefert Sachschaden mit Hinweis, ohne Fakten SCHADENART_UNKLAR, jeweils genau ein Trace-Eintrag. Lücken: Regel 2 nur für Schadenart und Eigenschaden-Hinweis getestet; AC1 und AC2 prüfen nicht, dass bei mehreren Problemen der Präfix nur einmal steht (Code erzeugt ihn einmal).
+
+> Entscheidung der Gruppe (2026-10-01): Regel 1 stammt von Sabine. Die Regeln 2 und 3 sind unsere Auslegung ihrer Prinzipien, damit offene „müsste ich klären“-Punkte nicht blockieren. Klärt Sabine einen Punkt, bekommt er eine eigene Anforderung.
+>
+> Auslegung: Der genaue Wortlaut der Rückfrage ist offen (Interview Abbruchfälle, Antwort 1). `Bitte nachfragen:` ist unser Platzhalter.
 
 ## Offene Fragen an die Fachperson
 
@@ -220,7 +253,11 @@ Stand nach dem Interview vom 2026-10-01 (offene Fragen). Bei allen sagt Sabine �
 - Gibt es außer Spätmeldung und möglichem Eigenschaden weitere Hinweise für die Deckungsprüfung? (G1-REQ-006, G1-REQ-007)
 - Gibt es Fälle, die gar nicht erst angelegt werden (fremde Sparte, Scherz)?
 - Wird aktiv nach der Forderungshöhe gefragt? (Geklärt: genannter Betrag wird übernommen, sonst bleibt das Feld leer, nie schätzen.)
-- Was zählt als Meldezeitpunkt: Anruf, Formulareingang oder Anlage des Vorgangs? (G1-REQ-003, G1-REQ-006)
+- Was zählt als Meldezeitpunkt: Anruf, Formulareingang oder Anlage des Vorgangs? Was tun, wenn er fehlt? (G1-REQ-003, G1-REQ-006)
+- Genauer Wortlaut der Rückfrage an den Kunden, und was wird notiert? (G1-REQ-010)
+- Werden mehrere fehlende Angaben auf einmal erfragt, gibt es eine Reihenfolge? (G1-REQ-010)
+- Gibt es Fälle, die endgültig nicht angelegt werden (Ablehnung statt Rückfrage)? (G1-REQ-010)
+- Versicherungsnehmer fehlt: ohne ihn anlegen oder nachfragen? (G1-REQ-007, vorerst Gruppenentscheidung B)
 
 ## Offene Fragen an Gruppe 2 (Deckungsprüfung)
 

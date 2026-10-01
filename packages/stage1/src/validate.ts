@@ -7,8 +7,9 @@ export interface Problem {
   message: string;
 }
 
-// G1-REQ-001, G1-REQ-009: Ohne diese Angaben legt Stage 1 keinen Vorgang an.
-const REQUIRED = ["policyNumber", "incidentDate", "reportedAt", "description", "claimantName", "policyholderName"] as const;
+// G1-REQ-001: Ohne diese Angaben legt Stage 1 keinen Vorgang an (Rückfrage, G1-REQ-010).
+// Der Versicherungsnehmer gehört nicht dazu (Gruppenentscheidung B, G1-REQ-007).
+const REQUIRED = ["policyNumber", "incidentDate", "reportedAt", "description", "claimantName"] as const;
 
 /** Prüft die Eingangsmeldung und sammelt alle Probleme; die Reihenfolge bestimmt den Fehlercode. */
 export function validate(report: Report): Problem[] {
@@ -26,10 +27,14 @@ export function validate(report: Report): Problem[] {
   if (!isBlank(report.policyNumber) && normalizePolicyNumber(report.policyNumber!) === null) {
     problems.push({ code: "VERSICHERUNGSSCHEIN_UNGUELTIG", message: `Versicherungsscheinnummer ungültig: ${report.policyNumber}` });
   }
-  // G1-REQ-003: Der Schadentag liegt nicht nach dem Tag der Meldung.
-  if (!isBlank(report.incidentDate) && !isBlank(report.reportedAt)) {
-    const reportedDay = dayOf(report.reportedAt!);
-    if (!isIsoDate(report.incidentDate!) || reportedDay === null || report.incidentDate! > reportedDay) {
+  // G1-REQ-010: Ein Meldezeitpunkt, der kein gültiger Zeitpunkt ist, führt zur Rückfrage.
+  const reportedDay = isBlank(report.reportedAt) ? null : dayOf(report.reportedAt!);
+  if (!isBlank(report.reportedAt) && reportedDay === null) {
+    problems.push({ code: "MELDEZEITPUNKT_UNGUELTIG", message: `Meldezeitpunkt ungültig: ${report.reportedAt}` });
+  }
+  // G1-REQ-003, G1-REQ-010: Der Schadentag ist ein Datum und liegt nicht nach dem Tag der Meldung.
+  if (!isBlank(report.incidentDate)) {
+    if (!isIsoDate(report.incidentDate!) || (reportedDay !== null && report.incidentDate! > reportedDay)) {
       problems.push({ code: "SCHADENTAG_UNGUELTIG", message: `Schadentag ungültig: ${report.incidentDate}` });
     }
   }

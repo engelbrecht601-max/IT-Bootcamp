@@ -1,5 +1,5 @@
-import { classifyDamage } from "./classify.js";
-import { LATE_REPORT, POSSIBLE_OWN_DAMAGE, isLateReport, isPossibleOwnDamage } from "./flags.js";
+import { classifyDamage, isUnknownDamageType } from "./classify.js";
+import { LATE_REPORT, isLateReport, ownDamageFlag } from "./flags.js";
 import { normalizePolicyNumber } from "./normalize.js";
 import { validate, type Problem } from "./validate.js";
 import type { Claim, Report, Stage1 } from "./claim.js";
@@ -44,10 +44,12 @@ export function run(claim: Claim, report: Report = {}, now: Date = new Date()): 
   if (report.claimantEmail?.trim()) stage1.claimantEmail = report.claimantEmail.trim();
   if (typeof report.claimedAmount === "number") stage1.claimedAmount = report.claimedAmount;
 
-  // G1-REQ-006, G1-REQ-007: Markierungen für die Deckungsprüfung stehen in der note
+  // G1-REQ-006, G1-REQ-007, G1-REQ-010: Markierungen und Hinweise für die Deckungsprüfung stehen in der note
   const flags: string[] = [];
   if (isLateReport(stage1.incidentDate, stage1.reportedAt)) flags.push(LATE_REPORT);
-  if (isPossibleOwnDamage(report)) flags.push(POSSIBLE_OWN_DAMAGE);
+  const ownDamage = ownDamageFlag(report);
+  if (ownDamage) flags.push(ownDamage);
+  if (isUnknownDamageType(report)) flags.push(`Schadenart laut Kunde unbekannt: ${report.damageType}`);
 
   // G1-REQ-008: genau ein Trace-Eintrag, Übergabe an Stage 2
   out.stage1 = stage1;
@@ -56,9 +58,9 @@ export function run(claim: Claim, report: Report = {}, now: Date = new Date()): 
   return out;
 }
 
-// G1-REQ-001: Abbruch mit error-Block; der Code kommt vom ersten Problem, die Meldung nennt alle.
+// G1-REQ-001, G1-REQ-010: Abbruch als Rückfrage; der Code kommt vom ersten Problem, die Meldung nennt alle.
 function abort(out: Claim, problems: Problem[], at: string): Claim {
-  const message = problems.map((p) => p.message).join("; ");
+  const message = `Bitte nachfragen: ${problems.map((p) => p.message).join("; ")}`;
   out.trace.push({ stage: 1, at, action: "abgebrochen", note: message });
   out.error = { stage: 1, code: problems[0].code, message };
   return out;
