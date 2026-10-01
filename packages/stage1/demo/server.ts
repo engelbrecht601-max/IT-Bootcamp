@@ -42,7 +42,7 @@ function process1(name: string, report: Report) {
 }
 
 function requirements() {
-  const text = readFileSync(join(PKG, "requirements.md"), "utf8");
+  const text = readFileSync(join(PKG, "requirements.md"), "utf8").replace(/```[\s\S]*?```/g, ""); // Vorlage im Codeblock ignorieren
   return text.split(/^### /m).slice(1).flatMap((s) => {
     const m = /^(G1-REQ-\d{3}):\s*(.*)$/m.exec(s);
     const status = /\*\*Status:\*\*\s*(\S+)/.exec(s)?.[1] ?? "?";

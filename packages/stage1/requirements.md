@@ -24,18 +24,15 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
 - **User Story:** Als Sachbearbeiter:in möchte ich …, damit …
 - **Akzeptanzkriterien:**
   1. Gegeben …, wenn …, dann …
-- **Status:** umgesetzt
+- **Status:** offen
 - **Quelle:** Interview vom …
-- **Umgesetzt in:** `src/validate.ts`, `src/index.ts`
+- **Umgesetzt in:** –
 - **Verifiziert:** –
 ```
 
 ## Anforderungen
 
 **Gemeinsame Ausgangslage für alle Kriterien:** Stage 1 wird aufgerufen als `run(claim, report, now)`. `claim` ist die Eingangsakte: `fixtures/1-2/standardfall.json` ohne Block `stage1`, mit leerem `trace` und `meta.currentStage: 1`. `report` ist die Eingangsmeldung nach G1-REQ-009, standardmäßig `packages/stage1/fixtures/eingang/standardfall.json`. „Eine Meldung mit X“ heißt: diese Eingangsmeldung, nur X ist geändert. Abgebrochen heißt immer: neuer Trace-Eintrag `action: "abgebrochen"`, `error.stage: 1`, `meta.currentStage` bleibt `1`, kein Block `stage1`.
-
-> Auslegung beim Bauen: Auch `reportedAt` fehlt nicht ohne Abbruch, sonst wäre die Akte nicht contract-konform. Bei mehreren Problemen gibt es einen `error`-Block: `code` vom ersten Problem (Reihenfolge: Pflichtangaben, Kontakt, Versicherungsschein, Schadentag, Schadenart), `message` nennt alle. Die `note` des Trace-Eintrags wiederholt die `message`.
-
 
 ### G1-REQ-001: Pflichtangaben vollständig
 
@@ -44,14 +41,16 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
   1. Gegeben eine Meldung mit Versicherungsscheinnummer, Schadentag, Hergang, Name des Anspruchstellers und Name des Versicherungsnehmers, wenn Stage 1 sie verarbeitet, dann ist der Block `stage1` gefüllt, der neue Trace-Eintrag hat `action: "erfasst"` und `meta.currentStage` ist `2`.
   2. Gegeben eine Meldung, in der eine dieser fünf Angaben fehlt oder leer ist, wenn Stage 1 sie verarbeitet, dann hat der neue Trace-Eintrag `action: "abgebrochen"`, die Akte hat einen `error`-Block mit `stage: 1` und `code: "PFLICHTANGABE_FEHLT"`, `error.message` enthält den Feldnamen der fehlenden Angabe aus der Eingangsmeldung (z. B. `policyNumber`), und `meta.currentStage` bleibt `1`.
   3. Gegeben eine Meldung, in der mehrere Pflichtangaben fehlen, wenn Stage 1 sie verarbeitet, dann enthält `error.message` die Feldnamen aller fehlenden Angaben.
-- **Status:** offen
+- **Status:** umgesetzt
 - **Quelle:** Interview vom 2026-10-01 (Fünf Pflichtangaben; „Fehlt eine davon, lege ich nichts an, sondern frage nach.“), Entscheidung der Gruppe vom 2026-10-01
-- **Umgesetzt in:** –
+- **Umgesetzt in:** `src/validate.ts`, `src/index.ts`
 - **Verifiziert:** –
 
 > Auslegung: „Nachfragen“ bilden wir als Abbruch mit `error`-Block ab, weil der Contract keinen Wartezustand kennt. Wartefrist und Wiedervorlage sind offen (siehe Offene Fragen). Fehlercode und `meta.currentStage` bei Abbruch sind unser Vorschlag, noch nicht bestätigt. Fehlercodes folgen dem Contract-Format `^[A-Z][A-Z0-9_]*$` (z. B. `PFLICHTANGABE_FEHLT`).
 >
 > Entscheidung der Gruppe (2026-10-01): Abweichend von Sabines Liste ist die Schadenart keine Pflichtangabe des Kunden, weil Sabine sie ableitet, wenn der Kunde sie nicht nennt (G1-REQ-004). Dafür muss der Kunde den Versicherungsnehmer nennen (G1-REQ-009).
+>
+> Auslegung beim Bauen: Auch ein fehlendes `reportedAt` führt zum Abbruch, sonst wäre die Akte nicht contract-konform. Bei mehreren Problemen gibt es einen `error`-Block: `code` vom ersten Problem (Reihenfolge: Pflichtangaben, Kontakt, Versicherungsschein, Schadentag, Schadenart), `message` nennt alle. Die `note` des Trace-Eintrags wiederholt die `message`.
 
 ### G1-REQ-002: Versicherungsscheinnummer prüfen und normalisieren
 
