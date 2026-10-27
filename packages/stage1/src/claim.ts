@@ -33,7 +33,15 @@ export interface Report {
   claimedAmount?: number;
 }
 
-/** Block stage1 laut Contract, inklusive der Felder aus G1-CR-001. */
+/** Markierung für die Deckungsprüfung (G1-CR-002). */
+export type FlagType = "Spätmeldung" | "möglicher Eigenschaden" | "Eigenschaden nicht prüfbar" | "Schadenart unklar";
+
+export interface Flag {
+  type: FlagType;
+  reason: string;
+}
+
+/** Block stage1 laut Contract, inklusive der Felder aus G1-CR-001 und G1-CR-002. */
 export interface Stage1 {
   completedAt: string;
   policyNumber: string;
@@ -45,6 +53,7 @@ export interface Stage1 {
   claimantPhone?: string;
   claimantEmail?: string;
   claimedAmount?: number;
+  flags?: Flag[];
 }
 
 export interface Claim {

@@ -1,0 +1,48 @@
+{
+  "id": "G1-CR-002",
+  "group": 1,
+  "requirementId": "G1-REQ-011",
+  "rationale": "Im Block stage1 fehlt ein Feld für die Markierungen an die Deckungsprüfung (Spätmeldung, möglicher Eigenschaden, Eigenschaden nicht prüfbar, Schadenart unklar), jeweils mit festem Kennzeichen und Begründung. Bisher stehen sie nur als Freitext in der Trace-note.",
+  "fragment": {
+    "properties": {
+      "stage1": {
+        "properties": {
+          "flags": {
+            "description": "Markierungen der Schadenaufnahme für die Deckungsprüfung, jeweils mit Kennzeichen und Begründung. Leere Liste, wenn nichts markiert wurde.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "reason"
+              ],
+              "properties": {
+                "type": {
+                  "description": "Art der Markierung.",
+                  "type": "string",
+                  "enum": [
+                    "Spätmeldung",
+                    "möglicher Eigenschaden",
+                    "Eigenschaden nicht prüfbar",
+                    "Schadenart unklar"
+                  ]
+                },
+                "reason": {
+                  "description": "Begründung der Markierung in Worten, z. B. die Anzahl der Monate bei einer Spätmeldung.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "requestedAt": "2026-10-01T21:19:24.070Z",
+  "status": "freigegeben",
+  "approvedAt": "2026-10-01T21:19:31.371Z",
+  "approvedBy": "contract-classify",
+  "decisionNote": "additive Änderung im eigenen Block"
+}

@@ -238,6 +238,26 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
 >
 > Auslegung: Der genaue Wortlaut der Rückfrage ist offen (Interview Abbruchfälle, Antwort 1). `Bitte nachfragen:` ist unser Platzhalter.
 
+### G1-REQ-011: Markierungen als eigenes Feld übergeben
+
+- **User Story:** Als Deckungsprüfung möchte ich die Markierungen der Schadenaufnahme als festes Kennzeichen mit Begründung in der Akte finden, damit ich sie sofort sehe und nicht aus einem Freitext herauslesen oder selbst nachrechnen muss.
+- **Akzeptanzkriterien:**
+  1. Gegeben eine vollständige Meldung mit Schadentag `2025-12-19`, Meldezeitpunkt `2026-11-04T14:05:00Z` und einem `claimantName`, der weder `policyholderName` noch `propertyManagerName` entspricht, wenn Stage 1 sie verarbeitet, dann ist `stage1.flags` genau `[{ "type": "Spätmeldung", "reason": "10 volle Monate zwischen Schadentag und Meldung" }]`.
+  2. Gegeben eine vollständige, rechtzeitige Meldung mit `claimantName` gleich `policyholderName`, wenn Stage 1 sie verarbeitet, dann ist `stage1.flags` genau `[{ "type": "möglicher Eigenschaden", "reason": "Anspruchsteller entspricht dem Versicherungsnehmer" }]`.
+  3. Gegeben eine vollständige, rechtzeitige Meldung mit `claimantName` gleich `propertyManagerName` und ungleich `policyholderName`, wenn Stage 1 sie verarbeitet, dann ist `stage1.flags` genau `[{ "type": "möglicher Eigenschaden", "reason": "Anspruchsteller entspricht der Hausverwaltung" }]`.
+  4. Gegeben eine vollständige, rechtzeitige Meldung ohne `policyholderName` und ohne `propertyManagerName`, wenn Stage 1 sie verarbeitet, dann ist `stage1.flags` genau `[{ "type": "Eigenschaden nicht prüfbar", "reason": "Versicherungsnehmer nicht angegeben" }]`.
+  5. Gegeben eine vollständige, rechtzeitige Meldung ohne Eigenschaden mit `personInjured: true` und `damageType: "Unfall"`, wenn Stage 1 sie verarbeitet, dann ist `stage1.flags` genau `[{ "type": "Schadenart unklar", "reason": "Kunde nannte: Unfall" }]`.
+  6. Gegeben eine vollständige, rechtzeitige Meldung ohne jede Markierung, wenn Stage 1 sie verarbeitet, dann ist `stage1.flags` eine leere Liste `[]`.
+  7. Gegeben eine Meldung, die zugleich Spätmeldung (wie in Kriterium 1) und möglicher Eigenschaden (wie in Kriterium 2) ist, wenn Stage 1 sie verarbeitet, dann enthält `stage1.flags` genau zwei Einträge in der Reihenfolge `Spätmeldung`, `möglicher Eigenschaden`, die `note` des neuen Trace-Eintrags enthält weiterhin `Spätmeldung` und `möglicher Eigenschaden`, und die Akte ist valide gegen `contracts/claim.schema.json`.
+- **Status:** spezifiziert
+- **Quelle:** Interview vom 2026-10-01, Antwort C11 („deutlich markieren“, „sofort sehen“); Interview Rückfrage zur Markierung vom 2026-10-01 (Form offen, ein Grund hilft laut Sabines Einschätzung); Entscheidung der Gruppe vom 2026-10-01
+- **Umgesetzt in:** –
+- **Verifiziert:** –
+
+> Entscheidung der Gruppe (2026-10-01): Sabine kann die Form der Markierung nicht festlegen, Gruppe 2 gibt es im Testlauf noch nicht. Wir wählen eine Liste aus Kennzeichen (fester Wert) und Begründung (Freitext) im Block `stage1`. Die `note` im Trace bleibt zusätzlich bestehen, damit G1-REQ-006, G1-REQ-007 und G1-REQ-010 unverändert gelten. Das ist eine Annahme, bis Gruppe 2 sagt, was sie lesen will.
+>
+> Auslegung: „Volle Monate“ zählt wie G1-REQ-006 in Kalendermonaten (Schadentag plus n Monate liegt nicht nach dem Meldetag). Entspricht der Anspruchsteller Versicherungsnehmer und Hausverwaltung zugleich, gilt die Begründung „Versicherungsnehmer“.
+
 ## Offene Fragen an die Fachperson
 
 Stand nach dem Interview vom 2026-10-01 (offene Fragen). Bei allen sagt Sabine „müsste ich klären“; wir legen sie nicht selbst fest.

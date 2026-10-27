@@ -195,3 +195,32 @@ Wenn du zu einem Punkt keinen Fall kennst, sag das einfach.
 6. Wartezeit auf eine Kundenantwort: Dazu kann ich euch keine Zahl nennen, und was danach passiert, müsste ich klären.
 
 Einen echten Fall aus dem letzten Winter kann ich euch dafür erzählen, auch wenn er nicht zu euren sechs Punkten passt: Ein Paketzusteller ist vor einem Haus ausgerutscht. Der Anwalt hat sich erst elf Monate später gemeldet. Das war eine klassische Spätmeldung, mehr als sechs Monate zwischen Schadentag und Meldung. Ich habe sie angelegt und für die Deckungsprüfung deutlich markiert. Ob das dem Kunden schadet, entscheide ich nicht, das tun die Kollegen.
+
+**Gruppe:** Sabine, bei vielen Punkten hast du gesagt „müsste ich klären“. Konntest du inzwischen etwas davon klären, zum Beispiel mit deiner Teamleitung oder in euren Arbeitsanweisungen? Und wo es noch nicht geklärt ist: Wie machst du es heute ganz praktisch, wenn so ein Fall auf deinem Tisch landet? Wir markieren das in unseren Anforderungen als deine Arbeitspraxis, nicht als offizielle Regel.
+
+Es geht um diese Punkte:
+1. Ungefährer Schadentag, z. B. „Mitte Dezember“
+2. Hergang ist nur ein Wort, z. B. „Wasserschaden“
+3. Versicherungsscheinnummer ist formal richtig, aber es gibt keinen Vertrag dazu
+4. Was zählt als Meldezeitpunkt, und was gilt, wenn er fehlt?
+5. Wie lange wartest du auf eine Antwort des Kunden, und was passiert danach?
+6. Fragst du mehrere fehlende Angaben auf einmal nach?
+7. Der Name des Versicherungsnehmers fehlt
+
+Und eine Frage zur Übergabe: Du sagst, du markierst Spätmeldung und möglichen Eigenschaden „deutlich“ für die Deckungsprüfung. Wie sieht diese Markierung bei dir aus? Ist das ein Vermerk im Freitext, ein Häkchen oder Kennzeichen in der Akte, oder etwas anderes? Und schreibst du dazu, warum, z. B. die Anzahl der Monate oder welcher Name übereinstimmt?
+
+**Fachperson:** Ehrlich gesagt: Nein, ich konnte dazu nichts Neues klären. Ich habe keine Rückmeldung von meiner Teamleitung und keine Arbeitsanweisung, die ich euch dazu nennen könnte. Ich möchte euch nichts als "meine Praxis" verkaufen, was ich mir gerade ausdenke. Sonst steht es hinterher in euren Anforderungen und stimmt nicht.
+
+Zu euren Punkten kann ich nur sagen, was ich sicher weiß:
+
+1. Ungefährer Schadentag: Dazu habe ich keine Regel. Sicher ist nur, dass der Schadentag eine Pflichtangabe ist und nicht nach der Meldung liegen darf. Wie ich mit "Mitte Dezember" umgehe, müsste ich klären.
+2. Hergang nur ein Wort: Sicher ist, dass der Hergang in eigenen Worten da sein muss. Wie viel das mindestens sein muss, müsste ich klären.
+3. Nummer formal richtig, aber kein Vertrag: Das müsste ich klären.
+4. Meldezeitpunkt und fehlendes Eingangsdatum: Das müsste ich klären. Sicher ist nur, dass die Sechs-Monats-Grenze zwischen Schadentag und Meldung gerechnet wird.
+5. Wartezeit und Abbruch: Sicher ist nur, dass ich bei fehlenden Angaben nichts anlege und nachfrage. Wie lange ich warte und was danach passiert, müsste ich klären.
+6. Mehrere fehlende Angaben: Das müsste ich klären.
+7. Name des Versicherungsnehmers fehlt: Das müsste ich klären. Er steht nicht bei den Pflichtangaben des Anspruchstellers. Wie ich dann den Eigenschaden prüfe, weiß ich aber nicht sicher.
+
+Zur Markierung: Sicher ist, dass ich Spätmeldung und möglichen Eigenschaden deutlich markiere und dass der Kollege in der Deckungsprüfung es sofort sehen muss. Ob das ein Häkchen, ein Kennzeichen oder ein Freitextvermerk ist und ob ich einen Grund dazuschreibe, müsste ich klären. Das hängt davon ab, was die Akte hergibt. Ich glaube, dass dem Kollegen ein Grund hilft, etwa die Monate bei der Spätmeldung. Das ist aber meine Einschätzung und keine Regel.
+
+Ihr solltet diese Punkte als offen markieren und sie über eure Workshop-Leitung klären lassen, statt sie mir in den Mund zu legen.

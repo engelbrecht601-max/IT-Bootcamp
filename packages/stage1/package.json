@@ -6,6 +6,9 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
+    "demo": "PORT=${PORT:-5173} node --import tsx demo/server.ts",
+    "mvp": "PORT=${PORT:-4100} node --import tsx demo/mvp.ts",
+    "struktur": "PORT=${PORT:-4200} node --import tsx demo/struktur.ts",
     "typecheck": "tsc --noEmit"
   }
 }
