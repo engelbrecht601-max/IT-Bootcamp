@@ -80,13 +80,13 @@ Aus den Testläufen bleiben persönliche Logins und Testarbeit in den Volumes un
 - [ ] Testbranches wie `gruppe1` auf GitHub löschen oder bewusst als Beispiel behalten.
 - [ ] Push-Frage entscheiden: `GIT_PUSH_TOKEN` setzen oder Gruppen ohne Push arbeiten lassen.
 - [ ] Workshop-API-Key mit Spend Cap in `.env` eintragen, nach dem Workshop widerrufen.
-- [ ] Nach dem Merge der PRs `REPO_BRANCH=main` setzen.
+- [ ] Auf der VM `REPO_BRANCH=main` setzen (der alte Branch `claude/server-setup` ist gelöscht).
 
 ## Lokal ausprobieren
 
 Mit `DOMAIN=localhost` in `.env` stellt Caddy selbst signierte Zertifikate aus, `ACME_EMAIL` darf
-dann ein Platzhalter sein. Solange #1 bis #4 nicht auf `main` liegen, `REPO_BRANCH=claude/server-setup`
-setzen und `PERSONAS_DIR=./personas` (Ordner ist ignoriert).
+dann ein Platzhalter sein. `REPO_BRANCH=main` (oder `testversion` für den Beispieldurchlauf von Gruppe 1)
+und `PERSONAS_DIR=./personas` setzen (Ordner ist ignoriert).
 
 Unter Windows ist Port 80 oft vom System belegt. Dann in `.env` `HTTP_PORT=8080` und `HTTPS_PORT=8443`
 setzen und `https://gruppe1.localhost:8443` im Browser öffnen (`*.localhost` löst Chrome/Edge selbst auf).
