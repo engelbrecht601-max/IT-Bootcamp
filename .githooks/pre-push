@@ -1,0 +1,10 @@
+#!/bin/sh
+# Alle Gruppen pushen auf main. Dieses Gate verhindert, dass ein roter Stand bei allen anderen landet.
+echo "pre-push: pnpm check läuft …"
+if ! pnpm check >/tmp/pre-push-check.log 2>&1; then
+  tail -30 /tmp/pre-push-check.log
+  echo ""
+  echo "✗ pnpm check ist rot, Push abgebrochen. Erst beheben, dann erneut pushen."
+  exit 1
+fi
+echo "✓ pnpm check grün"

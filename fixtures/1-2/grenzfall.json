@@ -1,0 +1,28 @@
+{
+  "claimId": "SCH-2026-00102",
+  "meta": {
+    "contractVersion": "1.0.0",
+    "createdAt": "2026-11-04T14:05:00Z",
+    "currentStage": 2,
+    "testCase": "Grenzfall"
+  },
+  "trace": [
+    {
+      "stage": 1,
+      "at": "2026-11-04T14:30:00Z",
+      "action": "erfasst",
+      "note": "Meldung rund elf Monate nach dem Schaden, Forderungshöhe noch unbekannt."
+    }
+  ],
+  "stage1": {
+    "completedAt": "2026-11-04T14:30:00Z",
+    "policyNumber": "GH-4711587",
+    "incidentDate": "2025-12-19",
+    "reportedAt": "2026-11-04T14:05:00Z",
+    "damageType": "Personenschaden",
+    "description": "Ein Paketzusteller ist im letzten Winter auf dem vereisten Gehweg vor dem Haus gestürzt und hat sich das Handgelenk gebrochen. Der Winterdienst war laut Mietvertrag an die Mieter im Erdgeschoss übertragen. Der Anwalt des Zustellers meldet sich erst jetzt.",
+    "claimant": {
+      "name": "Emre Yıldız"
+    }
+  }
+}
