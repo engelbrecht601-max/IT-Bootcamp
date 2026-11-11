@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Factory Workshop</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; max-width: 40rem; margin: 3rem auto; padding: 0 1rem; color: #1a1a1a; background: #fff; }
+  @media (prefers-color-scheme: dark) { body { color: #eee; background: #161616; } a { color: #8ab4ff; } }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid #8884; }
+</style>
+</head>
+<body>
+<h1>IT-Bootcamp Track 1: agentic Coding am Schadenfall</h1>
+<p>Euer Arbeitsplatz läuft im Browser. Das Passwort bekommt ihr von der Workshop-Leitung.</p>
+<table>
+  <thead><tr><th>Gruppe</th><th>Arbeitsplatz</th><th>App</th></tr></thead>
+  <tbody id="gruppen"></tbody>
+</table>
+<script>
+  const names = ["Schadenaufnahme", "Deckungsprüfung", "Schadenbewertung", "Regulierung", "UI"];
+  const host = location.host;
+  document.getElementById("gruppen").innerHTML = names.map((name, i) => {
+    const n = i + 1;
+    return `<tr><td>${n}: ${name}</td>` +
+      `<td><a href="https://gruppe${n}.${host}/">gruppe${n}.${host}</a></td>` +
+      `<td><a href="https://app-gruppe${n}.${host}/">app-gruppe${n}</a></td></tr>`;
+  }).join("");
+</script>
+</body>
+</html>

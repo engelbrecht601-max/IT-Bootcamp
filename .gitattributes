@@ -1,0 +1,4 @@
+# Shell-Skripte und Container-Dateien laufen unter Linux, auch wenn das Repo unter Windows ausgecheckt wird.
+*.sh text eol=lf
+deploy/Caddyfile text eol=lf
+deploy/Dockerfile text eol=lf
