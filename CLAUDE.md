@@ -22,8 +22,12 @@ Jedes Package hat eine eigene `CLAUDE.md` mit den Regeln der Gruppe. Starte Clau
 | `pnpm check` | Das Gate: Contract bauen, Fixtures validieren, Requirements prüfen, Tests, Typecheck. Läuft in Sekunden und automatisch vor jedem Push. |
 | `pnpm contracts:build` | baut `contracts/claim.schema.json` aus Basis plus Patches |
 | `pnpm test` | alle Tests (`node --test`, TypeScript über tsx) |
+| `pnpm test:req <ID>` | nur die Tests einer Anforderung. Beim Bauen reicht dieser Ausschnitt. |
 | `pnpm mock-server` | liefert Musterakten und Contract per HTTP auf Port 4000 (`/claims`, `/claims/2-3/grenzfall`, `/claims/SCH-2026-00101`, `/schema`) |
 | `pnpm conformance [N]` | schickt die Eingangsakten durch `run()` der Stages und prüft die Envelope-Regeln. Für die Integration, nicht Teil des Gates. |
+| `/spec <ID>` | Anforderung auf Testbarkeit prüfen, Subagent `test-author` schreibt Tests nur aus den Akzeptanzkriterien |
+| `/implement <ID>` | umsetzen, bis die Tests grün sind. Die Tests selbst bleiben unverändert. |
+| `/verify <ID>` | Subagent `verifier` versucht die Umsetzung zu widerlegen und trägt das Ergebnis ein |
 | `/contract-change <ID> <Satz>` | fehlendes Feld im Contract beantragen |
 
 ## Der Contract
@@ -40,7 +44,7 @@ Regeln mit Begründung:
 
 1. **Anforderungen erheben:** Interview mit der Fachperson eurer Stage.
 2. **Aufschreiben** in `requirements.md` eures Packages, mit ID, User Story und Akzeptanzkriterien (Gegeben/Wenn/Dann). Ohne ID kein Code.
-3. **Spezifizieren, implementieren, verifizieren**, jeweils mit Claude Code. Die Akzeptanzkriterien werden zu Tests.
+3. **Spezifizieren, implementieren, verifizieren:** `/spec`, `/implement` und `/verify` pro Anforderung. Die Akzeptanzkriterien werden zu Tests. Wer baut, verifiziert nicht selbst.
 4. **Fehlt ein Feld** im Contract: `/contract-change`.
 
 Konventionen:

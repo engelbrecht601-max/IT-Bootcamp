@@ -2,6 +2,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { check } from "./pre-tool-use.mjs";
 
+// Die Tests setzen Gruppe und Admin-Modus selbst; die Umgebung einer Gruppe darf sie nicht färben.
+delete process.env.BOOTCAMP_GROUP;
+delete process.env.BOOTCAMP_ADMIN;
+
 const edit = (file_path) => ({ tool_name: "Edit", tool_input: { file_path } });
 const bash = (command) => ({ tool_name: "Bash", tool_input: { command } });
 
