@@ -17,6 +17,6 @@ Zeigt Sachbearbeitenden den Vorgang über alle vier Stages hinweg.
 
 ## Arbeitsweise
 
-1. Anforderungen im Interview mit der Fachperson erheben.
+1. Anforderungen im Interview mit der Fachperson erheben: `pnpm interview 5` im zweiten Terminal oder `/interview 5 <Frage>`.
 2. In `requirements.md` festhalten, nach der Vorlage dort.
 3. Pro Anforderung spezifizieren, implementieren und verifizieren. Tests tragen die ID im Namen.

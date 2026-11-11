@@ -1,7 +1,7 @@
 ---
 description: Änderungsantrag an den gemeinsamen Claim-Contract stellen
 argument-hint: <Requirement-ID> <ein Satz, was fehlt>
-allowed-tools: Read, Grep, Glob, Write, Bash(pnpm contracts:build), Bash(pnpm contracts:request:*), Agent, Task
+allowed-tools: Read, Grep, Glob, Write, Bash(pnpm contracts:build), Bash(pnpm contracts:request *), Agent, Task
 ---
 
 Stelle einen Änderungsantrag an den Claim-Contract. Eingabe: `$ARGUMENTS`
