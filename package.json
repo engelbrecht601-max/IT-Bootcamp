@@ -18,7 +18,7 @@
     "test": "node --import tsx --test \"scripts/**/*.test.mjs\" \"packages/*/src/**/*.test.ts\"",
     "typecheck": "pnpm -r typecheck",
     "mock-server": "node scripts/mock-server.mjs",
-    "conformance": "node scripts/conformance.mjs",
+    "conformance": "node --import tsx scripts/conformance.mjs",
     "prepare": "git config core.hooksPath .githooks || true"
   },
   "devDependencies": {
