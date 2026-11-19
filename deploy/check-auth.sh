@@ -8,12 +8,13 @@
 # stdin ist überall /dev/null: claude -p liest sonst zusätzlich die Standardeingabe und wartet ewig auf deren Ende.
 set -uo pipefail
 cd "$(dirname "$0")"
+trap 'echo; echo "Abgebrochen."; exit 130' INT
 groups=("$@")
 [ ${#groups[@]} -eq 0 ] && groups=(1 2 3 4 5)
 failed=0
 for n in "${groups[@]}"; do
   svc="gruppe$n"
-  out=$(timeout 90 docker compose exec -T "$svc" bash -c '
+  out=$(timeout --foreground 60 docker compose exec -T "$svc" bash -c '
     cd ~/workspace
     if   [ -n "${ANTHROPIC_API_KEY:-}" ];       then echo "MODE=API-Key"
     elif [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then echo "MODE=Abo-Token"
