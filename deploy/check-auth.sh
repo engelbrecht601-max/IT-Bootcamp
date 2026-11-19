@@ -5,6 +5,7 @@
 #   ./check-auth.sh 3                     nur Gruppe 3
 # Grund: Abo-Tokens aus `claude setup-token` scheitern in manchen Umgebungen erst beim ersten Request
 # mit 401, obwohl `claude auth status` "angemeldet" zeigt. Das will man am Vorabend sehen, nicht um 9 Uhr.
+# stdin ist überall /dev/null: claude -p liest sonst zusätzlich die Standardeingabe und wartet ewig auf deren Ende.
 set -uo pipefail
 cd "$(dirname "$0")"
 groups=("$@")
@@ -17,8 +18,8 @@ for n in "${groups[@]}"; do
     if   [ -n "${ANTHROPIC_API_KEY:-}" ];       then echo "MODE=API-Key"
     elif [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then echo "MODE=Abo-Token"
     else echo "MODE=keine"; fi
-    claude -p "Antworte mit genau einem Wort: OK" 2>&1 | tail -3
-  ' 2>&1)
+    claude -p "Antworte mit genau einem Wort: OK" </dev/null 2>&1 | tail -3
+  ' </dev/null 2>&1)
   mode=$(printf '%s\n' "$out" | sed -n 's/^MODE=//p' | head -1)
   answer=$(printf '%s\n' "$out" | grep -v '^MODE=' | tr '\n' ' ' | cut -c1-160)
   if printf '%s' "$answer" | grep -q 'OK'; then
