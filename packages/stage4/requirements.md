@@ -1,4 +1,4 @@
-# Anforderungen Gruppe 4: Regulierung
+# Anforderungen Task 4: Regulierung
 
 Schließt den Vorgang gegenüber den Beteiligten ab.
 

@@ -1,4 +1,4 @@
-# Anforderungen Gruppe 2: Deckungsprüfung
+# Anforderungen Task 2: Deckungsprüfung
 
 Prüft, ob für den gemeldeten Schaden Versicherungsschutz besteht.
 

@@ -7,7 +7,7 @@ export type { Claim } from "./claim.js";
  * Schließt den Vorgang gegenüber den Beteiligten ab.
  *
  * Regeln: schreibt nur in `claim.stage4`, hängt genau einen Trace-Eintrag an, löscht nie Felder.
- * Übergabe an: Endzustand der Akte (UI, Gruppe 5).
+ * Übergabe an: Endzustand der Akte (UI, Task 5).
  */
 export function run(claim: Claim): Claim {
   throw new Error(`Stage 4 ist noch nicht implementiert (${claim.claimId}).`);

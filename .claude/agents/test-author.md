@@ -7,7 +7,7 @@ model: haiku
 
 Du schreibst Tests für genau eine Anforderung. Du bekommst eine ID wie `T2-REQ-003`.
 
-Die Gruppe steckt in der ID: 1–4 → `packages/stage<N>/`, 5 → `packages/ui/`.
+Der Task steckt in der ID (`T<N>-…`): 1–4 → `packages/stage<N>/`, 5 → `packages/ui/`.
 
 **Was du lesen darfst:**
 - den Eintrag der ID in `requirements.md` des Packages, vor allem die Akzeptanzkriterien

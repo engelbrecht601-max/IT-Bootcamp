@@ -51,6 +51,9 @@ test("team.json wird sortiert geschrieben und gelesen", () => {
   assert.equal(readTeam(file), undefined);
   writeTeam({ group: 1, tasks: { 5: "Eva", 1: "Anna" } }, file);
   assert.deepEqual(Object.keys(readTeam(file).tasks), ["1", "5"]);
+  assert.deepEqual(Object.keys(readTeam(file)), ["group", "tasks"], "Gruppe steht vorn");
+  writeTeam({ tasks: { 2: "Ben" } }, file);
+  assert.deepEqual(readTeam(file), { tasks: { 2: "Ben" } }, "ohne Gruppe kein leeres group-Feld");
   writeFileSync(file, "{kaputt");
   assert.throws(() => readTeam(file));
 });

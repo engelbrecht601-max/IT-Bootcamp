@@ -1,4 +1,4 @@
-# Anforderungen Gruppe 5: Oberfläche
+# Anforderungen Task 5: Oberfläche
 
 Zeigt Sachbearbeitenden den Vorgang über alle vier Stages hinweg.
 

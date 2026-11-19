@@ -1,4 +1,4 @@
-# Anforderungen Gruppe 3: Schadenbewertung
+# Anforderungen Task 3: Schadenbewertung
 
 Ermittelt die Höhe des ersatzfähigen Schadens.
 

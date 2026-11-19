@@ -1,4 +1,4 @@
-# Anforderungen Gruppe 1: Schadenaufnahme
+# Anforderungen Task 1: Schadenaufnahme
 
 Nimmt die Schadenmeldung auf und legt die Grunddaten des Vorgangs an.
 

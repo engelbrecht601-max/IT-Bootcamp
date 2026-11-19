@@ -39,7 +39,7 @@ export function readTeam(file = TEAM_FILE) {
 
 export function writeTeam(team, file = TEAM_FILE) {
   const tasks = Object.fromEntries(Object.entries(team.tasks).sort(([a], [b]) => a - b));
-  writeFileSync(file, JSON.stringify({ ...team, tasks }, null, 2) + "\n");
+  writeFileSync(file, JSON.stringify({ group: team.group, ...team, tasks }, null, 2) + "\n");
 }
 
 /**

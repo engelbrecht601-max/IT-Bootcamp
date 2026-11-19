@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Liefert der UI-Gruppe die Musterakten und den gebauten Contract über HTTP, ab Minute eins.
+// Liefert der Oberfläche (Task 5) die Musterakten und den gebauten Contract über HTTP, ab Minute eins.
 // Aufruf: pnpm mock-server [--port 4000]
 //
 //   GET /claims                      Übersicht aller Akten (Grenze, Testfall, Stage)
