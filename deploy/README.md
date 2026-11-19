@@ -81,14 +81,24 @@ tail -f /var/log/aifactory-setup.log          # bis "AIFACTORY-SETUP FERTIG", da
 
 ```bash
 claude                  # Link im Browser öffnen, Code einfügen, Ordner vertrauen, dann /exit
-claude setup-token      # gibt das Token für die Arbeitsplätze aus (gilt ein Jahr)
+```
+
+Das Token für die Arbeitsplätze **nicht aus dem Terminal kopieren**. Ein Windows-Terminal fügt beim
+Markieren über umgebrochene Zeilen Leerzeichen und Rahmen ein; Claude Code meldet dann „Not logged in“
+(Leerzeichen im Token) oder „401“ (Token unvollständig). Stattdessen die Ausgabe aufzeichnen und das
+Token herausziehen:
+
+```bash
+cd /srv/aifactory/repo/deploy
+script -q -c "claude setup-token" ~/setup-token.log      # Link öffnen, autorisieren, Code einfügen
+T=$(grep -ao 'sk-ant-oat01-[A-Za-z0-9_-]\{20,\}' ~/setup-token.log | tail -1); echo "Länge: ${#T}"   # erwartet 108
+sed -i "s|^CLAUDE_CODE_OAUTH_TOKEN=.*|CLAUDE_CODE_OAUTH_TOKEN=$T|" .env && unset T && rm ~/setup-token.log
 ```
 
 **5. `.env` ergänzen** und starten:
 
 ```bash
-cd /srv/aifactory/repo/deploy
-nano .env               # ACME_EMAIL=<deine Adresse>, CLAUDE_CODE_OAUTH_TOKEN=<Token aus Schritt 4>
+nano .env               # ACME_EMAIL=<deine Adresse>
 # Personas vom eigenen Rechner aus dem privaten Lösungsrepo: scp personas/*.md leitung@<IP>:/srv/aifactory/personas/
 docker compose up -d
 docker compose logs -f gruppe1                # bis "HTTP server listening", dann Strg+C
@@ -108,7 +118,7 @@ Remote Control läuft bewusst in `/srv/aifactory` und nicht im Repo: Dort greife
 nicht, die Node auf dem Host bräuchten.
 
 **7. Nach dem Testlauf** die VM löschen (Hetzner Console oder API), sonst läuft die Abrechnung weiter.
-Das Abo-Token in den Kontoeinstellungen zurückziehen.
+Abo-Tokens zurückziehen unter `https://claude.ai/settings/claude-code`.
 
 ## Anmeldung (Claude Code)
 
@@ -156,7 +166,7 @@ Alle stehen nur in `deploy/.env` auf der VM, nie im Repo.
 
 - `ANTHROPIC_API_KEY` oder `CLAUDE_CODE_OAUTH_TOKEN`: siehe [Anmeldung](#anmeldung-claude-code). Wer ein
   Terminal im Container hat, kann beides lesen (`env`). Deshalb Spend Cap und Widerruf nach dem Workshop;
-  ein Abo-Token gilt ein Jahr und muss genauso zurückgezogen werden.
+  ein Abo-Token gilt ein Jahr und muss genauso zurückgezogen werden (`https://claude.ai/settings/claude-code`).
 - `GIT_PUSH_TOKEN`: fine-grained Token mit `Contents: write` nur auf das Workshop-Repo. Ohne Token
   können die Gruppen nicht pushen. Der Pre-Push-Hook lässt nur den eigenen Gruppenbranch zu
   (`git config bootcamp.branch`); das Token selbst könnte technisch jeden Branch schreiben.
