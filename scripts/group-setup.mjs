@@ -1,25 +1,27 @@
 #!/usr/bin/env node
-// Richtet einen Arbeitsplatz für eine Gruppe ein: pnpm group:setup <1–5>
-// Schreibt .claude/settings.local.json (nicht versioniert) mit
-// - BOOTCAMP_GROUP, damit der Hook Schreibzugriffe auf fremde Packages blockiert
+// Richtet den Arbeitsplatz einer Gruppe ein: pnpm group:setup <N>
+// Jede Gruppe baut die komplette App (alle fünf Packages). Schreibt .claude/settings.local.json
+// (nicht versioniert) mit
+// - BOOTCAMP_GROUP, damit der Hook erst nach pnpm desk Schreibzugriffe in packages/ zulässt
+//   (welches Package, entscheidet der Task der einzelnen Session, siehe scripts/desk.mjs)
 // - einer Allow-Liste für die Befehle, die die Gruppe ständig braucht, damit Claude nicht bei jedem fragt
-// Pushen bleibt bewusst eine Rückfrage: Das entscheidet die Gruppe, nicht Claude.
+// Pushen bleibt bewusst eine Rückfrage: Das entscheidet die Person, nicht Claude.
 // Permission-Syntax geprüft mit Claude Code 2.1.285 (Leerzeichen-Form "Bash(cmd *)").
 import { writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = new URL("../", import.meta.url).pathname;
-const PACKAGES = { 1: "stage1", 2: "stage2", 3: "stage3", 4: "stage4", 5: "ui" };
 
 export function settingsFor(group) {
-  const pkg = PACKAGES[group];
-  if (!pkg) throw new Error("Gruppe muss 1 bis 5 sein");
+  const n = Number(group);
+  if (!Number.isInteger(n) || n < 1 || n > 99) throw new Error("Gruppe muss eine Zahl von 1 bis 99 sein");
   return {
-    env: { BOOTCAMP_GROUP: String(group) },
+    env: { BOOTCAMP_GROUP: String(n) },
     permissions: {
       allow: [
-        `Edit(/packages/${pkg}/**)`,
-        `Write(/packages/${pkg}/**)`,
+        // Breit freigegeben; auf das eigene Package begrenzt der Hook anhand von BOOTCAMP_TASK.
+        "Edit(/packages/**)",
+        "Write(/packages/**)",
         "Write(/.claude/tmp/**)",
         "Bash(pnpm check)",
         "Bash(pnpm test)",
@@ -42,7 +44,7 @@ export function settingsFor(group) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const group = Number(process.argv[2] ?? process.env.BOOTCAMP_GROUP);
+  const group = process.argv[2] ?? process.env.BOOTCAMP_GROUP;
   const target = join(ROOT, ".claude", "settings.local.json");
   if (existsSync(target) && !process.argv.includes("--force")) {
     console.error("✗ .claude/settings.local.json existiert schon. Mit --force überschreiben.");
@@ -51,8 +53,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   try {
     writeFileSync(target, JSON.stringify(settingsFor(group), null, 2) + "\n");
   } catch (err) {
-    console.error(`✗ ${err.message}. Aufruf: pnpm group:setup <1–5>`);
+    console.error(`✗ ${err.message}. Aufruf: pnpm group:setup <N>`);
     process.exit(64);
   }
-  console.log(`✓ Arbeitsplatz für Gruppe ${group} eingerichtet (packages/${PACKAGES[group]}/). Claude Code neu starten.`);
+  console.log(`✓ Arbeitsplatz für Gruppe ${group} eingerichtet. Jede Person startet ihren Task mit: pnpm desk <Task> <Vorname>`);
 }

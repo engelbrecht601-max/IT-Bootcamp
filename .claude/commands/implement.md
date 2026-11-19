@@ -9,7 +9,7 @@ Setze die Anforderung `$ARGUMENTS` um.
 2. **Plan zeigen.** Beschreib der Gruppe in wenigen Sätzen, welche Dateien du wie änderst. Warte auf ihr Okay. Die Gruppe soll verstehen, was gebaut wird.
 3. **Umsetzen**, nur im eigenen Package:
    - Die Stage schreibt nur in ihren eigenen Block, hängt genau einen Trace-Eintrag an und löscht nichts.
-   - Kommentar mit der ID an der Stelle, die die Anforderung umsetzt: `// G2-REQ-003: …`.
+   - Kommentar mit der ID an der Stelle, die die Anforderung umsetzt: `// T2-REQ-003: …`.
    - Feldnamen und Code englisch, fachliche Werte deutsch, wie im Contract.
    - **Die Tests änderst du nicht.** Hältst du einen Test für falsch, stopp und sag es der Gruppe; dann ist die Anforderung unklar, nicht der Test.
 4. **Prüfen:** `pnpm test:req <ID>` muss grün sein, danach `pnpm check`. Für Stages zusätzlich `pnpm conformance <N>`.

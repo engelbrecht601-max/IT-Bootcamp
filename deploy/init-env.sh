@@ -10,5 +10,5 @@ for n in 1 2 3 4 5; do
   fi
 done
 chmod 600 .env
-echo "✓ deploy/.env bereit. Noch eintragen: ACME_EMAIL, ANTHROPIC_API_KEY, ggf. GIT_PUSH_TOKEN."
+echo "✓ deploy/.env bereit. Noch eintragen: ACME_EMAIL, ANTHROPIC_API_KEY oder CLAUDE_CODE_OAUTH_TOKEN, ggf. GIT_PUSH_TOKEN."
 grep '^GRUPPE._PASSWORD=' .env

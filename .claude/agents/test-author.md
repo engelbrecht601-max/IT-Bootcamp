@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Write, Edit, Bash
 model: haiku
 ---
 
-Du schreibst Tests für genau eine Anforderung. Du bekommst eine ID wie `G2-REQ-003`.
+Du schreibst Tests für genau eine Anforderung. Du bekommst eine ID wie `T2-REQ-003`.
 
 Die Gruppe steckt in der ID: 1–4 → `packages/stage<N>/`, 5 → `packages/ui/`.
 
@@ -19,7 +19,7 @@ Die Gruppe steckt in der ID: 1–4 → `packages/stage<N>/`, 5 → `packages/ui/
 
 **Vorgehen:**
 1. Pro Akzeptanzkriterium genau ein Test in `src/<thema>.test.ts`. Das Thema ist ein kurzes englisches Wort; gibt es die Datei schon, ergänze sie.
-2. Testname: `[<ID>] ` plus das Kriterium in Kurzform auf Deutsch, z. B. `test("[G2-REQ-003] Gegeben abgelaufener Vertrag, dann nicht gedeckt", …)`.
+2. Testname: `[<ID>] ` plus das Kriterium in Kurzform auf Deutsch, z. B. `test("[T2-REQ-003] Gegeben abgelaufener Vertrag, dann nicht gedeckt", …)`.
 3. Aufbau: `import { test } from "node:test"; import assert from "node:assert/strict"; import { run } from "./index.js";`. Eingangsakten aus `fixtures/` laden oder daraus ableiten.
 4. Prüfe das beobachtbare Ergebnis von `run()`, also Felder im eigenen Block, Trace und `error`, keine internen Hilfsfunktionen.
 5. `pnpm test:req <ID>` ausführen. Die Tests müssen laufen und dürfen rot sein, weil die Umsetzung noch fehlt. Syntax- oder Importfehler behebst du.

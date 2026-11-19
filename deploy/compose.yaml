@@ -1,4 +1,5 @@
-# Workshop-Server: Caddy plus fünf Arbeitsplätze, einer pro Gruppe.
+# Workshop-Server: Caddy plus fünf Arbeitsplätze, einer pro Gruppe. Jede Gruppe baut die komplette App
+# auf ihrem eigenen Branch, fünf Personen teilen sich einen Arbeitsplatz (je ein Task, siehe pnpm desk).
 #   cd deploy && ./init-env.sh && docker compose up -d --build
 # Secrets stehen nur in deploy/.env (nicht versioniert), siehe .env.example.
 name: aifactory
@@ -10,14 +11,17 @@ x-workspace: &workspace
   deploy:
     resources:
       limits:
-        cpus: "${WORKSPACE_CPUS:-2.5}"
-        memory: "${WORKSPACE_MEMORY:-8g}"
+        cpus: "${WORKSPACE_CPUS:-4}"
+        memory: "${WORKSPACE_MEMORY:-12g}"
 
 x-env: &env
   REPO_URL: ${REPO_URL:?REPO_URL in .env setzen}
   REPO_BRANCH: ${REPO_BRANCH:-main}
   DOMAIN: ${DOMAIN:?DOMAIN in .env setzen}
+  GROUP_BRANCH_PREFIX: ${GROUP_BRANCH_PREFIX:-workshop/gruppe}
   GIT_PUSH_TOKEN: ${GIT_PUSH_TOKEN:-}
+  # Optional: Modell für alle Sessions festlegen, z. B. sonnet, um ein Abo-Kontingent zu strecken.
+  ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-}
 
 services:
   caddy:
@@ -46,6 +50,7 @@ services:
       BOOTCAMP_GROUP: "1"
       PASSWORD: ${GRUPPE1_PASSWORD:?GRUPPE1_PASSWORD in .env setzen}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE1:-${ANTHROPIC_API_KEY:-}}
+      CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN_GRUPPE1:-${CLAUDE_CODE_OAUTH_TOKEN:-}}
     volumes:
       - home1:/home/node
       - ${PERSONAS_DIR:-./personas}:/opt/personas:ro
@@ -57,6 +62,7 @@ services:
       BOOTCAMP_GROUP: "2"
       PASSWORD: ${GRUPPE2_PASSWORD:?GRUPPE2_PASSWORD in .env setzen}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE2:-${ANTHROPIC_API_KEY:-}}
+      CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN_GRUPPE2:-${CLAUDE_CODE_OAUTH_TOKEN:-}}
     volumes:
       - home2:/home/node
       - ${PERSONAS_DIR:-./personas}:/opt/personas:ro
@@ -69,6 +75,7 @@ services:
       BOOTCAMP_GROUP: "3"
       PASSWORD: ${GRUPPE3_PASSWORD:?GRUPPE3_PASSWORD in .env setzen}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE3:-${ANTHROPIC_API_KEY:-}}
+      CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN_GRUPPE3:-${CLAUDE_CODE_OAUTH_TOKEN:-}}
     volumes:
       - home3:/home/node
       - ${PERSONAS_DIR:-./personas}:/opt/personas:ro
@@ -81,6 +88,7 @@ services:
       BOOTCAMP_GROUP: "4"
       PASSWORD: ${GRUPPE4_PASSWORD:?GRUPPE4_PASSWORD in .env setzen}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE4:-${ANTHROPIC_API_KEY:-}}
+      CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN_GRUPPE4:-${CLAUDE_CODE_OAUTH_TOKEN:-}}
     volumes:
       - home4:/home/node
       - ${PERSONAS_DIR:-./personas}:/opt/personas:ro
@@ -93,6 +101,7 @@ services:
       BOOTCAMP_GROUP: "5"
       PASSWORD: ${GRUPPE5_PASSWORD:?GRUPPE5_PASSWORD in .env setzen}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE5:-${ANTHROPIC_API_KEY:-}}
+      CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN_GRUPPE5:-${CLAUDE_CODE_OAUTH_TOKEN:-}}
     volumes:
       - home5:/home/node
       - ${PERSONAS_DIR:-./personas}:/opt/personas:ro

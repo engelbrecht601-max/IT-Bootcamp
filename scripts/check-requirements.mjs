@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 // Prüft die requirements.md aller Packages:
-// - IDs haben das Format G<N>-REQ-<NNN> der eigenen Gruppe und sind eindeutig
+// - IDs haben das Format T<N>-REQ-<NNN> des eigenen Tasks und sind eindeutig
 // - jeder Eintrag hat User Story, Akzeptanzkriterien und einen gültigen Status
 // - jedes umgesetzte oder verifizierte Requirement hat mindestens einen Test mit der ID im Namen
 // - IDs, die im Code oder in Tests stehen, gibt es auch in der requirements.md
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
+import { TASKS } from "./lib/tasks.mjs";
 
 const ROOT = new URL("../", import.meta.url).pathname;
-const PACKAGES = { stage1: 1, stage2: 2, stage3: 3, stage4: 4, ui: 5 };
+
+const PACKAGES = Object.fromEntries(Object.entries(TASKS).map(([n, t]) => [t.pkg, Number(n)]));
 const STATUS = ["offen", "spezifiziert", "umgesetzt", "verifiziert", "gestrichen"];
 const NEEDS_TEST = new Set(["umgesetzt", "verifiziert"]);
 const errors = [];
@@ -26,13 +28,13 @@ for (const [pkg, group] of Object.entries(PACKAGES)) {
   const defined = new Set();
 
   for (const section of sections) {
-    const id = /^(G[0-9]-REQ-[0-9]{3})\b/.exec(section)?.[1];
+    const id = /^(T[0-9]-REQ-[0-9]{3})\b/.exec(section)?.[1];
     const where = `${relative(ROOT, file)}: ${section.split("\n")[0]}`;
     if (!id) {
-      errors.push(`${where} → Überschrift muss mit G${group}-REQ-NNN beginnen`);
+      errors.push(`${where} → Überschrift muss mit T${group}-REQ-NNN beginnen`);
       continue;
     }
-    if (!id.startsWith(`G${group}-`)) errors.push(`${where} → ID gehört nicht zu Gruppe ${group}`);
+    if (!id.startsWith(`T${group}-`)) errors.push(`${where} → ID gehört nicht zu Task ${group}`);
     if (defined.has(id)) errors.push(`${where} → ID doppelt vergeben`);
     defined.add(id);
     count++;
@@ -49,8 +51,8 @@ for (const [pkg, group] of Object.entries(PACKAGES)) {
   }
 
   for (const f of sourceFiles(dir)) {
-    for (const [ref] of readFileSync(f, "utf8").matchAll(/G[0-9]-REQ-[0-9]{3}/g)) {
-      if (ref.startsWith(`G${group}-`) && !defined.has(ref)) {
+    for (const [ref] of readFileSync(f, "utf8").matchAll(/T[0-9]-REQ-[0-9]{3}/g)) {
+      if (ref.startsWith(`T${group}-`) && !defined.has(ref)) {
         errors.push(`${relative(ROOT, f)} → ${ref} steht nicht in der requirements.md`);
       }
     }

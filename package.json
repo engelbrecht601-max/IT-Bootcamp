@@ -8,13 +8,14 @@
     "pnpm": "9.12.3"
   },
   "scripts": {
-    "check": "pnpm contracts:build && pnpm check:requirements && pnpm test && pnpm typecheck",
+    "check": "pnpm contracts:build && pnpm check:team && pnpm check:requirements && pnpm test && pnpm typecheck",
     "doctor": "node scripts/doctor.mjs",
     "contracts:build": "node scripts/contracts-build.mjs",
     "contracts:classify": "node scripts/contract-classify.mjs",
     "contracts:request": "node scripts/contract-change.mjs request",
     "contracts:decide": "node scripts/contract-change.mjs decide",
     "check:requirements": "node scripts/check-requirements.mjs",
+    "check:team": "node scripts/check-team.mjs",
     "test": "node --import tsx --test \"scripts/**/*.test.mjs\" \"packages/*/src/**/*.test.ts\"",
     "test:req": "node scripts/test-req.mjs",
     "typecheck": "pnpm -r typecheck",
@@ -23,6 +24,7 @@
     "interview": "node scripts/interview.mjs",
     "personas:install": "node scripts/install-personas.mjs",
     "group:setup": "node scripts/group-setup.mjs",
+    "desk": "node scripts/desk.mjs",
     "prepare": "git config core.hooksPath .githooks || true"
   },
   "devDependencies": {

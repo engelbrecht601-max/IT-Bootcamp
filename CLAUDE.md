@@ -52,7 +52,7 @@ Regeln mit Begründung:
 
 Konventionen:
 - **Domäne deutsch, Code englisch:** Feldnamen, Bezeichner und Commits englisch (camelCase). Fachbegriffe, Enum-Werte, Beschreibungen und Requirements deutsch.
-- **Traceability:** Die Requirement-ID steht im Code-Kommentar und im Testnamen (`test("[G2-REQ-003] …")`). `pnpm check` prüft, dass jede umgesetzte Anforderung einen Test hat.
+- **Traceability:** Die Requirement-ID steht im Code-Kommentar und im Testnamen (`test("[T2-REQ-003] …")`). `pnpm check` prüft, dass jede umgesetzte Anforderung einen Test hat.
 - **Tests sind die Wahrheit:** Eine Anforderung ist erst `verifiziert`, wenn ein Test sie prüft und jemand anderes als der Autor ihn laufen gesehen hat.
 - **Rote Tests werden behoben, nicht wiederholt.**
 
