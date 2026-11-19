@@ -9,10 +9,10 @@ export const BASE_SCHEMA = join(CONTRACTS, "claim.base.schema.json");
 export const BUILT_SCHEMA = join(CONTRACTS, "claim.schema.json");
 export const PATCHES = join(CONTRACTS, "patches");
 
-const STAGE_GROUPS = { stage1: 1, stage2: 2, stage3: 3, stage4: 4 };
+const STAGE_TASKS = { stage1: 1, stage2: 2, stage3: 3, stage4: 4 };
 const ESCALATE_KEYS = new Set(["meta", "trace", "error"]);
-const REQUEST_ID = /^G([1-5])-CR-[0-9]{3}$/;
-const REQUIREMENT_ID = /^G([1-5])-REQ-[0-9]{3}$/;
+const REQUEST_ID = /^T([1-5])-CR-[0-9]{3}$/;
+const REQUIREMENT_ID = /^T([1-5])-REQ-[0-9]{3}$/;
 const FIELD_NAME = /^[a-z][a-zA-Z0-9]*$/;
 
 export function readJson(path) {
@@ -74,16 +74,16 @@ export function classify(schema, request, { requirementsText, skipRequirementChe
   const escalate = [];
 
   const idMatch = REQUEST_ID.exec(request?.id ?? "");
-  if (!idMatch) reject.push(`id "${request?.id}" entspricht nicht G<N>-CR-<NNN>`);
-  const group = request?.group;
-  if (!Number.isInteger(group) || group < 1 || group > 5) reject.push("group muss 1 bis 5 sein");
-  if (idMatch && Number(idMatch[1]) !== group) reject.push("group passt nicht zur id");
+  if (!idMatch) reject.push(`id "${request?.id}" entspricht nicht T<N>-CR-<NNN>`);
+  const task = request?.task;
+  if (!Number.isInteger(task) || task < 1 || task > 5) reject.push("task muss 1 bis 5 sein");
+  if (idMatch && Number(idMatch[1]) !== task) reject.push("task passt nicht zur id");
 
   const reqMatch = REQUIREMENT_ID.exec(request?.requirementId ?? "");
-  if (!reqMatch) reject.push(`requirementId "${request?.requirementId}" entspricht nicht G<N>-REQ-<NNN>`);
-  else if (Number(reqMatch[1]) !== group) reject.push("requirementId gehört zu einer anderen Gruppe");
+  if (!reqMatch) reject.push(`requirementId "${request?.requirementId}" entspricht nicht T<N>-REQ-<NNN>`);
+  else if (Number(reqMatch[1]) !== task) reject.push("requirementId gehört zu einem anderen Task");
   else if (!skipRequirementCheck && !(requirementsText ?? "").includes(request.requirementId)) {
-    reject.push(`${request.requirementId} steht nicht in der requirements.md der Gruppe`);
+    reject.push(`${request.requirementId} steht nicht in der requirements.md des Tasks`);
   }
 
   if (typeof request?.rationale !== "string" || request.rationale.trim() === "") reject.push("rationale fehlt");
@@ -101,15 +101,15 @@ export function classify(schema, request, { requirementsText, skipRequirementChe
 
   for (const [blockName, blockFragment] of Object.entries(fragment.properties)) {
     if (ESCALATE_KEYS.has(blockName)) {
-      escalate.push(`${blockName} gehört keiner Gruppe`);
+      escalate.push(`${blockName} gehört keinem Task`);
       continue;
     }
-    if (!(blockName in STAGE_GROUPS)) {
+    if (!(blockName in STAGE_TASKS)) {
       reject.push(`${blockName} ist kein Stage-Block; neue geteilte Felder gibt es nicht`);
       continue;
     }
-    if (STAGE_GROUPS[blockName] !== group) {
-      reject.push(`${blockName} gehört Gruppe ${STAGE_GROUPS[blockName]}, nicht Gruppe ${group}`);
+    if (STAGE_TASKS[blockName] !== task) {
+      reject.push(`${blockName} gehört Task ${STAGE_TASKS[blockName]}, nicht Task ${task}`);
       continue;
     }
     checkOwnBlock(schema.properties[blockName], blockFragment, blockName, reject, escalate);

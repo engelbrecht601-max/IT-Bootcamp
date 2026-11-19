@@ -1,4 +1,4 @@
-# Anforderungen Gruppe 1: Schadenaufnahme
+# Anforderungen Task 1: Schadenaufnahme
 
 Nimmt die Schadenmeldung auf und legt die Grunddaten des Vorgangs an.
 
@@ -6,9 +6,9 @@ Diese Datei ist Auftrag, Testvorlage und Nachweis zugleich. `pnpm check` prüft 
 
 ## Regeln
 
-- Jede Anforderung hat eine ID `G1-REQ-NNN`, fortlaufend ab `G1-REQ-001`. Eine ID wird nie neu vergeben, auch nicht nach dem Streichen.
+- Jede Anforderung hat eine ID `T1-REQ-NNN`, fortlaufend ab `T1-REQ-001`. Eine ID wird nie neu vergeben, auch nicht nach dem Streichen.
 - Akzeptanzkriterien stehen als Gegeben/Wenn/Dann da, so konkret, dass ein Test sie wörtlich prüfen kann.
-- Die ID steht im Code-Kommentar an der Stelle, die die Anforderung umsetzt, und im Namen des Tests, der sie prüft: `test("[G1-REQ-001] …")`.
+- Die ID steht im Code-Kommentar an der Stelle, die die Anforderung umsetzt, und im Namen des Tests, der sie prüft: `test("[T1-REQ-001] …")`.
 - Ab Status `umgesetzt` braucht jede Anforderung mindestens einen Test mit ihrer ID, sonst schlägt `pnpm check` fehl.
 - `Verifiziert` trägt ein, wer die Tests gefahren hat: was beobachtet wurde, mit Befehl und Lücken. Wer baut, verifiziert nicht selbst.
 - Auslegungsentscheidungen, die beim Bauen fallen, kommen als Zitatblock direkt unter die Anforderung.
@@ -19,7 +19,7 @@ Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gest
 ## Vorlage
 
 ```markdown
-### G1-REQ-001: Kurzer Titel
+### T1-REQ-001: Kurzer Titel
 
 - **User Story:** Als Sachbearbeiter:in möchte ich …, damit …
 - **Akzeptanzkriterien:**

@@ -1,16 +1,17 @@
 #!/usr/bin/env node
-// Führt nur die Tests einer Anforderung aus: pnpm test:req G2-REQ-003
+// Führt nur die Tests einer Anforderung aus: pnpm test:req T2-REQ-003
 // Beim Bauen läuft nur der eigene Ausschnitt; die volle Suite läuft mit pnpm check vor dem Push.
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
+import { TASKS } from "./lib/tasks.mjs";
 
 const id = process.argv[2] ?? "";
-const m = /^G([1-5])-REQ-[0-9]{3}$/.exec(id);
+const m = /^T([1-5])-REQ-[0-9]{3}$/.exec(id);
 if (!m) {
-  console.error("Aufruf: pnpm test:req G<N>-REQ-<NNN>");
+  console.error("Aufruf: pnpm test:req T<N>-REQ-<NNN>");
   process.exit(64);
 }
-const pkg = m[1] === "5" ? "ui" : `stage${m[1]}`;
+const pkg = TASKS[m[1]].pkg;
 const dir = `packages/${pkg}/src`;
 if (!existsSync(dir)) {
   console.error(`✗ ${dir} fehlt`);

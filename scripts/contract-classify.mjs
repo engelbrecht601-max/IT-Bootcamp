@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Klassifiziert einen Änderungsantrag deterministisch: approve, escalate oder reject.
-// Aufruf: pnpm contracts:classify contracts/requests/G2-CR-001.json
+// Aufruf: pnpm contracts:classify contracts/requests/T2-CR-001.json
 // Ausgabe: JSON auf stdout. Exit-Code 0 bei approve, 2 bei escalate, 3 bei reject.
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";

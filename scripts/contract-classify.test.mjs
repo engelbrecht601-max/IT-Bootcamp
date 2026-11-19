@@ -3,13 +3,13 @@ import assert from "node:assert/strict";
 import { classify, compose, deepMerge, readJson, BASE_SCHEMA } from "./lib/contract.mjs";
 
 const base = readJson(BASE_SCHEMA);
-const reqText = "| G2-REQ-001 | ... |\n| G1-REQ-004 | ... |";
+const reqText = "| T2-REQ-001 | ... |\n| T1-REQ-004 | ... |";
 
 function request(overrides = {}) {
   return {
-    id: "G2-CR-001",
-    group: 2,
-    requirementId: "G2-REQ-001",
+    id: "T2-CR-001",
+    task: 2,
+    requirementId: "T2-REQ-001",
     rationale: "Die Deckungsprüfung braucht den Selbstbehalt.",
     fragment: {
       properties: {
@@ -74,9 +74,9 @@ test("neuer geteilter Top-Level-Block wird abgelehnt", () => {
 
 test("Formfehler werden abgelehnt", () => {
   assert.equal(run(request({ id: "CR-1" })).decision, "reject");
-  assert.equal(run(request({ group: 3 })).decision, "reject");
-  assert.equal(run(request({ requirementId: "G2-REQ-999" })).decision, "reject");
-  assert.equal(run(request({ requirementId: "G1-REQ-004" })).decision, "reject");
+  assert.equal(run(request({ task: 3 })).decision, "reject");
+  assert.equal(run(request({ requirementId: "T2-REQ-999" })).decision, "reject");
+  assert.equal(run(request({ requirementId: "T1-REQ-004" })).decision, "reject");
   assert.equal(run(request({ rationale: " " })).decision, "reject");
 });
 
@@ -96,7 +96,7 @@ test("compose erhöht pro Patch die Minor-Version und lehnt ungültige Patches a
   const built = compose(base, [p]);
   assert.equal(built["x-contractVersion"], "1.1.0");
   assert.ok(built.properties.stage2.properties.deductible);
-  assert.throws(() => compose(base, [{ ...p, group: 3, id: "G3-CR-001" }]));
+  assert.throws(() => compose(base, [{ ...p, task: 3, id: "T3-CR-001" }]));
 });
 
 test("deepMerge ist additiv", () => {

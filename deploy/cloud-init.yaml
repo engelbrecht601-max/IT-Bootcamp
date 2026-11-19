@@ -1,0 +1,40 @@
+#cloud-config
+# Erststart einer frischen Ubuntu-24.04-VM (getestet für Hetzner Cloud) für den Workshop-Server.
+# Beim Anlegen der VM als "Cloud config / User data" einfügen. Vorher __BRANCH__ ersetzen
+# (Branch des Workshop-Repos, z. B. main).
+#
+# Erledigt alles, was ohne Anmeldung geht:
+#   - Benutzer "leitung" (sudo, docker) mit demselben SSH-Key wie root
+#   - Docker, Repo unter /srv/aifactory/repo, deploy/.env mit zufälligen code-server-Passwörtern (bootstrap.sh)
+#   - Arbeitsplatz-Image vorab bauen (spart am Workshoptag 5–10 Minuten)
+#   - Claude Code auf dem Host, für Remote Control durch die Workshop-Leitung
+# Danach per SSH weiter: deploy/README.md, Abschnitt "Server aufsetzen (Hetzner)".
+# Fortschritt auf der VM: tail -f /var/log/aifactory-setup.log
+package_update: true
+packages: [git, openssl, tmux, jq, curl, ca-certificates]
+users:
+  - default
+  - name: leitung
+    groups: [sudo]
+    shell: /bin/bash
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    lock_passwd: true
+write_files:
+  - path: /usr/local/sbin/aifactory-setup
+    permissions: "0755"
+    content: |
+      #!/usr/bin/env bash
+      set -euxo pipefail
+      BRANCH="__BRANCH__"
+      install -d -m 700 -o leitung -g leitung /home/leitung/.ssh
+      install -m 600 -o leitung -g leitung /root/.ssh/authorized_keys /home/leitung/.ssh/authorized_keys
+      curl -fsSL "https://raw.githubusercontent.com/engelbrecht601-max/IT-Bootcamp/${BRANCH}/deploy/bootstrap.sh" | BRANCH="$BRANCH" bash
+      sed -i "s|^REPO_BRANCH=.*|REPO_BRANCH=${BRANCH}|" /srv/aifactory/repo/deploy/.env
+      usermod -aG docker leitung
+      chown -R leitung:leitung /srv/aifactory
+      cd /srv/aifactory/repo
+      docker build -f deploy/Dockerfile --target workspace -t aifactory-workspace:latest .
+      sudo -iu leitung bash -c 'curl -fsSL https://claude.ai/install.sh | bash'
+      echo "AIFACTORY-SETUP FERTIG"
+runcmd:
+  - [bash, -c, "/usr/local/sbin/aifactory-setup > /var/log/aifactory-setup.log 2>&1"]

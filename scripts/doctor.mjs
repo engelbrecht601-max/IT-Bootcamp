@@ -77,9 +77,14 @@ else warn(`${personas.length} von ${PERSONAS.length} Interview-Personas eingespi
 const claude = cmd("claude", ["--version"]);
 if (claude) ok(`Claude Code ${claude}`);
 else fail("Claude Code nicht gefunden", "npm install -g @anthropic-ai/claude-code");
-if (!process.env.ANTHROPIC_API_KEY && !existsSync(join(process.env.HOME ?? "", ".claude"))) {
-  warn("keine Claude-Anmeldung gefunden", "claude starten und anmelden oder ANTHROPIC_API_KEY setzen");
-}
+const { authMode } = await import("./seed-claude.mjs");
+const mode = authMode();
+const credentials = join(process.env.CLAUDE_CONFIG_DIR ?? join(process.env.HOME ?? "", ".claude"), ".credentials.json");
+if (mode === "api") ok("Claude-Anmeldung über API-Key (Server)");
+else if (mode === "abo") ok("Claude-Anmeldung über Abo-Token (Server)");
+else if (existsSync(credentials)) ok("Claude-Anmeldung über persönlichen Login");
+else if (process.env.BOOTCAMP_GROUP) fail("keine Claude-Anmeldung im Arbeitsplatz", "Workshop-Leitung: ANTHROPIC_API_KEY oder CLAUDE_CODE_OAUTH_TOKEN in deploy/.env");
+else warn("keine Claude-Anmeldung gefunden", "claude starten und anmelden, ANTHROPIC_API_KEY oder CLAUDE_CODE_OAUTH_TOKEN setzen");
 
 console.log(errors ? `\n${errors} Fehler, ${warnings} Warnung(en). Bitte beheben.` : `\nArbeitsfähig (${warnings} Warnung(en)).`);
 process.exit(errors ? 1 : 0);

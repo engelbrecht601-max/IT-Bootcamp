@@ -1,20 +1,45 @@
 #!/usr/bin/env bash
-# Startet den Arbeitsplatz einer Gruppe: Repo klonen (nur beim ersten Start), Abhängigkeiten aus dem
-# vorgewärmten Store, Personas und Gruppen-Settings einspielen, dann code-server.
+# Startet den Arbeitsplatz einer Gruppe. Jede Gruppe baut die komplette App auf ihrem eigenen Branch,
+# fünf Personen teilen sich diesen Container (je ein Browser-Tab, ein Terminal, ein Task).
+# Ablauf: Repo klonen (nur beim ersten Start), Gruppenbranch auschecken, Abhängigkeiten aus dem
+# vorgewärmten Store, Personas und Gruppen-Settings einspielen, Claude Code vorbereiten, code-server.
 set -euo pipefail
 
 : "${BOOTCAMP_GROUP:?BOOTCAMP_GROUP fehlt (1 bis 5)}"
 : "${REPO_URL:?REPO_URL fehlt}"
 : "${PASSWORD:?PASSWORD für code-server fehlt}"
 WS="$HOME/workspace"
+BRANCH="${GROUP_BRANCH_PREFIX:-workshop/gruppe}${BOOTCAMP_GROUP}"
+
+# Leere Variablen aus compose.yaml gelten für Claude Code als gesetzt. Weg damit, sonst überdeckt ein
+# leerer API-Key das Abo-Token.
+for v in ANTHROPIC_API_KEY CLAUDE_CODE_OAUTH_TOKEN ANTHROPIC_MODEL GIT_PUSH_TOKEN; do
+  if [ -z "${!v:-}" ]; then unset "$v"; fi
+done
 
 if [ ! -d "$WS/.git" ]; then
   git clone --branch "${REPO_BRANCH:-main}" "$REPO_URL" "$WS"
 fi
 cd "$WS"
-git config user.name "Gruppe $BOOTCAMP_GROUP"
+
+# Gruppenbranch: vorhandenen vom Remote übernehmen, sonst neu vom Startstand abzweigen.
+# Bei einem Neustart steht der Checkout schon auf dem Branch, dann passiert hier nichts.
+git fetch --quiet origin || echo "! git fetch fehlgeschlagen, arbeite mit dem lokalen Stand."
+if [ "$(git branch --show-current)" != "$BRANCH" ]; then
+  if git show-ref --quiet --verify "refs/heads/$BRANCH"; then
+    git checkout --quiet "$BRANCH"
+  elif git show-ref --quiet --verify "refs/remotes/origin/$BRANCH"; then
+    git checkout --quiet --track -b "$BRANCH" "origin/$BRANCH"
+  else
+    git checkout --quiet -b "$BRANCH"
+  fi
+fi
+git config user.name "Gruppe $BOOTCAMP_GROUP"          # Fallback; pnpm desk setzt pro Person Name und Adresse
 git config user.email "gruppe${BOOTCAMP_GROUP}@${DOMAIN:-localhost}"
 git config pull.rebase true
+git config push.default current                         # git push geht immer auf den eigenen Branch
+git config bootcamp.branch "$BRANCH"                    # der Pre-Push-Hook lässt nur diesen Branch zu
+echo "✓ Gruppe $BOOTCAMP_GROUP arbeitet auf Branch $BRANCH"
 
 # Push-Zugang für das gemeinsame Repo, falls gesetzt (Token nur mit Schreibrecht auf dieses eine Repo).
 if [ -n "${GIT_PUSH_TOKEN:-}" ]; then
@@ -34,15 +59,9 @@ fi
 pnpm group:setup "$BOOTCAMP_GROUP" --force
 pnpm contracts:build || true
 
-# Claude Code ohne Onboarding-Dialog starten und den serverseitigen Key vorab bestätigen.
-if [ -n "${ANTHROPIC_API_KEY:-}" ] && [ ! -f "$HOME/.claude.json" ]; then
-  node -e '
-    const k = process.env.ANTHROPIC_API_KEY;
-    require("fs").writeFileSync(process.env.HOME + "/.claude.json", JSON.stringify({
-      hasCompletedOnboarding: true,
-      customApiKeyResponses: { approved: [k.slice(-20)], rejected: [] },
-    }, null, 2));'
-fi
+# Claude Code ist vorab angemeldet (API-Key oder Abo-Token aus deploy/.env) und startet ohne
+# Onboarding, Key-Rückfrage und Vertrauens-Dialog. Niemand meldet sich persönlich an.
+node scripts/seed-claude.mjs "$WS"
 
 pnpm run doctor || true
 

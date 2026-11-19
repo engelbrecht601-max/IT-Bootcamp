@@ -3,9 +3,9 @@
 //
 //   pnpm contracts:request <entwurf.json>
 //       Prüft einen Antrag (Requirement vorhanden, Felder noch nicht vorhanden) und legt ihn als
-//       contracts/requests/G<N>-CR-<NNN>.json mit der nächsten freien Nummer an.
+//       contracts/requests/T<N>-CR-<NNN>.json mit der nächsten freien Nummer an.
 //
-//   pnpm contracts:decide <G<N>-CR-<NNN>> [--approve-escalated "<Begründung>" --by <contract-guard|moritz>]
+//   pnpm contracts:decide <T<N>-CR-<NNN>> [--approve-escalated "<Begründung>" --by <contract-guard|moritz>]
 //       Klassifiziert den Antrag. approve → Patch anlegen, CHANGELOG ergänzen, Contract neu bauen.
 //       escalate → Eintrag in ESCALATIONS.md. reject → Antrag als abgelehnt markieren.
 //       Mit --approve-escalated wird ein eskalierter Antrag freigegeben. Ein reject lässt sich nie
@@ -21,8 +21,8 @@ const ESCALATIONS = join(CONTRACTS, "ESCALATIONS.md");
 const [, , command, ...args] = process.argv;
 
 const current = () => compose(readJson(BASE_SCHEMA), loadPatches());
-const requirementsFor = (group) => {
-  const file = join(ROOT, "packages", group === 5 ? "ui" : `stage${group}`, "requirements.md");
+const requirementsFor = (task) => {
+  const file = join(ROOT, "packages", task === 5 ? "ui" : `stage${task}`, "requirements.md");
   return existsSync(file) ? readFileSync(file, "utf8") : "";
 };
 const save = (path, data) => writeFileSync(path, JSON.stringify(data, null, 2) + "\n");
@@ -38,15 +38,15 @@ else die("Aufruf: contract-change.mjs request <entwurf.json> | decide <id> [--ap
 function request(draftPath) {
   if (!draftPath) die("Entwurfsdatei fehlt");
   const draft = readJson(draftPath);
-  const group = Number(/^G([1-5])-REQ-/.exec(draft.requirementId ?? "")?.[1]);
-  if (!group) die(`requirementId "${draft.requirementId}" entspricht nicht G<N>-REQ-<NNN>`);
+  const task = Number(/^T([1-5])-REQ-/.exec(draft.requirementId ?? "")?.[1]);
+  if (!task) die(`requirementId "${draft.requirementId}" entspricht nicht T<N>-REQ-<NNN>`);
 
-  const prefix = `G${group}-CR-`;
+  const prefix = `T${task}-CR-`;
   const taken = readdirSync(REQUESTS).filter((f) => f.startsWith(prefix)).map((f) => Number(f.slice(prefix.length, -5)));
   const id = `${prefix}${String(Math.max(0, ...taken) + 1).padStart(3, "0")}`;
   const req = {
     id,
-    group,
+    task,
     requirementId: draft.requirementId,
     rationale: draft.rationale,
     fragment: draft.fragment,
@@ -55,7 +55,7 @@ function request(draftPath) {
   };
 
   // Vorprüfung mit denselben Regeln wie die Entscheidung, damit Formfehler sofort auffallen.
-  const result = classify(current(), req, { requirementsText: requirementsFor(group) });
+  const result = classify(current(), req, { requirementsText: requirementsFor(task) });
   if (result.decision === "reject") die(`Antrag würde abgelehnt:\n  - ${result.reasons.join("\n  - ")}`, 3);
 
   save(join(REQUESTS, `${id}.json`), req);
@@ -68,7 +68,7 @@ function decide(id, flags) {
   const req = readJson(path);
   if (req.status !== "offen" && req.status !== "eskaliert") die(`Antrag ${id} ist bereits ${req.status}`);
 
-  const result = classify(current(), req, { requirementsText: requirementsFor(req.group) });
+  const result = classify(current(), req, { requirementsText: requirementsFor(req.task) });
   let decision = result.decision;
   let by = "contract-classify";
   let note = result.reasons.join("; ");
@@ -109,7 +109,7 @@ function decide(id, flags) {
   } else if (decision === "escalate") {
     if (req.status !== "eskaliert") {
       save(path, { ...req, status: "eskaliert", decidedAt: now });
-      appendFileSync(ESCALATIONS, `\n## ${id} · offen\n\n- Gruppe ${req.group}, Requirement ${req.requirementId}\n- ${req.rationale}\n- Grund: ${note}\n`);
+      appendFileSync(ESCALATIONS, `\n## ${id} · offen\n\n- Task ${req.task}, Requirement ${req.requirementId}\n- ${req.rationale}\n- Grund: ${note}\n`);
     }
   } else {
     save(path, { ...req, status: "abgelehnt", decidedAt: now, decisionNote: note });

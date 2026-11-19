@@ -1,19 +1,19 @@
-# Gruppe 5: Oberfläche
+# Task 5: Oberfläche
 
 Zeigt Sachbearbeitenden den Vorgang über alle vier Stages hinweg.
 
 ## Euer Bereich
 
-- Ihr schreibt nur in `packages/ui/`. Andere Packages und `contracts/` sind für euch schreibgeschützt.
+- Wer Task 5 übernommen hat (`pnpm desk 5 <Vorname>`), schreibt nur in `packages/ui/`. Die Stages bauen andere Personen eurer Gruppe parallel im selben Checkout; ihr lest sie, ändert sie aber nicht. `contracts/` ist schreibgeschützt.
 - Das UI liest Akten und schreibt nie in einen Stage-Block.
-- Das UI-Framework ist noch offen. Klärt das mit der Workshop-Leitung, bevor ihr Abhängigkeiten installiert.
+- Das UI-Framework ist noch offen. Klärt das mit der Workshop-Leitung, bevor ihr Abhängigkeiten installiert. Den Dev-Server startet nur ihr (Port 5173), den Mock-Server nur einmal pro Gruppe (Port 4000).
 
 ## Daten
 
 - `pnpm mock-server` liefert euch alle Akten per HTTP auf Port 4000: `GET /claims` für die Übersicht, `GET /claims/<grenze>/<testfall>` für eine Akte, `GET /schema` für den Contract.
 - Ihr arbeitet gegen die Musterakten in `fixtures/`, eine pro Stage-Grenze und Testfall. So seht ihr jeden Zustand der Akte, bevor die Stages fertig sind.
 - Welche Felder es gibt, steht in `contracts/claim.schema.json` (`pnpm contracts:build`). Die Beschreibungen dort sind deutsch und taugen als Beschriftung.
-- Neue Felder beantragen die Stage-Gruppen, nicht ihr. Braucht ihr etwas, fragt die zuständige Gruppe.
+- Neue Felder beantragen die Stage-Tasks, nicht ihr. Braucht ihr etwas, fragt die Person in eurer Gruppe, die den Task hat (`pnpm desk` zeigt, wer das ist).
 
 ## Arbeitsweise
 

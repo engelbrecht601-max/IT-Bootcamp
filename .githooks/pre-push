@@ -1,10 +1,30 @@
 #!/bin/sh
-# Alle Gruppen pushen auf main. Dieses Gate verhindert, dass ein roter Stand bei allen anderen landet.
+# Pre-Push-Gate. Fünf Personen teilen sich den Branch ihrer Gruppe; ein roter Stand trifft alle fünf.
+#
+# 1. Im Gruppen-Arbeitsplatz (git config bootcamp.branch, gesetzt beim Container-Start) geht ein Push
+#    nur auf den Branch der eigenen Gruppe, nie auf main oder den Branch einer anderen Gruppe.
+# 2. pnpm check muss grün sein.
+allowed="$(git config --get bootcamp.branch || true)"
+if [ -n "$allowed" ]; then
+  while read -r _local_ref _local_sha remote_ref _remote_sha; do
+    [ -z "$remote_ref" ] && continue
+    if [ "$remote_ref" != "refs/heads/$allowed" ]; then
+      echo "✗ Push auf ${remote_ref#refs/heads/} abgelehnt. Eure Gruppe pusht nur auf $allowed."
+      echo "  Einfach 'git push' ohne Ziel verwenden."
+      exit 1
+    fi
+  done
+fi
+
 echo "pre-push: pnpm check läuft …"
-if ! pnpm check >/tmp/pre-push-check.log 2>&1; then
-  tail -30 /tmp/pre-push-check.log
+log="${TMPDIR:-/tmp}/pre-push-check-$$.log"
+if ! pnpm check >"$log" 2>&1; then
+  tail -30 "$log"
+  rm -f "$log"
   echo ""
   echo "✗ pnpm check ist rot, Push abgebrochen. Erst beheben, dann erneut pushen."
+  echo "  Rot kann auch ein anderer Task eurer Gruppe sein: kurz absprechen, wer es behebt."
   exit 1
 fi
+rm -f "$log"
 echo "✓ pnpm check grün"

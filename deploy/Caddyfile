@@ -1,4 +1,4 @@
-# Eine Subdomain pro Gruppe für code-server, eine zweite für die App der Gruppe (UI-Port 5173,
+# Eine Subdomain pro Gruppe für code-server (alle fünf Personen der Gruppe), eine zweite für die App der Gruppe (UI-Port 5173,
 # Mock-Server unter /mock). Zertifikate holt Caddy einzeln per HTTP-01, dafür reicht Wildcard-DNS
 # ohne API-Zugang zum DNS-Anbieter.
 {

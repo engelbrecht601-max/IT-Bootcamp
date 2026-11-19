@@ -1,5 +1,5 @@
-// Der Claim-Envelope, wie ihn diese Gruppe sieht. Maßgeblich ist contracts/claim.schema.json;
-// dieser Typ wird von der Gruppe mitgepflegt, wenn ihr Block durch Änderungsanträge wächst.
+// Der Claim-Envelope, wie ihn dieser Task sieht. Maßgeblich ist contracts/claim.schema.json;
+// dieser Typ wird von der Person des Tasks mitgepflegt, wenn ihr Block durch Änderungsanträge wächst.
 
 export type StageNumber = 1 | 2 | 3 | 4;
 
