@@ -57,6 +57,59 @@ Jeder Container stellt beim Start den Gruppenbranch ein und ruft `pnpm install`,
 `pnpm group:setup <N>`, `pnpm contracts:build`, `node scripts/seed-claude.mjs` und `pnpm run doctor` auf. Die Personas sind nur schreibgeschützt eingebunden,
 im Container liegt kein Token für das Lösungsrepo.
 
+## Server aufsetzen (Hetzner)
+
+Getesteter Weg für eine frische Hetzner-Cloud-VM. `cloud-init.yaml` erledigt beim ersten Boot alles, was
+ohne Anmeldung geht; danach folgt einmal SSH.
+
+**1. VM anlegen.** Ubuntu 24.04, Firewall mit eingehend 22/tcp, 80/tcp, 443/tcp, 443/udp, eigener SSH-Key.
+Als „Cloud config“ den Inhalt von `deploy/cloud-init.yaml` einfügen und `__BRANCH__` durch den Branch
+ersetzen (normalerweise `main`). Größe für 5 Gruppen: `ccx43` (16 dedizierte vCPU, 64 GB). Neue Accounts
+dürfen oft noch nicht so viele dedizierte Kerne; dann Limit-Erhöhung in der Console beantragen oder
+`cpx62` (16 shared vCPU, 32 GB) nehmen und in `.env` `WORKSPACE_MEMORY=6g` setzen.
+
+**2. DNS** beim Domain-Anbieter: `A` und `AAAA` für `@` und `*` auf die Adressen der VM (siehe oben).
+
+**3. Warten, bis das Startskript fertig ist** (10–15 Minuten, vor allem der Image-Build):
+
+```bash
+ssh leitung@<IP>
+tail -f /var/log/aifactory-setup.log          # bis "AIFACTORY-SETUP FERTIG", dann Strg+C
+```
+
+**4. Claude Code auf dem Host anmelden** (deine Lizenz, nur für die Workshop-Leitung):
+
+```bash
+claude                  # Link im Browser öffnen, Code einfügen, Ordner vertrauen, dann /exit
+claude setup-token      # gibt das Token für die Arbeitsplätze aus (gilt ein Jahr)
+```
+
+**5. `.env` ergänzen** und starten:
+
+```bash
+cd /srv/aifactory/repo/deploy
+nano .env               # ACME_EMAIL=<deine Adresse>, CLAUDE_CODE_OAUTH_TOKEN=<Token aus Schritt 4>
+# Personas vom eigenen Rechner aus dem privaten Lösungsrepo: scp personas/*.md leitung@<IP>:/srv/aifactory/personas/
+docker compose up -d
+docker compose logs -f gruppe1                # bis "HTTP server listening", dann Strg+C
+./check-auth.sh                               # alle fünf Gruppen ✓
+grep '^GRUPPE._PASSWORD=' .env                # Passwörter für die Gruppen
+```
+
+**6. Remote Control**, damit du den Server aus der Claude-App steuern kannst:
+
+```bash
+tmux new -s rc
+cd /srv/aifactory && claude remote-control --name aifactory-server
+# Rückfragen bestätigen, dann mit Strg+B, danach D abkoppeln. Wieder ran: tmux attach -t rc
+```
+
+Remote Control läuft bewusst in `/srv/aifactory` und nicht im Repo: Dort greifen die Workshop-Hooks
+nicht, die Node auf dem Host bräuchten.
+
+**7. Nach dem Testlauf** die VM löschen (Hetzner Console oder API), sonst läuft die Abrechnung weiter.
+Das Abo-Token in den Kontoeinstellungen zurückziehen.
+
 ## Anmeldung (Claude Code)
 
 Der Server meldet Claude Code an, nie die Studierenden. Es gibt zwei Wege, eingetragen in `deploy/.env`.
