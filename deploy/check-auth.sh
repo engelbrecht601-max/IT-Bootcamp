@@ -19,15 +19,15 @@ for n in "${groups[@]}"; do
     if   [ -n "${ANTHROPIC_API_KEY:-}" ];       then echo "MODE=API-Key"
     elif [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then echo "MODE=Abo-Token"
     else echo "MODE=keine"; fi
-    claude -p "Antworte mit genau einem Wort: OK" </dev/null 2>&1 | tail -3
+    claude -p "Antworte mit genau einem Wort: OK" </dev/null 2>&1 | tail -5
   ' </dev/null 2>&1)
   mode=$(printf '%s\n' "$out" | sed -n 's/^MODE=//p' | head -1)
-  answer=$(printf '%s\n' "$out" | grep -v '^MODE=' | tr '\n' ' ' | cut -c1-160)
-  if printf '%s' "$answer" | grep -q 'OK'; then
+  # Erst prüfen, dann kürzen: Warnungen beim Start von Claude Code können vor der Antwort stehen.
+  if printf '%s\n' "$out" | grep -qiE '^[[:space:]]*OK[.!]?[[:space:]]*$'; then
     echo "✓ Gruppe $n · ${mode:-?} · Claude antwortet"
   else
     failed=$((failed + 1))
-    echo "✗ Gruppe $n · ${mode:-?} · $answer"
+    echo "✗ Gruppe $n · ${mode:-?} · $(printf '%s\n' "$out" | grep -v '^MODE=' | tail -1 | tr '\n' ' ' | cut -c1-200)"
   fi
 done
 if [ "$failed" -gt 0 ]; then

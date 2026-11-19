@@ -6,8 +6,12 @@ test("Gruppe wird gesetzt, alle Packages sind freigegeben (den Rest regelt der H
   const s = settingsFor(3);
   assert.equal(s.env.BOOTCAMP_GROUP, "3");
   assert.equal(s.env.BOOTCAMP_TASK, undefined, "der Task gehört zur Session, nicht zum Checkout");
-  const edits = s.permissions.allow.filter((r) => r.startsWith("Edit(") || r.startsWith("Write(/packages"));
-  assert.deepEqual(edits, ["Edit(/packages/**)", "Write(/packages/**)"]);
+  const edits = s.permissions.allow.filter((r) => r.startsWith("Edit(") || r.startsWith("Write("));
+  assert.deepEqual(edits, ["Edit(/packages/**)", "Edit(/.claude/tmp/**)"]);
+});
+
+test("keine Write(path)-Regeln: Claude Code ignoriert sie und warnt bei jedem Start", () => {
+  assert.ok(!settingsFor(1).permissions.allow.some((r) => r.startsWith("Write(")));
 });
 
 test("Pushen und contracts/ sind nicht freigegeben", () => {

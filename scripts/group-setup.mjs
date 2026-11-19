@@ -20,9 +20,9 @@ export function settingsFor(group) {
     permissions: {
       allow: [
         // Breit freigegeben; auf das eigene Package begrenzt der Hook anhand von BOOTCAMP_TASK.
+        // Edit(path) deckt auch Write ab; Write(path)-Regeln ignoriert Claude Code mit einer Warnung.
         "Edit(/packages/**)",
-        "Write(/packages/**)",
-        "Write(/.claude/tmp/**)",
+        "Edit(/.claude/tmp/**)",
         "Bash(pnpm check)",
         "Bash(pnpm test)",
         "Bash(pnpm test:req *)",
