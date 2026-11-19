@@ -14,5 +14,5 @@ Setze die Anforderung `$ARGUMENTS` um.
    - **Die Tests änderst du nicht.** Hältst du einen Test für falsch, stopp und sag es der Person; dann ist die Anforderung unklar, nicht der Test.
 4. **Prüfen:** `pnpm test:req <ID>` muss grün sein, danach `pnpm check`. Für Stages zusätzlich `pnpm conformance <N>`.
 5. **Festhalten:** In `requirements.md` `**Status:** umgesetzt` und `**Umgesetzt in:** <Dateien>` setzen. Getroffene Auslegungsentscheidungen kommen als Zitatblock unter die Anforderung.
-6. **Commit** im Format `feat(stage<N>): <was> (<ID>)`. Stage dafür nur eigene Dateien (`git add packages/<eigenes Package>`), nie `git add -A`: Vier andere arbeiten im selben Checkout. Pushen (`git push`, geht auf den Gruppenbranch) ist Sache der Person; der Pre-Push-Hook führt `pnpm check` noch einmal aus.
+6. **Commit** im Format `feat(stage<N>): <was> (<ID>)`. Stage dafür nur eigene Dateien (`git add packages/<eigenes Package>`), nie `git add -A`: Vier andere arbeiten im selben Checkout. Vor dem Commit muss `pnpm check` grün sein (Schritt 4). Gepusht wird nicht: Die Workshop-Leitung sammelt die Gruppenbranches am Ende ein.
 7. **Melden:** was gebaut wurde und was als Nächstes kommt, nämlich `/verify <ID>` durch jemand anderen als den Autor.

@@ -181,7 +181,12 @@ docker compose rm -sf gruppe3 && docker volume rm aifactory_home3 && docker comp
 docker compose exec gruppe3 bash -c 'cd ~/workspace && cat team.json'   # wer in Gruppe 3 welchen Task hat
 ./check-auth.sh 3                               # Anmeldung von Gruppe 3 prüfen
 docker compose down                             # alles stoppen, Volumes bleiben
+./collect.sh                                    # Gruppenbranches sichern (Bundles in /srv/aifactory/sammlung, Branches im Host-Repo)
+./collect.sh --push                             # zusätzlich mit deinem Git-Zugang nach GitHub pushen
 ```
+
+Ohne `GIT_PUSH_TOKEN` pushen die Gruppen nicht selbst; `collect.sh` holt den committeten Stand aus den
+Containern. Nicht committete Änderungen meldet es nur. Zwischendurch laufen lassen ist eine billige Sicherung.
 
 Fallback: Snapshot der VM nach dem Testlauf, dazu Codespaces aus demselben Repo (Devcontainer nutzt
 dieses Dockerfile).
