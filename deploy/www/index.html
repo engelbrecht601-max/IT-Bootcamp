@@ -33,7 +33,7 @@ Claude Code ist schon angemeldet.</p>
   document.getElementById("tasks").innerHTML = tasks.map(([pkg, name], i) =>
     `<tr><td>${i + 1}</td><td><code>packages/${pkg}</code></td><td>${name}</td></tr>`).join("");
   const host = location.host;
-  document.getElementById("gruppen").innerHTML = [1, 2, 3, 4, 5].map((n) => {
+  document.getElementById("gruppen").innerHTML = [1, 2, 3, 4].map((n) => {
     return `<tr><td>Gruppe ${n}</td>` +
       `<td><a href="https://gruppe${n}.${host}/">gruppe${n}.${host}</a></td>` +
       `<td><a href="https://app-gruppe${n}.${host}/">app-gruppe${n}</a></td></tr>`;

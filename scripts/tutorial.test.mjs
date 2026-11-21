@@ -31,3 +31,16 @@ test("Tutorial: Kapitel decken Tasks, Eintragen, Arbeitsweise, Grenzen und Hilfe
     assert.ok(all.includes(needle), `fehlt: ${needle}`);
   }
 });
+
+test("Tutorial: Gruppe ohne Oberfläche (BOOTCAMP_TASKS=1,2,3,4)", () => {
+  const four = { ...env, BOOTCAMP_TASKS: "1,2,3,4" };
+  const ctx = context(four, { tasks: { 1: "a", 2: "b", 3: "c", 4: "d" } });
+  assert.deepEqual(ctx.free, [], "Gruppe gilt mit vier Personen als vollständig");
+  assert.doesNotMatch(banner(ctx), /Noch frei/);
+  const status = teamStatus(context(four, null)).join("\n");
+  assert.doesNotMatch(status, /Oberfläche/);
+  const all = chapters(context(four, null)).map((c) => `${c.title}\n${c.body.join("\n")}`).join("\n");
+  assert.match(all, /Ihr seid vier Personen/);
+  assert.match(all, /Die vier Tasks/);
+  assert.doesNotMatch(all, /Oberfläche|5173/);
+});

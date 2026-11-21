@@ -10,7 +10,8 @@ set -uo pipefail
 cd "$(dirname "$0")"
 trap 'echo; echo "Abgebrochen."; exit 130' INT
 groups=("$@")
-[ ${#groups[@]} -eq 0 ] && groups=(1 2 3 4 5)
+# ohne Argumente: alle laufenden Gruppen-Container
+[ ${#groups[@]} -eq 0 ] && mapfile -t groups < <(docker compose ps --services --status running | sed -n 's/^gruppe//p' | sort -n)
 failed=0
 for n in "${groups[@]}"; do
   svc="gruppe$n"

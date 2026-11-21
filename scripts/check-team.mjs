@@ -2,7 +2,7 @@
 // Teil von pnpm check: prüft team.json.
 // Im Gruppen-Arbeitsplatz (BOOTCAMP_GROUP gesetzt) muss die Aufteilung existieren, bevor gepusht wird:
 // Wer welchen Task übernimmt, legt die Gruppe am Anfang fest (pnpm desk <Task> <Vorname>).
-import { TEAM_FILE, readTeam, validateTeam, TASKS } from "./lib/tasks.mjs";
+import { TEAM_FILE, readTeam, validateTeam, activeTasks } from "./lib/tasks.mjs";
 
 let team;
 try {
@@ -25,5 +25,5 @@ if (errors.length) {
   process.exit(1);
 }
 const taken = Object.keys(team.tasks).length;
-const total = Object.keys(TASKS).length;
+const total = activeTasks().length;
 console.log(`✓ team.json: ${taken} von ${total} Tasks vergeben`);

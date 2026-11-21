@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { TASKS, taskNumber, taskForPackage, emptyTeam, assign, validateTeam, gitIdentity, readTeam, writeTeam } from "./tasks.mjs";
+import { TASKS, taskNumber, taskForPackage, emptyTeam, assign, validateTeam, gitIdentity, readTeam, writeTeam, activeTasks } from "./tasks.mjs";
 
 test("fünf Tasks: vier Stages und die Oberfläche", () => {
   assert.deepEqual(Object.values(TASKS).map((t) => t.pkg), ["stage1", "stage2", "stage3", "stage4", "ui"]);
@@ -65,4 +65,11 @@ test("Git-Identität: lesbarer Name, gültige Adresse ohne Umlaute", () => {
   });
   assert.equal(gitIdentity("Ana", undefined).email, "ana.lokal@localhost");
   assert.equal(gitIdentity("!!!", 1).email, "person.gruppe1@localhost");
+});
+
+test("Tasks pro Gruppe: BOOTCAMP_TASKS schränkt ein, ohne Variable gibt es alle fünf", () => {
+  assert.deepEqual(activeTasks({}), [1, 2, 3, 4, 5]);
+  assert.deepEqual(activeTasks({ BOOTCAMP_TASKS: "" }), [1, 2, 3, 4, 5]);
+  assert.deepEqual(activeTasks({ BOOTCAMP_TASKS: "1,2,3,4" }), [1, 2, 3, 4]);
+  assert.deepEqual(activeTasks({ BOOTCAMP_TASKS: " 4, 1,9,1 " }), [1, 4]);
 });

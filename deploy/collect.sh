@@ -20,7 +20,8 @@ for a in "$@"; do
     *) echo "Unbekanntes Argument: $a (erlaubt: Gruppennummern, --push)"; exit 2 ;;
   esac
 done
-[ ${#groups[@]} -eq 0 ] && groups=(1 2 3 4 5)
+# ohne Argumente: alle laufenden Gruppen-Container
+[ ${#groups[@]} -eq 0 ] && mapfile -t groups < <(docker compose ps --services --status running | sed -n 's/^gruppe//p' | sort -n)
 
 out="$OUT_ROOT/$(date +%Y-%m-%d_%H%M)"
 mkdir -p "$out"

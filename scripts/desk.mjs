@@ -11,7 +11,7 @@
 // und eure Git-Identität, damit jeder Commit zeigt, wer ihn gemacht hat. Jede Person öffnet dafür
 // ein eigenes Terminal; fünf Sessions laufen parallel im selben Checkout.
 import { spawnSync, execFileSync } from "node:child_process";
-import { TASKS, TEAM_FILE, ROOT, taskNumber, readTeam, writeTeam, emptyTeam, assign, gitIdentity } from "./lib/tasks.mjs";
+import { TASKS, TEAM_FILE, ROOT, taskNumber, readTeam, writeTeam, emptyTeam, assign, gitIdentity, activeTasks, countWord } from "./lib/tasks.mjs";
 
 const args = process.argv.slice(2);
 const flags = new Set(args.filter((a) => a.startsWith("--")));
@@ -29,8 +29,10 @@ if (!taskArg) {
   process.exit(0);
 }
 
+const active = activeTasks();
 const task = taskNumber(taskArg);
 if (!task) die(`Task muss 1 bis 5 sein. Aufruf: pnpm desk <1–5> <Vorname>`, 64);
+if (!active.includes(task)) die(`Task ${task} (${TASKS[task].name}) gibt es in eurer Gruppe nicht. Eure Tasks: ${active.join(", ")}.`, 64);
 const name = nameParts.join(" ");
 
 if (name) {
@@ -63,7 +65,7 @@ const res = spawnSync(
     "--append-system-prompt",
     `Du arbeitest mit ${person} an Task ${task} (${title}). Eigenes Package: packages/${pkg}/, ` +
       `Anforderungen mit IDs T${task}-REQ-NNN, Fachperson über /interview ${task}. ` +
-      `Lies zuerst packages/${pkg}/CLAUDE.md. Die anderen vier Tasks bauen andere Personen derselben Gruppe parallel im selben Checkout: ` +
+      `Lies zuerst packages/${pkg}/CLAUDE.md. Die anderen ${countWord(active.length - 1)} Tasks bauen andere Personen derselben Gruppe parallel im selben Checkout: ` +
       `fremde Packages nur lesen, beim Commit nur eigene Dateien stagen (git add packages/${pkg}).`,
   ],
   {
@@ -86,9 +88,10 @@ process.exit(res.status ?? 0);
 function printTeam(t) {
   console.log(group ? `Team Gruppe ${group}` : "Team");
   for (const [n, { pkg, name }] of Object.entries(TASKS)) {
+    if (!activeTasks().includes(Number(n))) continue;
     console.log(`  Task ${n}  ${name.padEnd(17)} packages/${pkg.padEnd(7)} ${t.tasks[n] ?? "– frei –"}`);
   }
-  const free = Object.keys(TASKS).filter((n) => !t.tasks[n]);
+  const free = activeTasks().filter((n) => !t.tasks[n]);
   console.log(free.length ? `\nEintragen: pnpm desk <Task> <Vorname>` : `\nAlle Tasks vergeben. Start: pnpm desk <eure Task-Nummer>`);
 }
 

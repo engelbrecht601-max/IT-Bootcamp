@@ -40,7 +40,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     networks: [internal]
-    depends_on: [gruppe1, gruppe2, gruppe3, gruppe4, gruppe5]
+    depends_on: [gruppe1, gruppe2, gruppe3, gruppe4]
 
   gruppe1:
     <<: *workspace
@@ -60,6 +60,7 @@ services:
     environment:
       <<: *env
       BOOTCAMP_GROUP: "2"
+      BOOTCAMP_TASKS: "1,2,3,4"   # ohne Oberfläche (Task 5)
       PASSWORD: ${GRUPPE2_PASSWORD:?GRUPPE2_PASSWORD in .env setzen}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE2:-${ANTHROPIC_API_KEY:-}}
       CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN_GRUPPE2:-${CLAUDE_CODE_OAUTH_TOKEN:-}}
@@ -73,6 +74,7 @@ services:
     environment:
       <<: *env
       BOOTCAMP_GROUP: "3"
+      BOOTCAMP_TASKS: "1,2,3,4"   # ohne Oberfläche (Task 5)
       PASSWORD: ${GRUPPE3_PASSWORD:?GRUPPE3_PASSWORD in .env setzen}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE3:-${ANTHROPIC_API_KEY:-}}
       CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN_GRUPPE3:-${CLAUDE_CODE_OAUTH_TOKEN:-}}
@@ -86,6 +88,7 @@ services:
     environment:
       <<: *env
       BOOTCAMP_GROUP: "4"
+      BOOTCAMP_TASKS: "1,2,3,4"   # ohne Oberfläche (Task 5)
       PASSWORD: ${GRUPPE4_PASSWORD:?GRUPPE4_PASSWORD in .env setzen}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE4:-${ANTHROPIC_API_KEY:-}}
       CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN_GRUPPE4:-${CLAUDE_CODE_OAUTH_TOKEN:-}}
@@ -95,6 +98,8 @@ services:
     depends_on: [gruppe1]
 
   gruppe5:
+    # Reserve: startet nur mit `docker compose --profile reserve up -d gruppe5`
+    profiles: [reserve]
     <<: *workspace
     environment:
       <<: *env
