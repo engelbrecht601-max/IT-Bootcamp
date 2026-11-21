@@ -25,6 +25,7 @@
     "personas:install": "node scripts/install-personas.mjs",
     "group:setup": "node scripts/group-setup.mjs",
     "desk": "node scripts/desk.mjs",
+    "tutorial": "node scripts/tutorial.mjs",
     "prepare": "git config core.hooksPath .githooks || true"
   },
   "devDependencies": {

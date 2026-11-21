@@ -150,6 +150,11 @@ ausläuft.
 > und hat einen API-Key als Reserve in der Tasche. Für den Regelbetrieb sind API-Key oder Claude for
 > Teams/Enterprise die vorgesehenen Wege.
 
+Beim Öffnen eines Terminals startet `scripts/tutorial.mjs` (Eintrag in `~/.bashrc`, gesetzt beim
+Container-Start): Solange in der Gruppe noch Tasks frei sind, begrüßt es mit dem Angebot zum geführten
+Einstieg samt Eintragen per `pnpm desk`, danach zeigt es nur einen kurzen Hinweis. Wieder aufrufen mit
+`tutorial` oder `tutorial <Kapitel>`.
+
 Was der Container-Start dafür tut (`scripts/seed-claude.mjs`, Ergebnis in `~/.claude.json`):
 
 - Onboarding gilt als erledigt: kein Theme-Assistent, kein Login-Bildschirm.

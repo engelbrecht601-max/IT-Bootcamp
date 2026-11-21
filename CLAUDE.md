@@ -33,6 +33,7 @@ Wenn du als Claude in einer Session mit `BOOTCAMP_TASK` läufst, ist das dein Ta
 | Befehl | Wann |
 |---|---|
 | `pnpm desk [<Task> [<Name>]]` | Task übernehmen und eigene Claude-Session starten, siehe oben |
+| `pnpm tutorial [<Kapitel>]` | geführter Einstieg: Tasks, Eintragen, Arbeitsweise, was geht und was nicht, Hilfe. Startet auf dem Workshop-Server beim Öffnen eines Terminals von selbst, solange noch Tasks frei sind (dort auch kurz `tutorial`). |
 | `pnpm run doctor` | Umgebung prüfen. `pnpm doctor` ohne `run` startet einen eingebauten pnpm-Befehl. |
 | `pnpm group:setup <N>` | richtet den Arbeitsplatz einer Gruppe ein (weniger Rückfragen, Schreibschutz erst nach `pnpm desk`). Auf dem Workshop-Server passiert das automatisch. |
 | `pnpm check` | Das Gate: Contract bauen, Fixtures validieren, Team und Requirements prüfen, Tests, Typecheck. Läuft in Sekunden und automatisch vor jedem Push. |
