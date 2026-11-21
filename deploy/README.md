@@ -200,7 +200,12 @@ docker compose exec gruppe3 bash -c 'cd ~/workspace && cat team.json'   # wer in
 docker compose down                             # alles stoppen, Volumes bleiben
 ./collect.sh                                    # Gruppenbranches sichern (Bundles in /srv/aifactory/sammlung, Branches im Host-Repo)
 ./collect.sh --push                             # zusätzlich mit deinem Git-Zugang nach GitHub pushen
+./message.sh alle "Um 12:30 Mittagspause"         # Nachricht an alle Gruppen (oder: 2, 1,3)
 ```
+
+`message.sh` öffnet die Nachricht in jedem offenen Browser-Fenster der Gruppe als eigenen Tab
+(`~/Nachrichten/` im Container, nicht im Repo) und schreibt sie als gelbe Zeile in alle offenen Terminals.
+Wer gerade nicht eingeloggt ist, sieht sie nicht: Wichtiges zusätzlich im Raum ansagen.
 
 Ohne `GIT_PUSH_TOKEN` pushen die Gruppen nicht selbst; `collect.sh` holt den committeten Stand aus den
 Containern. Nicht committete Änderungen meldet es nur. Zwischendurch laufen lassen ist eine billige Sicherung.
