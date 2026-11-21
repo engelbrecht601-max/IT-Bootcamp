@@ -193,7 +193,7 @@ export function chapters(ctx) {
         "",
         `  1. Claude-Session starten: ${cyan("pnpm desk <Task>")}`,
         `  2. Als Erstes fragen: „Lies packages/<euer Package>/CLAUDE.md und erklär mir meinen Task.“`,
-        `  3. Zweites Terminal öffnen (＋ oben rechts im Terminal-Bereich) und`,
+        `  3. Zweites Terminal öffnen (＋ oben rechts in der Tab-Leiste) und`,
         `     ${cyan("pnpm interview <Task>")} für das Gespräch mit eurer Fachperson.`,
         "",
         "Viel Spaß!",
@@ -221,7 +221,9 @@ function prompt() {
 
 function render(ch, i, total) {
   const head = `${dim(`Kapitel ${i + 1} von ${total}`)}  ${b(ch.title)}`;
-  return `\n${cyan("─".repeat(64))}\n${head}\n${cyan("─".repeat(64))}\n\n${ch.body.join("\n")}\n`;
+  // Jedes Kapitel auf leerem Bildschirm, damit es von oben lesbar ist und nicht herausscrollt.
+  const clear = process.stdout.isTTY ? "\x1b[2J\x1b[3J\x1b[H" : "\n";
+  return `${clear}${cyan("─".repeat(64))}\n${head}\n${cyan("─".repeat(64))}\n\n${ch.body.join("\n")}\n`;
 }
 
 async function registerStep(rl, state) {
