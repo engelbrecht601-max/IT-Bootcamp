@@ -5,7 +5,8 @@
 #   ./message.sh 1,3 "…"
 # In jedem offenen Browser-Fenster der Gruppe öffnet sich die Nachricht als eigener Tab
 # (Datei ~/Nachrichten/Nachricht-HHMM.md im Container, außerhalb des Repos, wird nie committet).
-# Zusätzlich erscheint sie als gelbe Zeile in allen offenen Terminals, auch in laufenden Claude-Sessions.
+# Zusätzlich erscheint sie als gelbe Zeile in offenen Terminals, aber nur dort, wo gerade kein Programm mit
+# eigener Oberfläche läuft (Claude, Interview, Tutorial): Text mitten in deren Anzeige bringt sie durcheinander.
 set -uo pipefail
 cd "$(dirname "$0")"
 
@@ -32,15 +33,16 @@ for n in "${groups[@]}"; do
       [ -S "$s" ] || continue
       VSCODE_IPC_HOOK_CLI=$s timeout 10 code-server --reuse-window "$file" >/dev/null 2>&1 && windows=$((windows + 1))
     done
-    terms=0
+    terms=0; skipped=0
     line=$(printf "%s" "$text" | sed ":a;N;\$!ba;s/\n/\r\n   /g")
     for t in /dev/pts/[0-9]*; do
       [ -w "$t" ] || continue
+      if ps -t "${t#/dev/}" -o args= 2>/dev/null | grep -qE "^claude|interview\.mjs|desk\.mjs|tutorial\.mjs"; then skipped=$((skipped + 1)); continue; fi
       printf "\a\r\n\033[1;30;43m Nachricht der Workshop-Leitung \033[0m \033[1;33m%s\033[0m\r\n" "$line" >"$t" 2>/dev/null && terms=$((terms + 1))
     done
-    echo "$windows $terms"
+    echo "$windows $terms $skipped"
   ' _ "$text" </dev/null 2>/dev/null)
   if [ -z "$out" ]; then echo "✗ Gruppe $n · Container nicht erreichbar"; continue; fi
-  read -r windows terms <<<"$out"
-  echo "✓ Gruppe $n · ${windows} Browser-Verbindungen (auch kürzlich geschlossene) · ${terms} Terminals"
+  read -r windows terms skipped <<<"$out"
+  echo "✓ Gruppe $n · ${windows} Browser-Verbindungen (auch kürzlich geschlossene) · Zeile in ${terms} Terminals · ${skipped} mit laufendem Claude/Interview/Tutorial ausgelassen"
 done
