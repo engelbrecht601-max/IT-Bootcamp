@@ -34,6 +34,9 @@ RUN curl -fsSL -o /tmp/code-server.deb \
  && apt-get install -y --no-install-recommends /tmp/code-server.deb \
  && rm /tmp/code-server.deb && rm -rf /var/lib/apt/lists/*
 COPY deploy/workspace-entrypoint.sh /usr/local/bin/workspace-entrypoint
+# Verwaltete Claude-Code-Einstellungen (root, für Teilnehmende nicht änderbar): nur Sonnet und Haiku,
+# damit niemand per /model auf Opus wechselt und das gemeinsame Kontingent leert.
+COPY deploy/managed-settings.json /etc/claude-code/managed-settings.json
 USER node
 # 8080 code-server, 5173 UI-Dev-Server, 4000 Mock-Server
 EXPOSE 8080 5173 4000
