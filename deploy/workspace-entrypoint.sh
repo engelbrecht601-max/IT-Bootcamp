@@ -63,12 +63,30 @@ pnpm contracts:build || true
 # Onboarding, Key-Rückfrage und Vertrauens-Dialog. Niemand meldet sich persönlich an.
 node scripts/seed-claude.mjs "$WS"
 
+# code-server: Terminals als große Tabs statt im schmalen Panel, keine Willkommensseite, keine
+# eingebauten KI-Funktionen (Chat, Copilot-Hinweis): Im Workshop arbeitet ihr mit Claude Code.
+CS_SETTINGS="$HOME/.local/share/code-server/User/settings.json"
+if [ ! -f "$CS_SETTINGS" ]; then
+  mkdir -p "$(dirname "$CS_SETTINGS")"
+  cat > "$CS_SETTINGS" <<'JSON'
+{
+  "workbench.startupEditor": "none",
+  "terminal.integrated.defaultLocation": "editor",
+  "terminal.integrated.initialHint": false,
+  "chat.disableAIFeatures": true,
+  "workbench.secondarySideBar.defaultVisibility": "hidden"
+}
+JSON
+fi
+
 # Tutorial beim Öffnen eines Terminals: solange noch Tasks frei sind, Begrüßung mit Angebot zum
 # geführten Einstieg, danach nur ein kurzer Hinweis. Nicht in Claude-Sessions (CLAUDECODE).
 if ! grep -q '>>> bootcamp-tutorial' "$HOME/.bashrc" 2>/dev/null; then
   cat >> "$HOME/.bashrc" <<'RC'
 # >>> bootcamp-tutorial >>>
 alias tutorial='node "$HOME/workspace/scripts/tutorial.mjs"'
+export CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL=1   # sonst "IDE extension install failed" in jeder Session
+export DISABLE_AUTOUPDATER=1                 # Version kommt aus dem Image; sonst "Auto-update failed"
 if [[ $- == *i* ]] && [ -z "${CLAUDECODE:-}" ] && [ -f "$HOME/workspace/scripts/tutorial.mjs" ]; then
   node "$HOME/workspace/scripts/tutorial.mjs" --auto
 fi
