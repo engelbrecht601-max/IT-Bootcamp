@@ -6,6 +6,8 @@
 //   erst mit pnpm desk <Task> <Name> eintragen
 // - im geteilten Checkout stagt jede Person nur eigene Dateien (kein git add -A / commit -a)
 // - kein Force-Push, kein reset --hard, kein Umgehen des Pre-Push-Gates
+// - im Gruppen-Arbeitsplatz keine KI im Produkt: nichts unter .claude/ anlegen (Subagenten, Befehle)
+//   und keine KI-Pakete installieren (@anthropic-ai/*, openai, langchain, ai, …)
 // Workshop-Leitung setzt BOOTCAMP_ADMIN=1, um contracts/ und fremde Packages direkt zu bearbeiten.
 // Exit-Code 2 blockiert den Aufruf; die Meldung auf stderr sieht Claude.
 import { resolve, relative, sep } from "node:path";
@@ -13,6 +15,9 @@ import { TASKS, taskNumber } from "../lib/tasks.mjs";
 
 const ROOT = resolve(process.env.CLAUDE_PROJECT_DIR ?? new URL("../../", import.meta.url).pathname);
 const PACKAGES = Object.values(TASKS).map((t) => t.pkg);
+const NO_CLAUDE_DIR = ".claude/ gehört der Workshop-Leitung: keine eigenen Subagenten, Befehle oder Einstellungen. Die App enthält keine KI-Agenten.";
+// Pakete, mit denen eine App Sprachmodelle aufruft oder Agenten baut.
+const AI_PACKAGES = /^(@anthropic-ai\/.+|openai|@openai\/.+|langchain|@langchain\/.+|ai|@ai-sdk\/.+|ollama|@google\/(generative-ai|genai)|cohere-ai|@mistralai\/.+|llamaindex|@llamaindex\/.+|@huggingface\/.+)$/;
 const NO_DESK = "Erst eintragen und den eigenen Schreibtisch starten: pnpm desk <Task> <Vorname> (im Terminal, nicht in Claude).";
 
 /**
@@ -40,6 +45,8 @@ function checkPath(rel, { task, locked }) {
   if (parts[0] === "contracts") {
     return "contracts/ ist schreibgeschützt. Änderungswünsche laufen über /contract-change.";
   }
+  // .claude/tmp/ ist Ablage für Entwürfe (/contract-change), alles andere unter .claude/ bleibt zu.
+  if (parts[0] === ".claude" && parts[1] !== "tmp" && (task || locked)) return NO_CLAUDE_DIR;
   if (parts[0] === "packages" && parts[1]) {
     if (locked) return NO_DESK;
     const own = task && TASKS[task].pkg;
@@ -60,6 +67,9 @@ function checkBash(cmd, { task, locked, admin }) {
     return "contracts/ ist schreibgeschützt. Nur pnpm contracts:request und contracts:decide schreiben dorthin.";
   }
   if (task || locked) {
+    if (writesTo(text, ".claude/(?!tmp/)")) return NO_CLAUDE_DIR;
+    const pkg = aiPackage(text);
+    if (pkg) return `${pkg} ist ein KI-Paket. Die App enthält keine KI-Agenten und ruft keine Sprachmodelle auf; KI ist euer Werkzeug, nicht Teil des Produkts. Fragen dazu: Workshop-Leitung.`;
     const own = task && TASKS[task].pkg;
     const other = PACKAGES.find((pkg) => pkg !== own && writesTo(text, `packages/${pkg}/`));
     if (other) return locked ? NO_DESK : `Task ${task} schreibt nur in packages/${own}/.`;
@@ -67,6 +77,21 @@ function checkBash(cmd, { task, locked, admin }) {
     if (/\bgit\s+add\b[^;&|\n]*\s(-A\b|--all\b|\.(?=\s|$)|-u\b|--update\b)/.test(text) ||
         /\bgit\s+commit\b[^;&|\n]*\s(-a\b|-am\b|--all\b)/.test(text)) {
       return `Im geteilten Checkout nur eigene Dateien stagen: git add ${own ? `packages/${own}` : "<Pfad>"}, dann git commit.`;
+    }
+  }
+  return null;
+}
+
+/** Name des ersten KI-Pakets, das ein pnpm/npm/yarn/bun add|install installieren würde, sonst null. */
+export function aiPackage(text) {
+  for (const segment of text.split(/[;&|\n]+/)) {
+    // Optionen vor dem Verb erlauben, z. B. pnpm --filter @bootcamp/stage2 add openai
+    const m = /\b(?:pnpm|npm|yarn|bun)\b.*?\s(?:add|install|i)(?=\s|$)(.*)/.exec(segment);
+    if (!m) continue;
+    for (const arg of m[1].trim().split(/\s+/)) {
+      if (!arg || arg.startsWith("-")) continue;
+      const name = arg.replace(/^(@?[^@]+)@.*$/, "$1");
+      if (AI_PACKAGES.test(name)) return name;
     }
   }
   return null;

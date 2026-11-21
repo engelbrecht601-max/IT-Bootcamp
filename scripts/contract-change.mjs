@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Einziger Schreibweg nach contracts/. Direkte Edits blockiert der PreToolUse-Hook.
 //
-//   pnpm contracts:request <entwurf.json>
+//   pnpm contracts:request <entwurf.json>     (oder "-": Entwurf als JSON auf stdin, ohne Zwischendatei)
 //       Prüft einen Antrag (Requirement vorhanden, Felder noch nicht vorhanden) und legt ihn als
 //       contracts/requests/T<N>-CR-<NNN>.json mit der nächsten freien Nummer an.
 //
@@ -36,8 +36,13 @@ else if (command === "decide") decide(args[0], parseFlags(args.slice(1)));
 else die("Aufruf: contract-change.mjs request <entwurf.json> | decide <id> [--approve-escalated <text> --by <wer>]", 64);
 
 function request(draftPath) {
-  if (!draftPath) die("Entwurfsdatei fehlt");
-  const draft = readJson(draftPath);
+  if (!draftPath) die("Entwurfsdatei fehlt (oder - für stdin)");
+  let draft;
+  try {
+    draft = draftPath === "-" ? JSON.parse(readFileSync(0, "utf8")) : readJson(draftPath);
+  } catch (err) {
+    die(`Entwurf ist kein gültiges JSON: ${err.message}`);
+  }
   const task = Number(/^T([1-5])-REQ-/.exec(draft.requirementId ?? "")?.[1]);
   if (!task) die(`requirementId "${draft.requirementId}" entspricht nicht T<N>-REQ-<NNN>`);
 
@@ -59,6 +64,12 @@ function request(draftPath) {
   if (result.decision === "reject") die(`Antrag würde abgelehnt:\n  - ${result.reasons.join("\n  - ")}`, 3);
 
   save(join(REQUESTS, `${id}.json`), req);
+  // Entwürfe in den Packages (.contract-draft.json) sind Wegwerfdateien, der Antrag ist jetzt gespeichert.
+  if (draftPath !== "-" && draftPath.endsWith(".contract-draft.json")) {
+    try {
+      unlinkSync(draftPath);
+    } catch {}
+  }
   console.log(JSON.stringify({ id, preview: result.decision, reasons: result.reasons }, null, 2));
 }
 
