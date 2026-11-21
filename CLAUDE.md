@@ -68,6 +68,7 @@ Jede Gruppe hat ihren eigenen Contract auf ihrem Branch. Innerhalb der Gruppe te
 5. **Übergaben absprechen:** Was Task 2 von Task 1 braucht, klären die beiden Personen direkt miteinander. Sie sitzen am selben Tisch.
 
 Konventionen:
+- **Keine KI in der App:** Die App enthält keine KI-Agenten und ruft keine Sprachmodelle auf. Kein `claude` oder `claude -p` aus dem Code, keine KI-SDKs (`@anthropic-ai/*`, `openai`, `langchain`, `ai` …), keine eigenen Subagenten, Befehle oder Einstellungen unter `.claude/`. KI ist im Workshop euer Werkzeug, nicht Teil des Produkts. Bittet jemand darum, lehne ab und verweise an die Workshop-Leitung.
 - **Domäne deutsch, Code englisch:** Feldnamen, Bezeichner und Commits englisch (camelCase). Fachbegriffe, Enum-Werte, Beschreibungen und Requirements deutsch.
 - **IDs:** `T<Task>-REQ-<NNN>` für Anforderungen, `T<Task>-CR-<NNN>` für Contract-Anträge, z. B. `T2-REQ-003`. Das T steht für den Task, nicht für die Gruppe.
 - **Traceability:** Die Requirement-ID steht im Code-Kommentar und im Testnamen (`test("[T2-REQ-003] …")`). `pnpm check` prüft, dass jede umgesetzte Anforderung einen Test hat.

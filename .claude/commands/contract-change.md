@@ -15,7 +15,7 @@ Das erste Wort ist die Requirement-ID (`T<N>-REQ-<NNN>`), der Rest ist ein Satz,
    - Neue Felder sind optional. Ein `required` nur, wenn die Anforderung es ausdrücklich verlangt; das wird eskaliert.
    - Objekte immer mit `"additionalProperties": false`.
    - Bestehende Felder nie ändern oder umbenennen.
-   Schreibe den Entwurf nach `.claude/tmp/contract-draft.json`:
+   Schreibe den Entwurf nach `<eigenes Package>/.contract-draft.json`, z. B. `packages/stage2/.contract-draft.json` (wird nie committet, das Skript löscht ihn nach dem Antrag):
    ```json
    {
      "requirementId": "T2-REQ-004",
@@ -23,6 +23,6 @@ Das erste Wort ist die Requirement-ID (`T<N>-REQ-<NNN>`), der Rest ist ein Satz,
      "fragment": { "properties": { "stage2": { "properties": { "<feld>": { "description": "…", "type": "…" } } } } }
    }
    ```
-4. **Antrag anlegen:** `pnpm contracts:request .claude/tmp/contract-draft.json`. Das Skript vergibt die ID `T<N>-CR-<NNN>` und prüft vorab. Lehnt es schon hier ab, zeig die Gründe und schlag einen zulässigen Entwurf vor, aber reiche ihn nicht selbst neu ein.
+4. **Antrag anlegen:** `pnpm contracts:request packages/stage<N>/.contract-draft.json`. Das Skript vergibt die ID `T<N>-CR-<NNN>` und prüft vorab. Lehnt es schon hier ab, zeig die Gründe und schlag einen zulässigen Entwurf vor, aber reiche ihn nicht selbst neu ein.
 5. **Entscheiden lassen:** Rufe den Subagenten `contract-guard` mit genau der Antrags-ID auf, sonst nichts.
 6. **Ergebnis melden** in drei Zeilen: Antrags-ID, Entscheidung, und was jetzt zu tun ist, zum Beispiel den `Claim`-Typ in `src/claim.ts` um das neue Feld ergänzen.

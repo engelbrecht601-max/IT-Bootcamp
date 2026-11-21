@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { check } from "./pre-tool-use.mjs";
+import { check, aiPackage } from "./pre-tool-use.mjs";
 
 // Jeder Test gibt seinen Kontext explizit mit; die Umgebung eines Arbeitsplatzes darf ihn nicht färben.
 const none = {};
@@ -75,4 +75,29 @@ test("BOOTCAMP_ADMIN hebt den Schreibschutz auf, aber nicht die Git-Regeln", () 
   assert.equal(check(edit("contracts/claim.base.schema.json"), admin), null);
   assert.equal(check(edit("packages/stage3/src/index.ts"), { ...admin, task: "2" }), null);
   assert.ok(check(bash("git reset --hard"), admin));
+});
+
+test("im Gruppen-Arbeitsplatz nichts unter .claude/ anlegen", () => {
+  assert.match(check(edit(".claude/agents/mein-agent.md"), desk(2)), /keine KI-Agenten/);
+  assert.match(check(edit(".claude/commands/x.md"), workspace), /\.claude\//);
+  assert.match(check(bash("echo x > .claude/agents/a.md"), desk(1)), /\.claude\//);
+  assert.equal(check(bash("cat .claude/settings.json"), desk(1)), null);
+  assert.equal(check(edit(".claude/tmp/contract-draft.json"), desk(2)), null, "/contract-change legt dort Entwürfe ab");
+  assert.equal(check(bash("cat > .claude/tmp/contract-draft.json <<'EOF'"), desk(2)), null);
+  assert.equal(check(edit(".claude/agents/a.md"), none), null, "lokal bleibt .claude/ pflegbar");
+  assert.equal(check(edit(".claude/agents/a.md"), admin), null);
+});
+
+test("im Gruppen-Arbeitsplatz keine KI-Pakete installieren", () => {
+  for (const cmd of ["pnpm add @anthropic-ai/sdk", "pnpm --filter @bootcamp/stage2 add openai@4", "npm i langchain",
+    "cd packages/stage1 && pnpm add -D ai", "pnpm add zod @anthropic-ai/claude-agent-sdk", "yarn add @langchain/core"]) {
+    assert.match(check(bash(cmd), desk(1)) ?? "", /KI-Paket/, cmd);
+  }
+  assert.match(check(bash("pnpm add openai"), workspace) ?? "", /KI-Paket/);
+  for (const cmd of ["pnpm add zod", "pnpm add -D vitest", "pnpm install", "pnpm add aimless", "pnpm add react-ai-hooks-not"]) {
+    assert.equal(check(bash(cmd), desk(1)), null, cmd);
+  }
+  assert.equal(check(bash("pnpm add openai"), none), null, "lokal offen");
+  assert.equal(check(bash("pnpm add openai"), admin), null);
+  assert.equal(aiPackage("pnpm add @ai-sdk/anthropic@1.2.0"), "@ai-sdk/anthropic");
 });
