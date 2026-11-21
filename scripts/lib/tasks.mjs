@@ -15,6 +15,20 @@ export const TASKS = {
   5: { pkg: "ui", name: "Oberfläche", persona: "persona-ui" },
 };
 
+/**
+ * Tasks, die es in dieser Gruppe gibt. Der Workshop-Server setzt BOOTCAMP_TASKS pro Gruppe
+ * (z. B. "1,2,3,4" für Gruppen ohne Oberfläche); ohne die Variable gibt es alle fünf.
+ */
+export function activeTasks(env = process.env) {
+  const list = String(env.BOOTCAMP_TASKS ?? "").split(",").map((t) => taskNumber(t)).filter(Boolean);
+  return list.length ? [...new Set(list)].sort((a, b) => a - b) : Object.keys(TASKS).map(Number);
+}
+
+/** Zahlwort für die Teamgröße in Texten. */
+export function countWord(n) {
+  return ["null", "eine", "zwei", "drei", "vier", "fünf"][n] ?? String(n);
+}
+
 /** Task-Nummer (1–5) aus Zahl oder String, sonst undefined. */
 export function taskNumber(value) {
   const n = Number(String(value ?? "").trim());

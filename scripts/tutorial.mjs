@@ -10,7 +10,7 @@
 import { spawnSync } from "node:child_process";
 import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
-import { TASKS, ROOT, readTeam } from "./lib/tasks.mjs";
+import { TASKS, ROOT, readTeam, activeTasks, countWord } from "./lib/tasks.mjs";
 
 const color = !process.env.NO_COLOR && process.stdout.isTTY;
 const sgr = (code) => (s) => (color ? `\x1b[${code}m${s}\x1b[0m` : s);
@@ -26,12 +26,13 @@ export function context(env = process.env, team = readTeam()) {
   const group = env.BOOTCAMP_GROUP || team?.group || "N";
   const domain = env.DOMAIN || "localhost";
   const tasks = team?.tasks ?? {};
-  const free = Object.keys(TASKS).map(Number).filter((n) => !tasks[n]);
-  return { group, domain, tasks, free, app: `https://app-gruppe${group}.${domain}` };
+  const active = activeTasks(env);
+  const free = active.filter((n) => !tasks[n]);
+  return { group, domain, tasks, active, free, people: countWord(active.length), ui: active.includes(5), app: `https://app-gruppe${group}.${domain}` };
 }
 
 export function teamStatus(ctx) {
-  return Object.entries(TASKS).map(([n, t]) => {
+  return Object.entries(TASKS).filter(([n]) => ctx.active.includes(Number(n))).map(([n, t]) => {
     const who = ctx.tasks[n] ? green(ctx.tasks[n]) : yellow("frei");
     return `  [${n}] ${t.name.padEnd(17)} packages/${t.pkg.padEnd(7)} ${who}`;
   });
@@ -75,14 +76,14 @@ export function chapters(ctx) {
         "Fertig werden ist nicht das Ziel. Gut erfragte, aufgeschriebene und",
         "getestete Anforderungen sind es.",
         "",
-        "Ihr seid fünf Personen an einem Arbeitsplatz. Jede öffnet ihn in einem",
+        `Ihr seid ${ctx.people} Personen an einem Arbeitsplatz. Jede öffnet ihn in einem`,
         "eigenen Browser-Tab und arbeitet in ihrem eigenen Terminal, alle im selben",
         "Projektordner. Claude Code ist schon angemeldet, ihr müsst euch nirgends",
         "einloggen.",
       ],
     },
     {
-      title: "Die fünf Tasks und wie sie zusammenhängen",
+      title: `Die ${ctx.people} Tasks und wie sie zusammenhängen`,
       body: [
         "Eine Schadenakte (Claim) wandert durch vier Stufen:",
         "",
@@ -98,8 +99,7 @@ export function chapters(ctx) {
         `     ▼`,
         `  Endzustand`,
         "",
-        `  [5] Oberfläche         ${dim("zeigt den Vorgang über alle vier Stufen")}`,
-        "",
+        ...(ctx.ui ? [`  [5] Oberfläche         ${dim("zeigt den Vorgang über alle vier Stufen")}`, ""] : []),
         `• Jede Stufe ergänzt nur ${b("ihren eigenen Block")} (stage1 … stage4) und hängt`,
         "  einen Trace-Eintrag an. Wie die Akte aussieht, legt der Contract fest:",
         "  contracts/claim.schema.json, gleich für alle und schreibgeschützt.",
@@ -113,7 +113,7 @@ export function chapters(ctx) {
       title: "Deinen Task übernehmen",
       register: true,
       body: [
-        "Jede Person übernimmt genau einen Task. Seid ihr weniger als fünf, nimmt",
+        `Jede Person übernimmt genau einen Task. Seid ihr weniger als ${ctx.people}, nimmt`,
         "jemand zwei (dann zwei Terminals). Erst eintragen, dann bauen: Ohne Eintrag",
         "schreibt Claude in keinem Package.",
         "",
@@ -152,8 +152,7 @@ export function chapters(ctx) {
         `  ${green("✓")} ${cyan("pnpm check")}, ${cyan("pnpm test")}, ${cyan("pnpm test:req <ID>")}, ${cyan("pnpm run doctor")}`,
         `  ${green("✓")} Musterakten per HTTP: ${cyan("pnpm mock-server")} (einmal pro Gruppe), dann`,
         `      ${ctx.app}/mock/claims`,
-        `  ${green("✓")} Oberfläche (Task 5): Dev-Server auf Port 5173, sichtbar unter`,
-        `      ${ctx.app}`,
+        ...(ctx.ui ? [`  ${green("✓")} Oberfläche (Task 5): Dev-Server auf Port 5173, sichtbar unter`, `      ${ctx.app}`] : []),
         `  ${green("✓")} committen, nur das eigene Package`,
         "",
         b("Geht nicht:"),
@@ -234,7 +233,7 @@ async function registerStep(rl, state) {
   }
   const t = (await rl.question(`\nWelchen Task übernimmst du? ${dim(`(${ctx.free.join(", ")} · Enter = später)`)} `)).trim();
   if (!t) return;
-  if (!TASKS[t]) return console.log(red(`Task ${t} gibt es nicht. Später: pnpm desk <Task> <Vorname>`));
+  if (!ctx.active.includes(Number(t))) return console.log(red(`Task ${t} gibt es in eurer Gruppe nicht (${ctx.active.join(", ")}). Später: pnpm desk <Task> <Vorname>`));
   if (ctx.tasks[t]) {
     console.log(yellow(`Task ${t} hat schon ${ctx.tasks[t]}.`) + " Wenn das du bist, passt alles.");
     state.task = t;

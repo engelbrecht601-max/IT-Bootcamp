@@ -24,7 +24,7 @@ pnpm desk 2 Ben           # Ben übernimmt Task 2 und startet seine Claude-Sessi
 pnpm desk 2               # später: Session für den eigenen Task wieder starten
 ```
 
-Die Aufteilung steht danach in `team.json` und ist committet. Ein Task gehört genau einer Person; bei weniger als fünf Leuten übernimmt jemand zwei Tasks (zwei Terminals). Ohne Eintrag schreibt Claude in keinem Package, und `pnpm check` (also auch der Push) bleibt rot.
+Die Aufteilung steht danach in `team.json` und ist committet. Gibt es in einer Gruppe weniger Tasks (Server-Variable `BOOTCAMP_TASKS`, z. B. `1,2,3,4` ohne Oberfläche), bieten `pnpm desk` und das Tutorial nur diese an. Ein Task gehört genau einer Person; bei weniger als fünf Leuten übernimmt jemand zwei Tasks (zwei Terminals). Ohne Eintrag schreibt Claude in keinem Package, und `pnpm check` (also auch der Push) bleibt rot.
 
 Wenn du als Claude in einer Session mit `BOOTCAMP_TASK` läufst, ist das dein Task. Schreib nur in sein Package. Die anderen Packages bauen andere Personen gleichzeitig im selben Checkout: lesen ja, ändern nie.
 

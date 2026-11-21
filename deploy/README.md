@@ -182,6 +182,13 @@ Alle stehen nur in `deploy/.env` auf der VM, nie im Repo.
   (`git config bootcamp.branch`); das Token selbst könnte technisch jeden Branch schreiben.
 - `GRUPPE<N>_PASSWORD`: code-server-Login, am Workshoptag an die Gruppe geben (alle fünf nutzen dasselbe).
 
+## Gruppen und Tasks
+
+Gruppe 1 baut alle fünf Tasks, Gruppe 2 bis 4 ohne Oberfläche (`BOOTCAMP_TASKS: "1,2,3,4"` in
+`compose.yaml`; `pnpm desk`, Team-Check und Tutorial bieten dann nur Task 1 bis 4 an). Gruppe 5 ist
+Reserve und startet nur mit `docker compose --profile reserve up -d gruppe5`. `check-auth.sh` und
+`collect.sh` prüfen ohne Argumente alle laufenden Gruppen.
+
 ## Betrieb
 
 ```bash
