@@ -155,6 +155,11 @@ Container-Start): Solange in der Gruppe noch Tasks frei sind, begrüßt es mit d
 Einstieg samt Eintragen per `pnpm desk`, danach zeigt es nur einen kurzen Hinweis. Wieder aufrufen mit
 `tutorial` oder `tutorial <Kapitel>`.
 
+**Modelle:** `deploy/managed-settings.json` liegt im Image unter `/etc/claude-code/` (root, für
+Teilnehmende nicht änderbar) und erlaubt nur Sonnet und Haiku. Wer per `/model` oder `--model` Opus
+wählt, bekommt Sonnet; Subagenten mit gesperrtem Modell laufen mit dem Modell der Session. Der Standard
+kommt aus `ANTHROPIC_MODEL` in `.env`. Ändern: Datei anpassen, `docker compose up -d --build`.
+
 Was der Container-Start dafür tut (`scripts/seed-claude.mjs`, Ergebnis in `~/.claude.json`):
 
 - Onboarding gilt als erledigt: kein Theme-Assistent, kein Login-Bildschirm.
