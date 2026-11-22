@@ -3,9 +3,10 @@
 #   cd deploy && ./collect.sh              alle Gruppen sichern (Bundles + lokale Branches im Host-Repo)
 #   ./collect.sh 2 4                       nur Gruppe 2 und 4
 #   ./collect.sh --push                    zusätzlich mit deinem eigenen Git-Zugang nach GitHub pushen
-# Pro Gruppe: committeten Stand des Gruppenbranches als git bundle aus dem Container holen, nach
-# /srv/aifactory/sammlung/<Zeitstempel>/ legen und als Branch ins Host-Repo übernehmen.
-# Nicht committete Änderungen werden nur gemeldet, nicht mitgenommen. pnpm check läuft zur Info.
+# Pro Gruppe: den Gruppenbranch (alles Freigegebene) und die Branches der Arbeitsplätze (desk/gruppe<N>/<name>,
+# auch Halbfertiges) als git bundle aus dem Container holen, nach /srv/aifactory/sammlung/<Zeitstempel>/
+# legen und als Branches ins Host-Repo übernehmen. Vorher sichert jeder Arbeitsplatz seinen Stand
+# (pnpm sync save), damit nichts Ungesichertes zurückbleibt. pnpm check läuft zur Info auf dem Gruppenstand.
 set -uo pipefail
 cd "$(dirname "$0")"
 REPO_DIR="$(cd .. && pwd)"
@@ -38,29 +39,37 @@ for n in "${groups[@]}"; do
 
   info=$(docker compose exec -T "$svc" bash -c '
     cd ~/workspace
-    echo "DIRTY=$(git status --porcelain | wc -l)"
+    desks=0
+    for d in ~/desks/*/; do
+      [ -d "$d" ] || continue
+      desks=$((desks + 1))
+      (cd "$d" && BOOTCAMP_DESK="$(basename "$d")" node scripts/sync.mjs save "wip: collected by staff" >/dev/null 2>&1) || true
+    done
+    echo "DESKS=$desks"
+    echo "DIRTY=$( (git status --porcelain; for d in ~/desks/*/; do [ -d "$d" ] && git -C "$d" status --porcelain; done) | wc -l)"
     echo "COMMITS=$(git rev-list --count "origin/${REPO_BRANCH:-main}..HEAD" 2>/dev/null || echo ?)"
     if pnpm check >/dev/null 2>&1; then echo "CHECK=grün"; else echo "CHECK=rot"; fi
   ' </dev/null 2>/dev/null)
   dirty=$(printf '%s\n' "$info" | sed -n 's/^DIRTY=//p')
   commits=$(printf '%s\n' "$info" | sed -n 's/^COMMITS=//p')
+  desks=$(printf '%s\n' "$info" | sed -n 's/^DESKS=//p')
   check=$(printf '%s\n' "$info" | sed -n 's/^CHECK=//p')
 
   bundle="$out/gruppe$n.bundle"
-  if ! docker compose exec -T "$svc" bash -c 'cd ~/workspace && git bundle create - "$1" 2>/dev/null' _ "$branch" \
+  if ! docker compose exec -T "$svc" bash -c 'cd ~/workspace && git bundle create - "$1" --glob="refs/heads/desk/*" 2>/dev/null' _ "$branch" \
        </dev/null >"$bundle" || ! git -C "$REPO_DIR" bundle verify "$bundle" >/dev/null 2>&1; then
     echo "✗ Gruppe $n · Bundle fehlgeschlagen"
     rm -f "$bundle"; failed=$((failed + 1)); continue
   fi
-  if ! git -C "$REPO_DIR" fetch --quiet --force "$bundle" "refs/heads/$branch:refs/heads/$branch"; then
+  if ! git -C "$REPO_DIR" fetch --quiet --force "$bundle" "refs/heads/$branch:refs/heads/$branch" "refs/heads/desk/*:refs/heads/desk/*"; then
     echo "✗ Gruppe $n · Übernahme ins Host-Repo fehlgeschlagen (Branch $branch dort ausgecheckt?)"
     failed=$((failed + 1)); continue
   fi
 
-  line="✓ Gruppe $n · $branch · ${commits:-?} Commits · pnpm check ${check:-?}"
+  line="✓ Gruppe $n · $branch · ${commits:-?} Commits · ${desks:-0} Arbeitsplätze · pnpm check ${check:-?}"
   [ "${dirty:-0}" != "0" ] && line="$line · ! $dirty nicht committete Dateien (nicht gesichert)"
   if [ "$push" -eq 1 ]; then
-    if git -C "$REPO_DIR" push --quiet origin "refs/heads/$branch:refs/heads/$branch" 2>"$out/push-gruppe$n.log"; then
+    if git -C "$REPO_DIR" push --quiet origin "refs/heads/$branch:refs/heads/$branch" "refs/heads/desk/gruppe$n/*:refs/heads/desk/gruppe$n/*" 2>"$out/push-gruppe$n.log"; then
       line="$line · gepusht"; rm -f "$out/push-gruppe$n.log"
     else
       line="$line · ✗ Push fehlgeschlagen, siehe $out/push-gruppe$n.log"; failed=$((failed + 1))

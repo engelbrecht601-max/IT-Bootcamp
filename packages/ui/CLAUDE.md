@@ -2,21 +2,24 @@
 
 Zeigt Sachbearbeitenden den Vorgang über alle vier Stages hinweg.
 
-## Euer Bereich
+## Bereich
 
-- Wer Task 5 übernommen hat (`pnpm desk 5 <Vorname>`), schreibt nur in `packages/ui/`. Die Stages bauen andere Personen eurer Gruppe parallel im selben Checkout; ihr lest sie, ändert sie aber nicht. `contracts/` ist schreibgeschützt.
-- Das UI liest Akten und schreibt nie in einen Stage-Block.
-- Das UI-Framework ist noch offen. Klärt das mit der Workshop-Leitung, bevor ihr Abhängigkeiten installiert. Den Dev-Server startet nur ihr (Port 5173), den Mock-Server nur einmal pro Gruppe (Port 4000).
+- Geschrieben wird nur in `packages/ui/`, und nur vom Arbeitsplatz, der diesen Task trägt. `contracts/` ist schreibgeschützt.
+- Die Oberfläche liest Akten und schreibt nie in einen Stage-Block.
+- Einstieg ist `run(claim)` in `src/index.ts`. Sie bekommt eine Akte und gibt HTML als Text zurück.
+- Kein Framework, keine neuen Abhängigkeiten, kein eigener Server. HTML und CSS als Text reichen für alles, was hier gebraucht wird.
 
-## Daten
+## Daten und Vorschau
 
-- `pnpm mock-server` liefert euch alle Akten per HTTP auf Port 4000: `GET /claims` für die Übersicht, `GET /claims/<grenze>/<testfall>` für eine Akte, `GET /schema` für den Contract.
-- Ihr arbeitet gegen die Musterakten in `fixtures/`, eine pro Stage-Grenze und Testfall. So seht ihr jeden Zustand der Akte, bevor die Stages fertig sind.
+- Die Musterakten in `fixtures/` zeigen jeden Zustand einer Akte, eine pro Stage-Grenze und Testfall. `akten/eingang/` enthält dieselben Akten nach Zustand sortiert. So entsteht die Oberfläche, bevor die Stages fertig sind.
+- `pnpm vorschau` zeigt jede Musterakte im Browser, so wie `run()` sie darstellt. Die Adresse nennt das Skript; neu laden zeigt den aktuellen Stand.
 - Welche Felder es gibt, steht in `contracts/claim.schema.json` (`pnpm contracts:build`). Die Beschreibungen dort sind deutsch und taugen als Beschriftung.
-- Neue Felder beantragen die Stage-Tasks, nicht ihr. Braucht ihr etwas, fragt die Person in eurer Gruppe, die den Task hat (`pnpm desk` zeigt, wer das ist).
+- Die Oberfläche hat keinen eigenen Block im Claim. Fehlt eine Angabe: `pnpm wunsch add <Task 1–4> "<was fehlt und wofür>"`. Der Wunsch landet beim Arbeitsplatz, dem der Block gehört.
 
 ## Arbeitsweise
 
-1. Anforderungen im Interview mit der Fachperson erheben: `pnpm interview 5` im zweiten Terminal oder `/interview 5 <Frage>`.
-2. In `requirements.md` festhalten, nach der Vorlage dort.
-3. Pro Anforderung spezifizieren, implementieren und verifizieren. Tests tragen die ID im Namen.
+Der Ablauf steht in der `CLAUDE.md` an der Wurzel: Die Person tippt `/weiter`, `pnpm next` nennt den einen Schritt.
+
+- Fachliche Regeln kommen aus dem Interview mit der Fachperson (Subagent `persona-ui`, Protokoll in `interview.md`).
+- Tests prüfen das HTML, das `run()` zurückgibt: Steht der Betrag da, ist der Status erkennbar, fehlt nichts bei einer abgebrochenen Akte. Sie tragen die ID im Namen.
+- Die drei Pflichtfälle sind: eine Akte im Standardfall anzeigen, den Grenzfall (Vorbehalt, vorläufige Werte) und die abgelehnte oder abgebrochene Akte.

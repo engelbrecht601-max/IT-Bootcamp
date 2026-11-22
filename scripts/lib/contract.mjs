@@ -11,8 +11,8 @@ export const PATCHES = join(CONTRACTS, "patches");
 
 const STAGE_TASKS = { stage1: 1, stage2: 2, stage3: 3, stage4: 4 };
 const ESCALATE_KEYS = new Set(["meta", "trace", "error"]);
-const REQUEST_ID = /^T([1-5])-CR-[0-9]{3}$/;
-const REQUIREMENT_ID = /^T([1-5])-REQ-[0-9]{3}$/;
+const REQUEST_ID = /^T([1-6])-CR-[0-9]{3}$/;
+const REQUIREMENT_ID = /^T([1-6])-REQ-[0-9]{3}$/;
 const FIELD_NAME = /^[a-z][a-zA-Z0-9]*$/;
 
 export function readJson(path) {
@@ -76,7 +76,7 @@ export function classify(schema, request, { requirementsText, skipRequirementChe
   const idMatch = REQUEST_ID.exec(request?.id ?? "");
   if (!idMatch) reject.push(`id "${request?.id}" entspricht nicht T<N>-CR-<NNN>`);
   const task = request?.task;
-  if (!Number.isInteger(task) || task < 1 || task > 5) reject.push("task muss 1 bis 5 sein");
+  if (!Number.isInteger(task) || task < 1 || task > 6) reject.push("task muss 1 bis 6 sein");
   if (idMatch && Number(idMatch[1]) !== task) reject.push("task passt nicht zur id");
 
   const reqMatch = REQUIREMENT_ID.exec(request?.requirementId ?? "");

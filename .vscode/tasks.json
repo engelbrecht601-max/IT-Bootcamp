@@ -1,0 +1,15 @@
+{
+  // Öffnet beim Laden des Arbeitsplatzes im Browser von selbst ein Terminal mit der Anmeldung.
+  // Braucht "task.allowAutomaticTasks": "on" (setzt deploy/workspace-entrypoint.sh).
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Arbeitsplatz",
+      "type": "shell",
+      "command": "export BOOTCAMP_STARTED=1; node scripts/start.mjs; exec bash",
+      "runOptions": { "runOn": "folderOpen" },
+      "presentation": { "reveal": "always", "focus": true, "panel": "dedicated", "showReuseMessage": false, "close": false },
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,24 +1,30 @@
-# IT-Bootcamp Track 1: agentic Coding am Schadenfall
+# IT-Bootcamp Track 1: Vibe Coding am Schadenfall
 
 Workshop-Repo für die Schadensabwicklung in der Gebäudehaftpflicht (Mockup mit erfundenen Daten).
 
 ## Worum es geht
 
-Material für den Workshop „IT-Bootcamp Track 1: agentic Coding am Schadenfall“ (4 Stunden, 25 Studierende in 5 Gruppen à 5 Personen). Lernziel ist agentic Coding und Requirements Engineering mit Claude Code, nicht das Fertigwerden.
+Material für den Workshop „IT-Bootcamp Track 1“ (rund 18 Personen in Gruppen von drei bis sechs). Die Teilnehmenden sind Fachleute für Versicherung ohne Programmiererfahrung. Lernziel ist, mit Claude Code vom Gespräch mit der Fachperson zu geprüftem Code zu kommen, nicht das Fertigwerden.
 
-Jede Gruppe baut unabhängig die komplette App: eine Schadenakte wandert durch vier Stages, dazu die Oberfläche. Innerhalb der Gruppe übernimmt jede Person einen Task:
+Jede Gruppe baut gemeinsam eine App: Eine Schadenakte wandert durch vier Stages, dazu die Oberfläche.
 
-| Task | Package | Stage |
-|------|---------|-------|
+| Task | Package | Was |
+|------|---------|-----|
 | 1 | `packages/stage1` | Schadenaufnahme |
 | 2 | `packages/stage2` | Deckungsprüfung |
 | 3 | `packages/stage3` | Schadenbewertung |
 | 4 | `packages/stage4` | Regulierung |
-| 5 | `packages/ui` | Oberfläche |
+| 5 | `packages/ui` | Oberfläche (Vorgangsansicht) |
+| 6 | `packages/intake` | Meldeformular, nur bei sechs Personen |
 
-Am Anfang trägt sich jede Person mit `pnpm desk <Task> <Vorname>` ein (landet in `team.json`) und bekommt eine eigene Claude-Session, die nur in ihr Package schreibt. Jede Gruppe arbeitet auf ihrem Branch `workshop/gruppe<N>`. Die Tasks reden nur über den Contract der Gruppe (`contracts/`) miteinander. Fehlt einem Task ein Feld, beantragt die Person es mit `/contract-change`.
+Der Ablauf ist als Schlauch gebaut, ohne Abzweigungen:
 
-Der Ablauf pro Task: Fachperson interviewen (`pnpm interview <Task>` oder `/interview`), Anforderungen in `packages/<stage>/requirements.md` schreiben, dann je Anforderung `/spec` (Tests aus den Akzeptanzkriterien), `/implement` (bis grün) und `/verify` (ein zweiter Agent versucht die Umsetzung zu widerlegen). `pnpm check` ist das Gate und läuft vor jedem Push.
+1. **Anmelden:** Im Browser öffnet sich ein Terminal und fragt nach dem Vornamen. Sind alle aus der Gruppe da, tippt eine Person `start`.
+2. **Aufteilen:** Das Setup verteilt die Tasks nach Kopfzahl (bei drei oder vier Personen werden Stages zusammengelegt, bei sechs wird die Oberfläche geteilt), legt jeder Person einen eigenen Arbeitsstand an und stellt die passenden Musterakten bereit.
+3. **Arbeiten:** Claude öffnet sich am eigenen Arbeitsplatz. Die Person tippt `/weiter` und bekommt genau einen nächsten Schritt: Interview, eine Anforderung aufschreiben, Tests zuerst, umsetzen, prüfen lassen, sichern, `/clear`.
+4. **Zusammenführen:** Jede geprüfte Anforderung landet von selbst im Stand der Gruppe. Git, Terminal-Befehle und Contract-Anträge braucht niemand.
+
+Wer vom Weg abkommt, bekommt es vom Setup gesagt: Terminal-Befehle im Chat, Stapelaufträge, Abstecher zu Dashboards und überlange Sitzungen fangen Hooks ab (`scripts/hooks/`).
 
 Auf dem Workshop-Server ist Claude Code vorab angemeldet (API-Key oder Abo-Token, siehe `deploy/README.md`). Niemand meldet sich persönlich an.
 
@@ -29,16 +35,19 @@ In dieser Reihenfolge lesen:
 1. diese README
 2. `CLAUDE.md` im Root: die Regeln, die Claude Code im Workshop befolgt
 3. `packages/stage1/CLAUDE.md` und `packages/stage1/requirements.md`: so sieht der Arbeitsplatz eines Tasks aus
-4. `scripts/desk.mjs` und `scripts/hooks/pre-tool-use.mjs`: wie Aufteilung und Schreibschutz pro Person funktionieren
-5. `.claude/commands/` und `.claude/agents/`: die Workshop-Befehle und Subagenten
-6. `deploy/README.md`: der Workshop-Server
+4. `scripts/start.mjs` und `scripts/lib/desks.mjs`: Anmeldung, Aufteilung nach Kopfzahl, eigener Arbeitsstand pro Person
+5. `scripts/lib/steps.mjs` und `scripts/lib/instructions.mjs`: der Schlauch, also welcher Schritt wann dran ist und was Claude dann tut
+6. `scripts/hooks/`: die Sperren (Schreibschutz, Git, abgeschaltete Werkzeuge, Pflicht zum `/clear`)
+7. `.claude/commands/` und `.claude/agents/`: `/weiter`, `/stand`, Test-Autor und Prüfer
+8. `deploy/README.md`: der Workshop-Server
 
 ### Branches
 
 | Branch | Inhalt |
 |--------|--------|
 | `main` | Startstand, von dem die Gruppenbranches abzweigen |
-| `workshop/gruppe<N>` | Arbeitsstand von Gruppe N am Workshoptag, legt der Server beim ersten Start an |
+| `workshop/gruppe<N>` | Stand von Gruppe N: alles, was geprüft und freigegeben ist. Legt der Server beim ersten Start an |
+| `desk/gruppe<N>/<name>` | Arbeitsstand einer Person, entsteht beim Start der Gruppe |
 | `gruppe1` | Testlauf vom Oktober (noch im alten Modell, IDs `G1-REQ-…`): Stage 1 einmal komplett durchgespielt (Interview, Anforderungen, Tests, Umsetzung, Demo) |
 | `testversion` | `gruppe1` plus Server-Setup, lokal startbar. Anleitung in `TESTVERSION.md` auf dem Branch, Tag `testversion-2026-10-27` |
 
@@ -46,20 +55,16 @@ Die Gruppenbranches heißen bewusst `workshop/gruppe<N>`, damit sie nicht mit de
 
 ### Was nicht im Repo liegt
 
-- **Personas** (die Fachpersonen für die Interviews). Sie liegen bewusst außerhalb, sonst könnten die Gruppen sie lesen. Ohne sie funktionieren `pnpm interview` und `/interview` nicht, alles andere schon.
+- **Personas** (die Fachpersonen für die Interviews). Sie liegen bewusst außerhalb, sonst könnten die Gruppen sie lesen. Ohne sie funktioniert das Interview (Level 1) nicht, alles andere schon.
 - **`deploy/.env`** mit Passwörtern und der Claude-Anmeldung (API-Key oder Abo-Token). Wird mit `deploy/init-env.sh` lokal erzeugt.
 
 ### Bekannter Stand
 
-Der Testlauf hat einige Lücken im Setup gezeigt, die noch offen sind. Die wichtigsten:
-
-- Stage 1 hat noch keinen eigenen Eingang. Es fehlen Eingangsmeldungen unter `fixtures/0-1/`, und `pnpm conformance` gibt Stage 1 Akten ohne Rohmeldung.
-- Der Subagent `test-author` liefert schwankende Qualität (Typfehler, ignorierte Ausgangslage). Parallele Läufe können sich gegenseitig Dateien überschreiben.
-- Die Envelope-Regeln des Contracts (z. B. Format von `error.code`) stehen nur im Schema, nicht in der Doku.
-- Push aus den Workshop-Containern braucht noch vorbereitete Zugangsdaten (`GIT_PUSH_TOKEN`).
-- Die Personas liegen im privaten Lösungsrepo und sind noch nicht auf das Task-Modell geprüft. Wenn sie von „Gruppe 2“ sprechen, ist jetzt „Task 2“ gemeint; inhaltlich ändert sich nichts.
-
-Die vollständige Liste steht in `packages/stage1/testlauf.md` auf dem Branch `gruppe1`.
+- **Noch nicht mit echtem Claude Code durchgespielt:** Aufteilung, Zyklus, Sichern und Contract-Automatik sind per Test und Simulation geprüft. Dass die Hooks in der Claude-Code-Version des Images so greifen wie beschrieben (vor allem `UserPromptSubmit` bei `/weiter` und `SessionStart` nach `/clear`), braucht einen Probelauf auf dem Server vor dem Workshop.
+- Das automatische Öffnen des Terminals im Browser (`.vscode/tasks.json`) ist ebenfalls ungetestet. Fallback: Menü ☰ → Terminal → New Terminal.
+- Die Fachperson für das Meldeformular (Task 6) ist die der Schadenaufnahme. Ob ihre Persona Fragen zum Formular gut beantwortet, ist nicht geprüft.
+- Der Subagent `test-author` liefert schwankende Qualität. Seit immer nur eine Anforderung in Arbeit ist, überschreiben sich parallele Läufe nicht mehr.
+- Stage 1 hat keine eigenen Eingangsmeldungen unter `fixtures/`. `akten/eingang/` und `pnpm conformance` leiten sie aus `fixtures/1-2/` ab (Akte ohne Block `stage1`).
 
 ## Schnellstart
 
@@ -78,22 +83,26 @@ Oder im Devcontainer öffnen, dort läuft das automatisch.
 | Pfad | Inhalt |
 |------|--------|
 | `contracts/claim.base.schema.json` | Basis-Contract der Schadenakte (JSON Schema 2020-12) |
-| `contracts/patches/` | freigegebene Änderungen, werden beim Build auf die Basis gelegt |
-| `contracts/requests/` | Änderungsanträge der Gruppen |
+| `contracts/patches/` | Ergänzungen der Gruppe (`pnpm contracts:add`), werden beim Build auf die Basis gelegt |
 | `fixtures/<von>-<nach>/` | Musterakten je Stage-Grenze: Standardfall, Grenzfall, Ablehnungskandidat |
-| `packages/stage1` … `stage4`, `packages/ui` | je ein Task (eine Person pro Gruppe) |
-| `team.json` | wer in der Gruppe welchen Task hat (entsteht mit `pnpm desk`, nur auf den Gruppenbranches) |
-| `scripts/` | doctor, Contract-Build, Klassifikator |
+| `packages/stage1` … `stage4`, `packages/ui`, `packages/intake` | je ein Task |
+| `team.json` | wer in der Gruppe welchen Task hat (entsteht beim Start der Gruppe, nur auf den Gruppenbranches) |
+| `akten/` | Musterakten passend zum eigenen Arbeitsplatz (erzeugt, nicht versioniert) |
+| `scripts/` | Anmeldung, Schlauch, Sichern, Contract, Hooks, doctor |
 | `deploy/` | Workshop-Server: Dockerfile, Compose, Caddy (siehe `deploy/README.md`) |
 
 ## Befehle
 
 | Befehl | Zweck |
 |--------|-------|
-| `pnpm desk [<Task> [<Name>]]` | Task übernehmen, Teamstand zeigen, eigene Claude-Session starten |
+| `pnpm start` | Anmeldung und Arbeitsplatz (läuft auf dem Server von selbst in jedem Terminal) |
+| `pnpm next` | der nächste Schritt des eigenen Arbeitsplatzes (ruft `/weiter` auf) |
+| `pnpm stand` | wer in der Gruppe wo steht |
+| `pnpm sync save` · `pull` · `publish` | sichern, Stand der Gruppe holen, freigeben |
+| `pnpm contracts:add -` | fehlendes Feld im eigenen Block anlegen |
 | `pnpm run doctor` | prüft, ob die Umgebung arbeitsfähig ist (inkl. Claude-Anmeldung) |
 | `pnpm contracts:build` | baut `contracts/claim.schema.json` und validiert alle Fixtures |
-| `pnpm contracts:classify <antrag.json>` | ordnet einen Änderungsantrag als approve, escalate oder reject ein |
+| `pnpm contracts:classify <antrag.json>` | zeigt, wie der Klassifikator einen Entwurf einordnet (approve, escalate, reject) |
 | `pnpm mock-server` | Musterakten und Contract per HTTP (Port 4000) |
 | `pnpm conformance [N]` | prüft, ob die Stages die Envelope-Regeln einhalten |
 | `pnpm test` | Tests der Skripte |

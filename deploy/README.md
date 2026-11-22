@@ -5,9 +5,10 @@ code-server (VS Code im Browser), Node 22.11.0, pnpm 9.12.3 und Claude Code. Das
 Start geklont und auf den Gruppenbranch `workshop/gruppe<N>` gestellt, die Abhängigkeiten kommen aus dem
 im Image vorgewärmten pnpm-Store.
 
-Jede Gruppe baut die komplette App. Die fünf Personen einer Gruppe teilen sich den Arbeitsplatz: jede
-öffnet ihn in einem eigenen Browser-Tab, öffnet ein Terminal und startet `pnpm desk <Task> <Vorname>`.
-Das trägt sie in `team.json` ein und startet ihre Claude-Session, die nur in ihr Package schreibt.
+Jede Gruppe baut die komplette App. Die Personen einer Gruppe teilen sich den Container, aber nicht den
+Arbeitsstand: Jede öffnet den Arbeitsplatz in einem eigenen Browser-Tab, gibt im Terminal, das sich öffnet,
+ihren Vornamen ein und wartet, bis eine Person der Gruppe `start` tippt. Dann verteilt das Setup die Tasks
+nach Kopfzahl, legt jeder Person einen eigenen Arbeitsstand an und öffnet Claude, das nur in ihre Packages schreibt.
 Claude Code ist dabei schon angemeldet (siehe [Anmeldung](#anmeldung-claude-code)).
 
 | Adresse | Ziel |
@@ -150,10 +151,9 @@ ausläuft.
 > und hat einen API-Key als Reserve in der Tasche. Für den Regelbetrieb sind API-Key oder Claude for
 > Teams/Enterprise die vorgesehenen Wege.
 
-Terminals öffnen in code-server als große Tabs (Einstellungen in `~/.local/share/code-server/User/settings.json`, ohne Willkommensseite und ohne eingebaute KI-Funktionen). Beim Öffnen eines Terminals startet `scripts/tutorial.mjs` (Eintrag in `~/.bashrc`, gesetzt beim
-Container-Start): Solange in der Gruppe noch Tasks frei sind, begrüßt es mit dem Angebot zum geführten
-Einstieg samt Eintragen per `pnpm desk`, danach zeigt es nur einen kurzen Hinweis. Wieder aufrufen mit
-`tutorial` oder `tutorial <Kapitel>`.
+Terminals öffnen in code-server als große Tabs (Einstellungen in `~/.local/share/code-server/User/settings.json`, ohne Willkommensseite und ohne eingebaute KI-Funktionen). Beim Laden des Arbeitsplatzes im Browser öffnet sich von selbst ein Terminal (`.vscode/tasks.json`), und jedes neue Terminal startet `scripts/start.mjs` (Eintrag in `~/.bashrc`, gesetzt beim Container-Start): Vorname eingeben, warten, bis alle da sind, eine Person tippt `start`. Danach öffnet sich Claude am eigenen Arbeitsplatz. Nach `/exit` führt Enter zurück in die Sitzung; wieder aufrufen mit `start`.
+
+**Kontingent:** Mit einem Abo-Token zählen alle Sitzungen gegen dasselbe Zeitfenster. Am 21.11. kamen 73 % des Verbrauchs aus überlangen Hauptsitzungen. Dagegen wirken jetzt drei Dinge: Nach jeder freigegebenen Anforderung ist `/clear` Pflicht, ab 120.000 Token nimmt eine Sitzung nichts mehr an (`scripts/hooks/user-prompt.mjs`), und `CLAUDE_CODE_AUTO_COMPACT_WINDOW=100000` lässt Claude früh zusammenfassen (in `.env` änderbar). Wer sichergehen will, gibt jeder Gruppe ein eigenes Token (`CLAUDE_CODE_OAUTH_TOKEN_GRUPPE<N>`), dann reißt eine Gruppe die anderen nicht mit. `./status.sh` zeigt die Größe jeder Sitzung.
 
 **Modelle:** `deploy/managed-settings.json` liegt im Image unter `/etc/claude-code/` (root, für
 Teilnehmende nicht änderbar) und erlaubt nur Sonnet und Haiku. Wer per `/model` oder `--model` Opus
@@ -182,12 +182,22 @@ Alle stehen nur in `deploy/.env` auf der VM, nie im Repo.
   (`git config bootcamp.branch`); das Token selbst könnte technisch jeden Branch schreiben.
 - `GRUPPE<N>_PASSWORD`: code-server-Login, am Workshoptag an die Gruppe geben (alle fünf nutzen dasselbe).
 
-## Gruppen und Tasks
+## Gruppen und Arbeitsplätze
 
-Gruppe 1 und 4 bauen alle fünf Tasks, Gruppe 2 und 3 ohne Oberfläche (`BOOTCAMP_TASKS: "1,2,3,4"` in
-`compose.yaml`; `pnpm desk`, Team-Check und Tutorial bieten dann nur Task 1 bis 4 an). Gruppe 5 ist
-Reserve und startet nur mit `docker compose --profile reserve up -d gruppe5`. `check-auth.sh` und
-`collect.sh` prüfen ohne Argumente alle laufenden Gruppen.
+Wie viele Personen in einer Gruppe sitzen, muss vorher niemand wissen. Jede Person meldet sich mit ihrem Vornamen an; wenn eine Person `start` bestätigt, verteilt `scripts/start.mjs` die Tasks nach Kopfzahl:
+
+| Personen | Arbeitsplätze |
+|---|---|
+| 3 | Aufnahme + Deckung · Bewertung + Regulierung · Oberfläche |
+| 4 | Aufnahme + Deckung · Bewertung · Regulierung · Oberfläche |
+| 5 | je ein Task |
+| 6 | je ein Task, die Oberfläche geteilt in Vorgangsansicht und Meldeformular |
+| ab 7 | wie 6, weitere Personen als Tandem |
+
+- Jede Person bekommt einen eigenen Arbeitsstand unter `~/desks/<name>` (git worktree, Branch `desk/gruppe<N>/<name>`). `~/workspace` ist der Stand der Gruppe; dort landet nur Geprüftes.
+- Wer später kommt, öffnet ein Terminal, gibt seinen Vornamen ein und setzt sich als Tandem zu jemandem dazu. Die Aufteilung selbst ändert sich nach dem Start nicht mehr.
+- Hat sich jemand vor dem Start vertippt: `docker compose exec gruppe3 bash -c 'cd ~/workspace && node scripts/start.mjs --reset'` leert die Anmeldeliste.
+- Gruppe 5 ist Reserve und startet nur mit `docker compose --profile reserve up -d gruppe5`. `check-auth.sh`, `collect.sh` und `status.sh` nehmen ohne Argumente alle laufenden Gruppen.
 
 ## Betrieb
 
@@ -195,10 +205,11 @@ Reserve und startet nur mit `docker compose --profile reserve up -d gruppe5`. `c
 docker compose ps
 docker compose restart gruppe3                  # Arbeitsplatz neu starten, Workspace bleibt erhalten
 docker compose rm -sf gruppe3 && docker volume rm aifactory_home3 && docker compose up -d gruppe3   # frisch klonen (Branch vom Remote bleibt)
-docker compose exec gruppe3 bash -c 'cd ~/workspace && cat team.json'   # wer in Gruppe 3 welchen Task hat
+./status.sh                                     # wer steht wo, wer hängt, wie groß sind die Sitzungen (watch -n 30 ./status.sh)
+docker compose exec gruppe3 bash -c 'cd ~/workspace && node scripts/start.mjs --status'   # Anmeldeliste und Aufteilung von Gruppe 3
 ./check-auth.sh 3                               # Anmeldung von Gruppe 3 prüfen
 docker compose down                             # alles stoppen, Volumes bleiben
-./collect.sh                                    # Gruppenbranches sichern (Bundles in /srv/aifactory/sammlung, Branches im Host-Repo)
+./collect.sh                                    # Gruppen- und Arbeitsplatz-Branches sichern (Bundles in /srv/aifactory/sammlung, Branches im Host-Repo)
 ./collect.sh --push                             # zusätzlich mit deinem Git-Zugang nach GitHub pushen
 ./message.sh alle "Um 12:30 Mittagspause"         # Nachricht an alle Gruppen (oder: 2, 1,3)
 ```
@@ -207,8 +218,9 @@ docker compose down                             # alles stoppen, Volumes bleiben
 (`~/Nachrichten/` im Container, nicht im Repo) und schreibt sie als gelbe Zeile in alle offenen Terminals.
 Wer gerade nicht eingeloggt ist, sieht sie nicht: Wichtiges zusätzlich im Raum ansagen.
 
-Ohne `GIT_PUSH_TOKEN` pushen die Gruppen nicht selbst; `collect.sh` holt den committeten Stand aus den
-Containern. Nicht committete Änderungen meldet es nur. Zwischendurch laufen lassen ist eine billige Sicherung.
+Die Gruppen pushen nicht, auch nicht mit `GIT_PUSH_TOKEN`: Schreibende Git-Befehle sind an den Arbeitsplätzen gesperrt. `collect.sh` lässt jeden Arbeitsplatz zuerst sichern und holt dann den Gruppenbranch und alle Arbeitsplatz-Branches. Zwischendurch laufen lassen ist eine billige Sicherung.
+
+**Eingreifen als Leitung:** In einem Terminal des Arbeitsplatzes die Anmeldung mit Strg+C abbrechen und `leitung` tippen. Das setzt `BOOTCAMP_ADMIN=1` (Schreibschutz und Sperren aus) und wechselt nach `~/workspace`. Die Arbeit einer Person liegt unter `~/desks/<name>`; ihr Stand und ihr nächster Schritt: `cd ~/desks/<name> && pnpm next`. Hängt eine Sitzung an der Pflicht zum `/clear`, reicht es, dass die Person `/clear` tippt oder mit `/exit` und Enter neu startet.
 
 Fallback: Snapshot der VM nach dem Testlauf, dazu Codespaces aus demselben Repo (Devcontainer nutzt
 dieses Dockerfile).
@@ -221,14 +233,18 @@ Aus den Testläufen bleiben persönliche Logins und Testarbeit in den Volumes un
       selbst, sobald eine Server-Anmeldung gesetzt ist; GitHub-Anmeldung in code-server abmelden.
       Sicherer: Volumes frisch anlegen (`docker compose down -v`, dann `up -d`).
 - [ ] Testbranches wie `gruppe1` auf GitHub löschen oder bewusst als Beispiel behalten.
-- [ ] Push-Frage entscheiden: `GIT_PUSH_TOKEN` setzen oder Gruppen ohne Push arbeiten lassen.
 - [ ] Anmeldung entscheiden: Workshop-API-Key mit Spend Cap oder Abo-Token (Abschnitt Anmeldung, Warnung
       dort lesen). Nach dem Workshop widerrufen.
 - [ ] `./check-auth.sh` am Vorabend: alle fünf Gruppen ✓.
 - [ ] `GROUP_BRANCH_PREFIX` prüfen. Gibt es `workshop/gruppe<N>` schon aus einer Probe, neues Präfix
       wählen (z. B. `workshop-2026-12/gruppe`) oder die alten Branches löschen, sonst starten die
       Gruppen mit dem Stand der Probe.
-- [ ] Am Workshopbeginn: jede Gruppe trägt sich mit `pnpm desk <Task> <Vorname>` ein, bevor jemand baut.
+- [ ] **Probelauf mit echtem Claude Code** in einer Gruppe, zu zweit in zwei Browser-Tabs: anmelden, `start`,
+      `/weiter` bis zur ersten freigegebenen Anforderung. Dabei prüfen: Das Terminal öffnet sich von selbst.
+      `pnpm check` als Eingabe im Chat wird abgefangen. Nach dem Freigeben nimmt die Sitzung nur `/clear` an,
+      und nach `/clear` geht `/weiter` wieder. Die Arbeit erscheint in `~/workspace` (`git log`).
+      `./status.sh` zeigt beide Arbeitsplätze. Diese Punkte sind bisher nur per Test und Simulation geprüft.
+- [ ] Am Workshopbeginn: Jede Person gibt ihren Vornamen ein, eine Person pro Gruppe tippt `start`, wenn alle da sind.
 - [ ] Auf der VM `REPO_BRANCH=main` setzen (der alte Branch `claude/server-setup` ist gelöscht).
 
 ## Lokal ausprobieren
@@ -244,5 +260,6 @@ setzen und `https://gruppe1.localhost:8443` im Browser öffnen (`*.localhost` l�
 curl -k --resolve gruppe1.localhost:443:127.0.0.1 https://gruppe1.localhost/
 ```
 
-Für ein UI hinter `app-gruppe<N>` muss der Dev-Server auf `0.0.0.0:5173` lauschen und den Host
-zulassen, bei Vite `server: { host: true, allowedHosts: true }`.
+Die Vorschau der Oberfläche (`pnpm vorschau`) läuft pro Arbeitsplatz auf einem eigenen Port (5173 plus
+Nummer des Arbeitsplatzes) und ist über die Portweiterleitung von code-server erreichbar:
+`https://gruppe<N>.<Domain>/proxy/<Port>/`. Die Adresse nennt das Skript beim Start.

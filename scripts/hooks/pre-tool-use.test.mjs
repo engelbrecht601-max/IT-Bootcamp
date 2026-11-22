@@ -29,8 +29,8 @@ test("am Schreibtisch nur das Package des eigenen Tasks", () => {
 
 test("im Gruppen-Arbeitsplatz ohne Schreibtisch kein Schreiben in packages/", () => {
   const reason = check(edit("packages/stage2/src/index.ts"), workspace);
-  assert.match(reason, /pnpm desk/);
-  assert.match(check(bash("touch packages/ui/src/x.ts"), workspace), /pnpm desk/);
+  assert.match(reason, /keinem Arbeitsplatz/);
+  assert.match(check(bash("touch packages/ui/src/x.ts"), workspace), /keinem Arbeitsplatz/);
   assert.equal(check(edit("README.md"), workspace), null);
   assert.equal(check(bash("cat packages/stage2/src/index.ts"), workspace), null);
 });
@@ -40,12 +40,50 @@ test("ohne Gruppen-Arbeitsplatz (lokal) bleibt alles außer contracts/ offen", (
   assert.equal(check(bash("git add -A"), none), null);
 });
 
-test("im geteilten Checkout kein git add -A und kein commit -a", () => {
-  for (const cmd of ["git add -A", "git add .", "git add --all", "git add -u", "git commit -a -m x", "git commit -am x", "git add packages/stage2 && git commit --all"]) {
-    assert.match(check(bash(cmd), desk(2)) ?? "", /eigene Dateien/, cmd);
+test("am Arbeitsplatz gehört Git dem Setup: nur lesen, schreiben über pnpm sync", () => {
+  for (const cmd of ["git add -A", "git add packages/stage2", "git commit -m x", "git commit -am x", "git push", "git reset --soft HEAD~1", "cd packages/stage2 && git stash", "git -C ../x merge main", "git checkout -b neu", "git worktree add ../y"]) {
+    assert.match(check(bash(cmd), desk(2)) ?? "", /pnpm sync/, cmd);
   }
-  assert.equal(check(bash("git add packages/stage2"), desk(2)), null);
-  assert.equal(check(bash("git add ./packages/stage2/src/a.ts && git commit -m 'feat(stage2): x'"), desk(2)), null);
+  for (const cmd of ["git status --short", "git diff packages/stage2", "git log --oneline -5", "git show HEAD:team.json", "pnpm sync save", "pnpm sync publish"]) {
+    assert.equal(check(bash(cmd), desk(2)), null, cmd);
+  }
+});
+
+test("ein Arbeitsplatz mit zusammengelegten Stages schreibt in alle seine Packages", () => {
+  const merged = { tasks: [1, 2], group: "3" };
+  assert.equal(check(edit("packages/stage1/src/index.ts"), merged), null);
+  assert.equal(check(edit("packages/stage2/requirements.md"), merged), null);
+  assert.match(check(edit("packages/stage3/src/index.ts"), merged), /packages\/stage1\/ und packages\/stage2\//);
+  assert.match(check(bash("rm packages/ui/src/index.ts"), merged), /nur in/);
+});
+
+test("am Arbeitsplatz entsteht nichts außerhalb des eigenen Packages", () => {
+  assert.match(check(edit("dashboard/index.html"), desk(1)), /ideen\.md/);
+  assert.match(check(edit("handover.md"), desk(1)), /ideen\.md/);
+  assert.equal(check(edit("/tmp/claude-1000/scratchpad/notiz.md"), desk(1)), null, "Ablage außerhalb des Repos bleibt offen");
+});
+
+test("abgeschaltete Werkzeuge: Veröffentlichen, Nachrichten zwischen Sessions, geplante Aufgaben, Web", () => {
+  for (const tool of ["Artifact", "SendMessage", "ListAgents", "CronCreate", "ScheduleWakeup", "WebSearch", "WebFetch", "EnterWorktree", "mcp__Canva__create-design"]) {
+    assert.match(check({ tool_name: tool, tool_input: {} }, desk(3)) ?? "", /abgeschaltet/, tool);
+    assert.equal(check({ tool_name: tool, tool_input: {} }, none), null, `${tool} lokal`);
+  }
+  assert.equal(check({ tool_name: "Read", tool_input: { file_path: "packages/ui/src/index.ts" } }, desk(3)), null);
+});
+
+test("Subagenten: nur Test-Autor, Prüfer und Fachperson, immer im Vordergrund", () => {
+  const agent = (subagent_type, extra = {}) => ({ tool_name: "Agent", tool_input: { subagent_type, prompt: "x", ...extra } });
+  for (const type of ["test-author", "verifier", "persona-stage4", "persona-ui"]) assert.equal(check(agent(type), desk(4)), null, type);
+  for (const type of ["general-purpose", "Explore", "", "claude"]) assert.match(check(agent(type), desk(4)) ?? "", /abgeschaltet/, type);
+  assert.match(check(agent("verifier", { run_in_background: true }), desk(4)), /Vordergrund/);
+});
+
+test("keine eigenen Server, kein npx, kein Internet", () => {
+  assert.match(check(bash("python3 -m http.server 8000"), desk(5)), /pnpm vorschau/);
+  assert.match(check(bash("cd packages/ui && npx getdesign@latest add sap"), desk(5)), /abgeschaltet/);
+  assert.match(check(bash("curl -s https://example.com/x.js -o x.js"), desk(5)), /abgeschaltet/);
+  assert.equal(check(bash("curl -s http://localhost:4000/claims"), desk(5)), null);
+  assert.equal(check(bash("pnpm vorschau"), desk(5)), null);
 });
 
 test("Shell-Schreibzugriffe auf contracts/ werden blockiert, Lesen und die Skripte nicht", () => {
@@ -53,7 +91,7 @@ test("Shell-Schreibzugriffe auf contracts/ werden blockiert, Lesen und die Skrip
   assert.ok(check(bash("rm contracts/patches/T1-CR-001.json"), none));
   assert.ok(check(bash("sed -i s/a/b/ contracts/claim.base.schema.json"), none));
   assert.equal(check(bash("cat contracts/claim.schema.json"), none), null);
-  assert.equal(check(bash("pnpm contracts:decide T1-CR-001"), desk(1)), null);
+  assert.equal(check(bash("echo '{}' | pnpm contracts:add -"), desk(1)), null);
 });
 
 test("gefährliche Git-Befehle werden blockiert", () => {
@@ -61,7 +99,7 @@ test("gefährliche Git-Befehle werden blockiert", () => {
   assert.ok(check(bash("git push -f"), desk(1)));
   assert.ok(check(bash("git reset --hard HEAD~1"), none));
   assert.ok(check(bash("git push --no-verify"), none));
-  assert.equal(check(bash("git push"), desk(1)), null);
+  assert.equal(check(bash("git push"), none), null, "außerhalb des Workshops bleibt ein normaler Push erlaubt");
 });
 
 test("Heredoc-Inhalte und Lesezugriffe lösen keinen Alarm aus", () => {
@@ -82,7 +120,7 @@ test("im Gruppen-Arbeitsplatz nichts unter .claude/ anlegen", () => {
   assert.match(check(edit(".claude/commands/x.md"), workspace), /\.claude\//);
   assert.match(check(bash("echo x > .claude/agents/a.md"), desk(1)), /\.claude\//);
   assert.equal(check(bash("cat .claude/settings.json"), desk(1)), null);
-  assert.equal(check(edit(".claude/tmp/contract-draft.json"), desk(2)), null, "/contract-change legt dort Entwürfe ab");
+  assert.equal(check(edit(".claude/tmp/contract-draft.json"), desk(2)), null, "Ablage für Entwürfe");
   assert.equal(check(bash("cat > .claude/tmp/contract-draft.json <<'EOF'"), desk(2)), null);
   assert.equal(check(edit(".claude/agents/a.md"), none), null, "lokal bleibt .claude/ pflegbar");
   assert.equal(check(edit(".claude/agents/a.md"), admin), null);

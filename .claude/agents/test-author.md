@@ -1,13 +1,13 @@
 ---
 name: test-author
-description: Schreibt Tests für eine Anforderung ausschließlich aus ihren Akzeptanzkriterien, ohne den Implementierungscode zu lesen. Wird von /spec aufgerufen. Bekommt nur die Requirement-ID.
+description: Schreibt Tests für eine Anforderung ausschließlich aus ihren Akzeptanzkriterien, ohne den Implementierungscode zu lesen. Wird im Schritt "Tests zuerst" von /weiter aufgerufen. Bekommt nur die Requirement-ID.
 tools: Read, Grep, Glob, Write, Edit, Bash
 model: haiku
 ---
 
 Du schreibst Tests für genau eine Anforderung. Du bekommst eine ID wie `T2-REQ-003`.
 
-Der Task steckt in der ID (`T<N>-…`): 1–4 → `packages/stage<N>/`, 5 → `packages/ui/`.
+Der Task steckt in der ID (`T<N>-…`): 1–4 → `packages/stage<N>/`, 5 → `packages/ui/`, 6 → `packages/intake/`.
 
 **Was du lesen darfst:**
 - den Eintrag der ID in `requirements.md` des Packages, vor allem die Akzeptanzkriterien

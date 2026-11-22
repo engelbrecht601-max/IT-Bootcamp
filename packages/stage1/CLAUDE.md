@@ -2,23 +2,26 @@
 
 Nimmt die Schadenmeldung auf und legt die Grunddaten des Vorgangs an.
 
-## Euer Bereich
+## Bereich
 
-- Wer Task 1 übernommen hat (`pnpm desk 1 <Vorname>`), schreibt nur in `packages/stage1/`. Die anderen Packages bauen andere Personen eurer Gruppe parallel im selben Checkout; ihr lest sie, ändert sie aber nicht. `contracts/` ist schreibgeschützt.
-- Im Claim schreibt ihr nur in den Block `stage1`. Fremde Blöcke lest ihr, ändert sie aber nie.
+- Geschrieben wird nur in `packages/stage1/`, und nur vom Arbeitsplatz, der diesen Task trägt. Die anderen Packages bauen andere Personen der Gruppe an eigenen Arbeitsständen; lesen ja, ändern nie. `contracts/` ist schreibgeschützt.
+- Im Claim schreibt die Stage nur in den Block `stage1`. Fremde Blöcke liest sie, ändert sie aber nie.
 - Einstieg ist `run(claim)` in `src/index.ts`. Sie bekommt eine Akte und gibt die ergänzte Akte zurück.
 
 ## Eingang und Übergabe
 
-- **Eingang:** Die Meldung kommt von außen; als Beispiele für eure Ausgabe dienen die Akten in `fixtures/1-2/`. Dort liegen je ein Standardfall, ein Grenzfall und ein Ablehnungskandidat. Entwickelt dagegen, statt auf den vorherigen Task zu warten.
-- **Übergabe an:** Deckungsprüfung (Task 2). Eure Ausgabe muss gegen `contracts/claim.schema.json` valide sein. `meta.currentStage` zeigt danach auf die nächste Stage.
-- **Trace:** Hängt genau einen Eintrag an, mit `stage: 1` und `action: "erfasst"`, oder `"abgebrochen"` zusammen mit einem `error`-Block.
-- Ihr verantwortet auch die Übergabe: Was braucht die nächste Stage von euch? Fragt nach.
+- **Eingang:** Die Meldung kommt von außen und hat noch keinen Stage-Block. So sieht sie aus: `akten/eingang/` (bei getrennten Aufgaben sind das die Akten aus `fixtures/1-2/` ohne den Block `stage1`).
+- **Ziel:** So kann die Akte nach dieser Stage aussehen: `fixtures/1-2/`. Eine mögliche Lösung, nicht die einzig richtige; was gilt, sagt die Fachperson.
+- **Übergabe an:** Deckungsprüfung (Task 2). Die Ausgabe muss gegen `contracts/claim.schema.json` valide sein. `meta.currentStage` zeigt danach auf die nächste Stage.
+- **Trace:** genau ein neuer Eintrag mit `stage: 1` und `action: "erfasst"`, oder `"abgebrochen"` zusammen mit einem `error`-Block.
+- Sind Stages an einem Arbeitsplatz zusammengelegt, zeigt `akten/eingang/` den Eingang der ersten und `akten/ziel/` das Ziel der letzten Stage.
 
 ## Arbeitsweise
 
-1. Anforderungen im Interview mit der Fachperson erheben, nicht erfinden: `pnpm interview 1` im zweiten Terminal oder `/interview 1 <Frage>`.
-2. In `requirements.md` festhalten, nach der Vorlage dort.
-3. Pro Anforderung spezifizieren, implementieren und verifizieren. Tests liegen neben dem Code als `src/*.test.ts` und tragen die ID im Namen.
-4. Fehlt ein Feld im Contract: `/contract-change T1-REQ-NNN <was fehlt>`. Bis zur Entscheidung arbeitet ihr lokal weiter.
-5. Bekommt ihr neue Felder, pflegt euren `Claim`-Typ in `src/claim.ts` nach.
+Der Ablauf steht in der `CLAUDE.md` an der Wurzel: Die Person tippt `/weiter`, `pnpm next` nennt den einen Schritt.
+
+- Fachliche Regeln kommen aus dem Interview mit der Fachperson (Subagent `persona-stage1`, Protokoll in `interview.md`), nie aus den Musterakten allein und nie erfunden.
+- Anforderungen stehen in `requirements.md`, eine zur Zeit, weitere Ideen in `ideen.md`.
+- Tests liegen neben dem Code als `src/*.test.ts` und tragen die ID im Namen.
+- Fehlt ein Feld im Block `stage1`: `pnpm contracts:add`. Danach den `Claim`-Typ in `src/claim.ts` nachziehen.
+- Nach jeder umgesetzten Anforderung: `pnpm conformance 1`.

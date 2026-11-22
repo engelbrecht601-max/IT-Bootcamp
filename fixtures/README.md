@@ -15,4 +15,6 @@ Drei erfundene Vorgänge, abgelegt als Schnappschuss an jeder Stage-Grenze. Jede
 | `grenzfall.json` | Paketzusteller stürzt auf vereistem Gehweg; Meldung elf Monate später, Winterdienst an Mieter übertragen | gedeckt mit Vorbehalt → 4.750 € → Zahlung |
 | `ablehnungskandidat.json` | Rohrbruch in der selbst genutzten Wohnung des Versicherungsnehmers (Eigenschaden) | nicht gedeckt → 0 € → Ablehnung |
 
+`pnpm akten` legt daraus für jeden Arbeitsplatz eine Sicht an, passend zu seinem Zuschnitt: `akten/eingang/` und `akten/ziel/`. Bei zusammengelegten Stages gilt der Eingang der ersten und das Ziel der letzten Stage; die Schadenaufnahme bekommt die Meldung ohne den Block `stage1`. Das passiert von selbst, sobald die Gruppe gestartet ist. `akten/` ist nur zum Ansehen und wird nicht versioniert, Tests lesen aus `fixtures/`.
+
 Die Akten zeigen eine mögliche Lösung, nicht die richtige. Was eine Stage im Grenzfall tun soll, klärt die Person des Tasks im Interview mit der Fachperson.

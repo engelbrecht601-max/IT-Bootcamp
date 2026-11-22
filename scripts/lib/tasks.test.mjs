@@ -5,11 +5,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { TASKS, taskNumber, taskForPackage, emptyTeam, assign, validateTeam, gitIdentity, readTeam, writeTeam, activeTasks } from "./tasks.mjs";
 
-test("fünf Tasks: vier Stages und die Oberfläche", () => {
-  assert.deepEqual(Object.values(TASKS).map((t) => t.pkg), ["stage1", "stage2", "stage3", "stage4", "ui"]);
+test("sechs Tasks: vier Stages, die Oberfläche und das Meldeformular für Gruppen mit sechs Personen", () => {
+  assert.deepEqual(Object.values(TASKS).map((t) => t.pkg), ["stage1", "stage2", "stage3", "stage4", "ui", "intake"]);
+  assert.equal(TASKS[6].persona, "persona-stage1", "das Meldeformular fragt die Fachperson der Schadenaufnahme");
   assert.equal(taskNumber("2"), 2);
   assert.equal(taskNumber(" 5 "), 5);
-  assert.equal(taskNumber(6), undefined);
+  assert.equal(taskNumber(7), undefined);
   assert.equal(taskNumber("ui"), undefined);
   assert.equal(taskForPackage("ui"), 5);
   assert.equal(taskForPackage("stage3"), 3);
@@ -32,7 +33,7 @@ test("eine Person darf mehrere Tasks halten (Gruppe mit weniger als fünf Leuten
 });
 
 test("ungültige Eingaben", () => {
-  assert.throws(() => assign(emptyTeam(), 0, "Ben"), /1 bis 5/);
+  assert.throws(() => assign(emptyTeam(), 0, "Ben"), /1 bis 6/);
   assert.throws(() => assign(emptyTeam(), 1, " "), /Name fehlt/);
   assert.throws(() => assign(emptyTeam(), 1, "x".repeat(41)), /zu lang/);
 });
@@ -67,9 +68,9 @@ test("Git-Identität: lesbarer Name, gültige Adresse ohne Umlaute", () => {
   assert.equal(gitIdentity("!!!", 1).email, "person.gruppe1@localhost");
 });
 
-test("Tasks pro Gruppe: BOOTCAMP_TASKS schränkt ein, ohne Variable gibt es alle fünf", () => {
+test("Tasks der Gruppe kommen aus team.json; vor dem Start gibt es die fünf Standard-Tasks", () => {
   assert.deepEqual(activeTasks({}), [1, 2, 3, 4, 5]);
-  assert.deepEqual(activeTasks({ BOOTCAMP_TASKS: "" }), [1, 2, 3, 4, 5]);
-  assert.deepEqual(activeTasks({ BOOTCAMP_TASKS: "1,2,3,4" }), [1, 2, 3, 4]);
-  assert.deepEqual(activeTasks({ BOOTCAMP_TASKS: " 4, 1,9,1 " }), [1, 4]);
+  assert.deepEqual(activeTasks({ tasks: {} }), [1, 2, 3, 4, 5]);
+  assert.deepEqual(activeTasks({ tasks: { 1: "A", 2: "A", 3: "B", 4: "B", 5: "C" } }), [1, 2, 3, 4, 5]);
+  assert.deepEqual(activeTasks({ tasks: { 6: "F", 1: "A", 2: "B", 3: "C", 4: "D", 5: "E" } }), [1, 2, 3, 4, 5, 6]);
 });
