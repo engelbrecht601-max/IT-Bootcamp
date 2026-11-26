@@ -15,7 +15,8 @@ Claude Code ist dabei schon angemeldet (siehe [Anmeldung](#anmeldung-claude-code
 |---------|------|
 | `https://aifactoryworkshop.de` | Startseite mit Links zu allen Gruppen |
 | `https://gruppe<N>.aifactoryworkshop.de` | code-server der Gruppe N (Passwort aus `.env`, ein Tab pro Person) |
-| `https://app-gruppe<N>.aifactoryworkshop.de` | Port 5173 im Container der Gruppe N (UI-Dev-Server von Task 5) |
+| `https://gruppe<N>.aifactoryworkshop.de/proxy/<Port>/` | Vorschau der Oberfläche eines Arbeitsplatzes (`pnpm vorschau`, Port 5173 plus Nummer des Arbeitsplatzes; die Adresse nennt das Skript) |
+| `https://app-gruppe<N>.aifactoryworkshop.de` | Port 5173 im Container der Gruppe N. Die Arbeitsplätze nutzen 5174 und höher, dort landet nur eine Vorschau, die die Leitung ohne Arbeitsplatz startet. Die Startseite verlinkt das deshalb nicht mehr |
 | `https://app-gruppe<N>.aifactoryworkshop.de/mock/…` | Port 4000 im Container (Mock-Server), z. B. `/mock/claims` |
 
 Dasselbe Dockerfile baut mit `--target base` das Image für den Devcontainer und Codespaces.

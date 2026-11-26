@@ -10,34 +10,47 @@
   table { border-collapse: collapse; width: 100%; margin-bottom: 1.5rem; }
   code { font-size: .9em; }
   td, th { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid #8884; }
+  ol li { margin-bottom: .4rem; }
+  .hint { color: #555; font-size: .95em; }
+  @media (prefers-color-scheme: dark) { .hint { color: #aaa; } }
 </style>
 </head>
 <body>
 <h1>IT-Bootcamp Track 1: agentic Coding am Schadenfall</h1>
 <p>Jede Gruppe baut die komplette Schadensabwicklung. Euer Arbeitsplatz läuft im Browser, das Passwort
 bekommt ihr von der Workshop-Leitung. Alle aus eurer Gruppe öffnen denselben Arbeitsplatz, jede Person in einem eigenen Tab.</p>
-<p>Erster Schritt: Es öffnet sich ein Terminal und fragt nach eurem Vornamen. Wenn alle aus der Gruppe
-angemeldet sind, tippt eine Person <code>start</code>. Danach sprecht ihr nur noch mit Claude; wenn ihr nicht
-weiterwisst, tippt <code>/weiter</code>. Öffnet sich kein Terminal: Menü ☰ → Terminal → New Terminal.</p>
+<h2>So geht es los</h2>
+<ol>
+  <li>Öffnet den Arbeitsplatz eurer Gruppe (unten), jede Person in einem eigenen Tab, und gebt das Passwort ein.</li>
+  <li>Es öffnet sich ein Terminal und fragt nach eurem <strong>Vornamen</strong>. Heißen zwei am Tisch gleich, nehmt den
+    Anfangsbuchstaben des Nachnamens dazu, zum Beispiel <code>Jan B.</code>. Öffnet sich kein Terminal: Menü ☰ → Terminal → New Terminal.</li>
+  <li>Sind alle aus der Gruppe angemeldet, tippt <strong>eine</strong> Person <code>start</code> und bestätigt mit <code>j</code>.
+    Jede Person bekommt dann ihre Station.</li>
+  <li>Ab jetzt sprecht ihr nur noch mit Claude, in ganz normalen Sätzen. Wisst ihr nicht weiter, tippt <code>/weiter</code>.
+    Sagt Claude „Tippe jetzt /clear“, tippt ihr <code>/clear</code> und danach <code>/weiter</code>. Dabei geht nichts verloren.</li>
+</ol>
+<p class="hint">Befehle für das Terminal braucht ihr nicht. Sichern und Zusammenführen macht das Setup von selbst.
+Habt ihr das Terminal geschlossen, öffnet ein neues und gebt denselben Vornamen ein.</p>
+<h2>Stationen</h2>
 <table>
   <thead><tr><th>Task</th><th>Package</th><th>Stage</th></tr></thead>
   <tbody id="tasks"></tbody>
 </table>
 <h2>Arbeitsplätze</h2>
 <table>
-  <thead><tr><th>Gruppe</th><th>Arbeitsplatz</th><th>App</th></tr></thead>
+  <thead><tr><th>Gruppe</th><th>Arbeitsplatz</th></tr></thead>
   <tbody id="gruppen"></tbody>
 </table>
+<p class="hint">Die Vorschau der Oberfläche startet Claude an der Station „Oberfläche“ und nennt dabei die Adresse.</p>
 <script>
   const tasks = [["stage1", "Schadenaufnahme"], ["stage2", "Deckungsprüfung"], ["stage3", "Schadenbewertung"],
-                 ["stage4", "Regulierung"], ["ui", "Oberfläche"]];
+                 ["stage4", "Regulierung"], ["ui", "Oberfläche"], ["intake", "Meldeformular (nur in Gruppen mit sechs Personen)"]];
   document.getElementById("tasks").innerHTML = tasks.map(([pkg, name], i) =>
     `<tr><td>${i + 1}</td><td><code>packages/${pkg}</code></td><td>${name}</td></tr>`).join("");
   const host = location.host;
   document.getElementById("gruppen").innerHTML = [1, 2, 3, 4].map((n) => {
     return `<tr><td>Gruppe ${n}</td>` +
-      `<td><a href="https://gruppe${n}.${host}/">gruppe${n}.${host}</a></td>` +
-      `<td><a href="https://app-gruppe${n}.${host}/">app-gruppe${n}</a></td></tr>`;
+      `<td><a href="https://gruppe${n}.${host}/">gruppe${n}.${host}</a></td></tr>`;
   }).join("");
 </script>
 </body>
