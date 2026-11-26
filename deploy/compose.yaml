@@ -14,6 +14,9 @@ x-workspace: &workspace
       limits:
         cpus: "${WORKSPACE_CPUS:-4}"
         memory: "${WORKSPACE_MEMORY:-12g}"
+        # Prozesse und Threads. Im Betrieb einige hundert; ein Stapel wie am 21.11. (rund 200 Node-Prozesse)
+        # scheitert dann am Start neuer Prozesse, statt den Speicher zu füllen und alle Terminals mitzureißen.
+        pids: ${WORKSPACE_PIDS:-2048}
 
 x-env: &env
   REPO_URL: ${REPO_URL:?REPO_URL in .env setzen}
@@ -23,7 +26,7 @@ x-env: &env
   GIT_PUSH_TOKEN: ${GIT_PUSH_TOKEN:-}
   # Optional: Modell für alle Sessions festlegen, z. B. sonnet, um ein Abo-Kontingent zu strecken.
   ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-}
-  # Ab so vielen Token fasst Claude den Verlauf zusammen (leer: 100000). Kleiner schont das Kontingent.
+  # Fenster für das automatische Zusammenfassen (leer: 140000, Zusammenfassen bei etwa 105.000 Token).
   CLAUDE_CODE_AUTO_COMPACT_WINDOW: ${CLAUDE_CODE_AUTO_COMPACT_WINDOW:-}
 
 services:
