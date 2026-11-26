@@ -25,7 +25,7 @@ Dasselbe Dockerfile baut mit `--target base` das Image für den Devcontainer und
 - VM mit Docker und Compose-Plugin, Ports 80 und 443 offen.
 - Größe: 5 × 4 Kerne und 12 GB (je fünf Claude-Sessions, Tests und Dev-Server parallel), also etwa
   20 vCPU und 64 GB RAM, 100 GB Platte. Claude Code selbst rechnet nicht lokal; der Bedarf kommt von
-  Typecheck, Tests und code-server. Mit `WORKSPACE_CPUS`/`WORKSPACE_MEMORY` in `.env` anpassbar.
+  Typecheck, Tests und code-server. Mit `WORKSPACE_CPUS`/`WORKSPACE_MEMORY` in `.env` anpassbar. `WORKSPACE_PIDS` (Standard 2048) begrenzt Prozesse und Threads pro Container: Ein Stapel paralleler Testläufe scheitert dann am Start neuer Prozesse, statt den Speicher zu füllen. `pnpm test:req` startet nur die Testdateien einer Anforderung, höchstens zwei gleichzeitig.
 - DNS beim Domain-Anbieter:
 
   | Typ | Name | Wert |
