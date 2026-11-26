@@ -13,9 +13,12 @@ import { spawnSync } from "node:child_process";
 import { createInterface } from "node:readline";
 import { TASKS } from "./lib/tasks.mjs";
 import { deskPackages, deskTitle, planFor, readState, writeState } from "./lib/desks.mjs";
-import { deskOf, joinDesk, prepareDesk, register, startGroup } from "./lib/lobby.mjs";
+import { deskOf, joinDesk, prepareDesk, register, registered, startGroup } from "./lib/lobby.mjs";
 import { identityEnv, ROOT } from "./lib/session.mjs";
 
+// Der Zustand der Gruppe hängt am Repo. Wer das Terminal woanders öffnet oder "start" aus einem anderen
+// Ordner tippt, landet trotzdem im richtigen Arbeitsplatz.
+process.chdir(ROOT);
 const group = process.env.BOOTCAMP_GROUP;
 const args = new Set(process.argv.slice(2));
 const say = (s = "") => console.log(s);
@@ -68,6 +71,15 @@ async function main() {
     while (!me) {
       const name = await ask("Wie heißt du (Vorname)? ");
       if (name === null) return;
+      const known = name && registered(name);
+      if (known) {
+        const again = await ask(`„${known}“ ist schon angemeldet. Bist du das, und du hast nur ein weiteres Terminal geöffnet? (j/n) `);
+        if (again === null) return;
+        if (!/^j/i.test(again)) {
+          say("  Dann gib deinen Vornamen und den Anfangsbuchstaben deines Nachnamens ein, zum Beispiel „Jan B.“.");
+          continue;
+        }
+      }
       try {
         me = register(name);
       } catch (err) {
@@ -159,8 +171,12 @@ function work(desk) {
         ...process.env,
         BOOTCAMP_DESK: desk.slug,
         ...(group ? { BOOTCAMP_GROUP: group } : {}),
-        // Lange Verläufe kosten das gemeinsame Kontingent: früh zusammenfassen. Die harte Grenze setzt der Hook.
-        CLAUDE_CODE_AUTO_COMPACT_WINDOW: process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW || "100000",
+        // Claude fasst etwa 35.000 Token vor dem Fenster zusammen. Bei 140.000 also um 105.000, deutlich nach der
+        // harten Grenze des Hooks (90.000): Vorher kommt /clear, das kostet nichts und verliert nichts.
+        CLAUDE_CODE_AUTO_COMPACT_WINDOW: process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW || "140000",
+        // Keine vorformulierten Eingaben (die Person stellt ihre Fragen selbst) und keine Umfragen mitten im Ablauf.
+        CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION: "false",
+        CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
         ...identityEnv(desk, group),
       },
     });

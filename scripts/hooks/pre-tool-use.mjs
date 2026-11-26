@@ -7,7 +7,7 @@
 //   sind am Arbeitsplatz gesperrt (kein add, commit, reset, push, merge …)
 // - Werkzeuge, die vom Auftrag wegführen oder das Kontingent leeren, sind abgeschaltet: Veröffentlichen
 //   (Artifact), Nachrichten zwischen Sessions, geplante Aufgaben, Websuche, freie Subagenten,
-//   Subagenten im Hintergrund, eigene Server und npx
+//   eigene Server und npx
 // - keine KI im Produkt: nichts unter .claude/ anlegen und keine KI-Pakete installieren
 // Workshop-Leitung setzt BOOTCAMP_ADMIN=1, um contracts/ und fremde Packages direkt zu bearbeiten.
 // Exit-Code 2 blockiert den Aufruf; die Meldung auf stderr sieht Claude.
@@ -45,7 +45,8 @@ export function check(input, ctx = fromEnv()) {
     if (tool === "Agent" || tool === "Task") {
       const type = String(args.subagent_type ?? "");
       if (!ALLOWED_AGENTS.test(type)) return `Der Subagent "${type || "ohne Typ"}" ${OFF} Erlaubt sind nur test-author, verifier und die Fachperson.`;
-      if (args.run_in_background) return "Subagenten laufen im Vordergrund, einer nach dem anderen (run_in_background weglassen). So wartet niemand auf Antworten, die noch ausstehen.";
+      // Nicht nach run_in_background blockieren: Claude Code 2.1.285 entfernt den Schalter, bevor der Hook ihn sieht.
+      // Ein Block würde jeden Subagenten sperren. Die Schrittanweisungen nennen den Schalter, adjust() setzt ihn.
       return null;
     }
   }
@@ -55,6 +56,21 @@ export function check(input, ctx = fromEnv()) {
   const file = args.file_path ?? args.notebook_path;
   if (!file || admin) return null;
   return checkPath(relative(ROOT, resolve(ROOT, file)), { tasks, locked });
+}
+
+/**
+ * Korrigiert einen erlaubten Aufruf, statt ihn zu blockieren. Gibt das geänderte tool_input zurück oder null.
+ * Claude Code startet Subagenten von sich aus im Hintergrund, wenn run_in_background nicht ausdrücklich false
+ * ist. Diese Korrektur ist ein Versuch für neuere Versionen: Claude Code 2.1.285 entfernt den Schalter vor dem
+ * Hook und übernimmt die Korrektur nicht. Subagenten laufen dort im Hintergrund, Claude wartet auf ihr Ergebnis.
+ */
+export function adjust(input, ctx = fromEnv()) {
+  const admin = Boolean(ctx.admin);
+  const tasks = admin ? [] : [...(ctx.tasks ?? []), ctx.task].map(taskNumber).filter(Boolean);
+  if (!tasks.length && !(ctx.group && !admin)) return null;
+  const { tool_name: tool, tool_input: args = {} } = input;
+  if ((tool === "Agent" || tool === "Task") && args.run_in_background !== false) return { ...args, run_in_background: false };
+  return null;
 }
 
 function fromEnv(env = process.env) {
@@ -145,10 +161,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   let raw = "";
   process.stdin.on("data", (c) => (raw += c));
   process.stdin.on("end", () => {
-    const reason = check(JSON.parse(raw || "{}"));
+    const input = JSON.parse(raw || "{}");
+    const reason = check(input);
     if (reason) {
       console.error(reason);
       process.exit(2);
+    }
+    const updated = adjust(input);
+    if (updated) {
+      console.log(JSON.stringify({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "allow", updatedInput: updated } }));
     }
   });
 }

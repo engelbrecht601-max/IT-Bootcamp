@@ -6,15 +6,15 @@
 //   in den Dateien und ist nach jeder Antwort gesichert, /clear kostet also nichts.
 // - Jede Eingabe bekommt den aktuellen Stand mit (Level, Anforderung, Schritt), damit Claude nie aus
 //   veraltetem Verlauf antwortet, und einen Hinweis, wenn die Eingabe vom Weg abführt.
-// Exit 2 blockiert die Eingabe; die Meldung auf stderr sieht die Person. stdout geht als Kontext an Claude.
+// {"decision":"block"} blockiert die Eingabe, die Person sieht den Grund. Sonst geht stdout als Kontext an Claude.
 import { closeSync, fstatSync, openSync, readSync } from "node:fs";
 import { currentDesk, deskTitle, readState, updateFlags } from "../lib/desks.mjs";
 import { deskStatus, ROOT } from "../lib/session.mjs";
 
 /** Ab hier bittet Claude von sich aus um /clear, sobald der Schritt fertig ist. */
-export const SOFT_LIMIT = 70_000;
-/** Ab hier nimmt die Sitzung keine Eingabe mehr an. */
-export const HARD_LIMIT = 120_000;
+export const SOFT_LIMIT = 60_000;
+/** Ab hier nimmt die Sitzung keine Eingabe mehr an. Liegt unter dem Auto-Compact (siehe scripts/start.mjs). */
+export const HARD_LIMIT = 90_000;
 
 // Eindeutige Terminal-Befehle. Bewusst eng, damit kein normaler Satz ("Start das Interview") hängen bleibt.
 const TERMINAL = /^\s*((c?pnp?m|pnbm|npm|npx)(\s|$)|git\s+(add|commit|push|pull|status|log|diff|checkout|clone|merge|reset|stash)\b|cd\s*[\/~.])/i;
@@ -47,6 +47,9 @@ export function decide({ prompt, desk, status, contextTokens = 0, group, admin }
   const lines = [`[Workshop-Stand] ${desk.persons.join(" & ")} · ${deskTitle(desk)} · ${status.line}`];
   for (const h of status.next.hints) lines.push(`[Hinweis] ${h}`);
   if (status.wishes.answered.length) lines.push(`[Hinweis] Es gibt eine Antwort auf einen Wunsch dieses Arbeitsplatzes. pnpm next zeigt sie.`);
+  if (contextTokens > 0) {
+    lines.push(`[Sitzungsgröße] etwa ${Math.round(contextTokens / 1000)}.000 Token, gemessen. Fragt die Person nach ihrem Verbrauch, nenn diese Zahl und sonst keine; ab ${SOFT_LIMIT / 1000}.000 kommt /clear.`);
+  }
   if (contextTokens >= SOFT_LIMIT) {
     lines.push(`[Kontext] Die Sitzung ist groß (${Math.round(contextTokens / 1000)}k Token). Bring nur noch den laufenden Schritt zu Ende, sichere mit pnpm sync save und bitte die Person dann, /clear und danach /weiter zu tippen.`);
   }
@@ -105,8 +108,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       if (desk) updateFlags(desk.slug, { contextTokens: tokens, lastPromptAt: new Date().toISOString() });
       const result = decide({ prompt: input.prompt, desk, status, contextTokens: tokens, group, admin });
       if (result.block) {
-        console.error(result.block);
-        process.exit(2);
+        // Als JSON statt Exit-Code 2: Dann zeigt Claude Code nur die Meldung, nicht die Befehlszeile des Hooks.
+        console.log(JSON.stringify({ decision: "block", reason: `👉 ${result.block}` }));
+        return;
       }
       if (result.context) console.log(result.context);
     } catch (err) {

@@ -49,6 +49,19 @@ export function cleanName(name) {
   return String(name ?? "").trim().replace(/\s+/g, " ").slice(0, 40);
 }
 
+/** Ein Vorname, höchstens mit zweitem Vornamen oder Anfangsbuchstaben: "Anna", "Anna Lena", "Jan B." */
+const FIRST_NAME = /^\p{L}[\p{L}'-]*(?: \p{L}[\p{L}'-]*\.?)?$/u;
+
+/** Prüft einen eingegebenen Vornamen. Gibt eine Erklärung zurück, wenn er nicht passt, sonst null. */
+export function nameProblem(name) {
+  const clean = cleanName(name);
+  if (!clean) return "Bitte einen Vornamen eingeben.";
+  if (clean.length > 24 || !FIRST_NAME.test(clean)) {
+    return "Bitte nur den Vornamen eingeben, zum Beispiel „Biggi“. Gibt es den Namen am Tisch zweimal: Vorname und Anfangsbuchstabe, zum Beispiel „Jan B.“.";
+  }
+  return null;
+}
+
 /**
  * Verteilt die angemeldeten Personen in Anmelde-Reihenfolge auf die Arbeitsplätze.
  * Gibt die Arbeitsplätze zurück: { id, persons, slug, tasks }.

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { check, aiPackage } from "./pre-tool-use.mjs";
+import { adjust, check, aiPackage } from "./pre-tool-use.mjs";
 
 // Jeder Test gibt seinen Kontext explizit mit; die Umgebung eines Arbeitsplatzes darf ihn nicht färben.
 const none = {};
@@ -71,11 +71,19 @@ test("abgeschaltete Werkzeuge: Veröffentlichen, Nachrichten zwischen Sessions, 
   assert.equal(check({ tool_name: "Read", tool_input: { file_path: "packages/ui/src/index.ts" } }, desk(3)), null);
 });
 
-test("Subagenten: nur Test-Autor, Prüfer und Fachperson, immer im Vordergrund", () => {
+test("Subagenten: nur Test-Autor, Prüfer und Fachperson", () => {
   const agent = (subagent_type, extra = {}) => ({ tool_name: "Agent", tool_input: { subagent_type, prompt: "x", ...extra } });
-  for (const type of ["test-author", "verifier", "persona-stage4", "persona-ui"]) assert.equal(check(agent(type), desk(4)), null, type);
+  const fg = { run_in_background: false };
+  for (const type of ["test-author", "verifier", "persona-stage4", "persona-ui"]) assert.equal(check(agent(type, fg), desk(4)), null, type);
   for (const type of ["general-purpose", "Explore", "", "claude"]) assert.match(check(agent(type), desk(4)) ?? "", /abgeschaltet/, type);
-  assert.match(check(agent("verifier", { run_in_background: true }), desk(4)), /Vordergrund/);
+  // Kein Block nach run_in_background: Claude Code entfernt den Schalter, bevor der Hook ihn sieht.
+  assert.equal(check(agent("verifier"), desk(4)), null);
+  assert.equal(check(agent("verifier", { run_in_background: true }), desk(4)), null);
+  assert.equal(adjust(agent("verifier", { run_in_background: true }), desk(4)).run_in_background, false);
+  assert.deepEqual(adjust(agent("test-author"), desk(4)), { subagent_type: "test-author", prompt: "x", run_in_background: false });
+  assert.equal(adjust(agent("verifier", { run_in_background: false }), desk(4)), null);
+  assert.equal(adjust(agent("verifier"), admin), null);
+  assert.equal(adjust(bash("ls"), desk(4)), null);
 });
 
 test("keine eigenen Server, kein npx, kein Internet", () => {
