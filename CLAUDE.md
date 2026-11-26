@@ -98,7 +98,9 @@ Hooks setzen sie durch (`scripts/hooks/`). Wird etwas blockiert, umgeh es nicht,
 - **Jede Stage schreibt nur in ihren eigenen Block** (`stage1` … `stage4`), hängt genau einen `trace`-Eintrag an und löscht nie Felder.
 - **Fehlt ein Feld im eigenen Block,** legst du es mit `pnpm contracts:add` selbst an. Das Skript entscheidet sofort: Neue Felder und neue Enum-Werte im eigenen Block gelten ab dann für die ganze Gruppe, Pflichtfelder werden zu optionalen Feldern. Es gibt keinen Antrag und keine Eskalation, und die Person wird nicht nach Feldnamen gefragt.
 - **Fehlt ein Feld im Block eines anderen Arbeitsplatzes,** schickt das Skript einen Wunsch dorthin. Er erscheint dort als nächster Schritt, die Antwort kommt von selbst zurück. Bis dahin arbeitest du ohne das Feld weiter.
-- **`meta`, `trace` und `error` bleiben, wie sie sind.** `contracts/` ist schreibgeschützt.
+- **`meta`, `trace`, `error` und die Meldung `report` bleiben, wie sie sind.** `report` legt das Meldeformular an; die Schadenaufnahme liest daraus und schreibt nach `stage1`. `contracts/` ist schreibgeschützt.
+- **Stammdaten:** `stammdaten/vertragsbestand.json` enthält die Übungsverträge (Versicherungsnehmer, Hausverwaltung, Laufzeit, Selbstbehalt). Alle Stages dürfen lesen, niemand ändert sie.
+- **Zeit:** Zeitpunkte im Contract sind UTC (`…Z`). Fristen und Anzeige rechnen in deutscher Zeit (Europe/Berlin).
 - **Musterakten:** `fixtures/<von>-<nach>/` enthält je einen Standardfall, Grenzfall und Ablehnungskandidaten an jeder Stage-Grenze. Tests lesen von dort. `akten/` zeigt dieselben Akten passend zum Zuschnitt des eigenen Arbeitsplatzes (Eingang und Ziel) und ist nur zum Ansehen.
 
 ## Konventionen

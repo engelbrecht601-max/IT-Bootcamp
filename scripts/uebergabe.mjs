@@ -39,9 +39,9 @@ console.log("EIGENE STAGES gegen die Musterakten:");
 const ownStages = desk.tasks.filter((t) => t <= 4);
 if (!ownStages.length) console.log("  (dieser Arbeitsplatz hat keine Stage)");
 for (const stage of ownStages) {
-  const results = await checkStage(stage, await load(stage), inputsFor(stage, fixtures), validate);
+  const results = await checkStage(stage, await load(stage), inputsFor(stage, fixtures), validate, fixtures);
   for (const r of results) {
-    if (r.status === "ok") console.log(`  ✓ ${TASKS[stage].name} · ${r.testCase}`);
+    if (r.status === "ok") console.log(`  ✓ ${TASKS[stage].name} · ${r.testCase}${r.warning ? ` (⚠ ${r.warning})` : ""}`);
     else if (r.status === "offen") console.log(`  ○ ${TASKS[stage].name}: noch nicht umgesetzt`);
     else {
       ownOk = false;

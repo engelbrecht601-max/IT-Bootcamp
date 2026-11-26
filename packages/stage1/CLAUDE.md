@@ -10,7 +10,8 @@ Nimmt die Schadenmeldung auf und legt die Grunddaten des Vorgangs an.
 
 ## Eingang und Übergabe
 
-- **Eingang:** Die Meldung kommt von außen und hat noch keinen Stage-Block. So sieht sie aus: `akten/eingang/` (bei getrennten Aufgaben sind das die Akten aus `fixtures/1-2/` ohne den Block `stage1`).
+- **Eingang:** Die Meldung kommt von außen und hat noch keinen Stage-Block. Was die meldende Person angegeben hat, steht im Block `report` unter `answers`, so wie sie es eingetippt oder gesagt hat: z. B. `"policyNumber": "gh 4711023"`, `"incidentDate": "1.11.2026"`, `"claimedAmount": "2.340 €"`. Daraus macht die Stage die geprüften Angaben in `stage1`. `report` selbst wird nie geändert. So sieht der Eingang aus: `akten/eingang/` (bei getrennten Aufgaben sind das die Akten aus `fixtures/1-2/` ohne den Block `stage1`).
+- **Stammdaten:** Wer Versicherungsnehmer ist und wer seine Hausverwaltung, steht in `stammdaten/vertragsbestand.json`.
 - **Ziel:** So kann die Akte nach dieser Stage aussehen: `fixtures/1-2/`. Eine mögliche Lösung, nicht die einzig richtige; was gilt, sagt die Fachperson.
 - **Übergabe an:** Deckungsprüfung (Task 2). Die Ausgabe muss gegen `contracts/claim.schema.json` valide sein. `meta.currentStage` zeigt danach auf die nächste Stage.
 - **Trace:** genau ein neuer Eintrag mit `stage: 1` und `action: "erfasst"`, oder `"abgebrochen"` zusammen mit einem `error`-Block.

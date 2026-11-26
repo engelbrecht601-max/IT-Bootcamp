@@ -24,6 +24,7 @@ const STAGE_OF = { stage1: 1, stage2: 2, stage3: 3, stage4: 4 };
 const NOBODY = {
   meta: "meta gehört niemandem und bleibt, wie es ist. Was du festhalten willst, kommt als Feld in deinen eigenen Block.",
   trace: "Der Trace hat eine feste Form: genau ein Eintrag pro Stage, Freitext in note. Mehr Angaben gehören als Feld in deinen eigenen Block.",
+  report: "Die Meldung (report) bleibt, wie sie eingegangen ist. Was die Schadenaufnahme daraus macht, steht als Feld im Block stage1.",
   error: "Der error-Block hat eine feste Form (stage, code, message). Den Grund schreibst du in message, alles Weitere in deinen eigenen Block.",
 };
 

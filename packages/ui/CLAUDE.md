@@ -22,4 +22,5 @@ Der Ablauf steht in der `CLAUDE.md` an der Wurzel: Die Person tippt `/weiter`, `
 
 - Fachliche Regeln kommen aus dem Interview mit der Fachperson (Subagent `persona-ui`, Protokoll in `interview.md`).
 - Tests prüfen das HTML, das `run()` zurückgibt: Steht der Betrag da, ist der Status erkennbar, fehlt nichts bei einer abgebrochenen Akte. Sie tragen die ID im Namen.
-- Die drei Pflichtfälle sind: eine Akte im Standardfall anzeigen, den Grenzfall (Vorbehalt, vorläufige Werte) und die abgelehnte oder abgebrochene Akte.
+- Die drei Pflichtfälle sind: eine Akte im Standardfall anzeigen, den Grenzfall („unter Vorbehalt“) und die abgelehnte oder abgebrochene Akte. Den Zustand „in Freigabe“ und vorläufige Bewertungen (`stage3.provisional`) kennt der Contract auch, Musterakten dazu gibt es nicht.
+- Die Oberfläche liest Akten nur, sie ruft keine Stage auf.

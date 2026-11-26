@@ -15,7 +15,7 @@ function request(overrides = {}) {
       properties: {
         stage2: {
           properties: {
-            deductible: { description: "Selbstbehalt laut Vertrag.", type: "number", minimum: 0 },
+            retentionNote: { description: "Selbstbehalt laut Vertrag.", type: "number", minimum: 0 },
           },
         },
       },
@@ -51,7 +51,7 @@ test("Änderungen an meta werden eskaliert", () => {
 
 test("neues Pflichtfeld wird eskaliert", () => {
   const r = request();
-  r.fragment.properties.stage2.required = ["deductible"];
+  r.fragment.properties.stage2.required = ["retentionNote"];
   assert.equal(run(r).decision, "escalate");
 });
 
@@ -83,7 +83,7 @@ test("Formfehler werden abgelehnt", () => {
 test("Feldname muss camelCase sein, Beschreibung Pflicht, Objekte geschlossen", () => {
   const field = (name, def) => request({ fragment: { properties: { stage2: { properties: { [name]: def } } } } });
   assert.equal(run(field("Selbstbehalt", { description: "x", type: "number" })).decision, "reject");
-  assert.equal(run(field("deductible", { type: "number" })).decision, "reject");
+  assert.equal(run(field("retentionNote", { type: "number" })).decision, "reject");
   assert.equal(run(field("limits", { description: "x", type: "object", properties: {} })).decision, "reject");
   assert.equal(
     run(field("limits", { description: "x", type: "object", additionalProperties: false, properties: {} })).decision,
@@ -94,8 +94,8 @@ test("Feldname muss camelCase sein, Beschreibung Pflicht, Objekte geschlossen", 
 test("compose erhöht pro Patch die Minor-Version und lehnt ungültige Patches ab", () => {
   const p = { ...request(), approvedAt: "2026-11-20T10:00:00Z" };
   const built = compose(base, [p]);
-  assert.equal(built["x-contractVersion"], "1.1.0");
-  assert.ok(built.properties.stage2.properties.deductible);
+  assert.equal(built["x-contractVersion"], "1.2.0");
+  assert.ok(built.properties.stage2.properties.retentionNote);
   assert.throws(() => compose(base, [{ ...p, task: 3, id: "T3-CR-001" }]));
 });
 

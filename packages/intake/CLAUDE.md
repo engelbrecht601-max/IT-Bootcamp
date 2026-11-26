@@ -10,7 +10,7 @@ Das Formular, mit dem jemand einen Schaden meldet. Diesen Task gibt es nur in Gr
 
 ## Ziel und Vorschau
 
-- **Ziel:** `akten/ziel/` zeigt, wie eine Meldung aussieht, wenn sie bei der Schadenaufnahme ankommt: mit `claimId`, `meta` und leerem `trace`, aber ohne Stage-Block. `submit()` schreibt in keinen Stage-Block.
+- **Ziel:** `akten/ziel/` zeigt, wie eine Meldung aussieht, wenn sie bei der Schadenaufnahme ankommt: mit `claimId`, `meta`, leerem `trace` und dem Block `report`, aber ohne Stage-Block. `submit()` schreibt die Angaben unverändert nach `report.answers` (Kanal `"Formular"`) und in keinen Stage-Block. Korrigieren und prüfen ist Sache der Schadenaufnahme.
 - `pnpm vorschau` zeigt das Formular im Browser. Absenden zeigt die Akte, die `submit()` daraus macht.
 - Was die Schadenaufnahme braucht, klärt die Person mit der Kollegin, die Task 1 hat. Sie sitzt am selben Tisch. Fehlt eine Angabe im Block `stage1`: `pnpm wunsch add 1 "<was fehlt und wofür>"`.
 

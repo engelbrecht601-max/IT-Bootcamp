@@ -1,7 +1,7 @@
 {
   "claimId": "SCH-2026-00103",
   "meta": {
-    "contractVersion": "1.0.0",
+    "contractVersion": "1.1.0",
     "createdAt": "2026-11-05T09:47:00Z",
     "currentStage": 4,
     "testCase": "Ablehnungskandidat"
@@ -11,7 +11,7 @@
       "stage": 1,
       "at": "2026-11-05T10:02:00Z",
       "action": "erfasst",
-      "note": "Anspruchsteller ist der Versicherungsnehmer selbst."
+      "note": "Möglicher Eigenschaden: Die Hausverwaltung des Versicherungsnehmers meldet."
     },
     {
       "stage": 2,
@@ -23,9 +23,23 @@
       "stage": 3,
       "at": "2026-11-05T15:10:00Z",
       "action": "bewertet",
-      "note": "Keine Bewertung, weil keine Deckung besteht."
+      "note": "Keine Bewertung mangels Deckung."
     }
   ],
+  "report": {
+    "receivedAt": "2026-11-05T09:47:00Z",
+    "channel": "Telefon",
+    "answers": {
+      "policyNumber": "GH-4712390",
+      "incidentDate": "28.10.2026",
+      "description": "Durch einen Rohrbruch im Keller ist Wasser in die vom Eigentümer selbst genutzte Einliegerwohnung gelaufen. Parkett und Küche sind beschädigt.",
+      "claimantName": "Hausverwaltung Kramer & Söhne GbR",
+      "claimantContact": "info@kramer-soehne.example.org",
+      "claimedAmount": "8.900 €",
+      "costEstimate": "8.900 € (Angebot Schreinerei Hellwig)",
+      "damagedItem": "Parkett und Einbauküche, Küche 7 Jahre alt"
+    }
+  },
   "stage1": {
     "completedAt": "2026-11-05T10:02:00Z",
     "policyNumber": "GH-4712390",
@@ -34,17 +48,27 @@
     "damageType": "Sachschaden",
     "description": "Durch einen Rohrbruch im Keller ist Wasser in die vom Eigentümer selbst genutzte Einliegerwohnung gelaufen. Parkett und Küche sind beschädigt.",
     "claimant": {
-      "name": "Hausverwaltung Kramer & Söhne GbR"
+      "name": "Hausverwaltung Kramer & Söhne GbR",
+      "contact": "info@kramer-soehne.example.org"
     },
-    "claimedAmount": 8900.0
+    "claimedAmount": 8900.0,
+    "costEstimate": 8900.0,
+    "damagedItem": {
+      "kind": "Einrichtungsgegenstand",
+      "ageYears": 7,
+      "label": "Einbauküche und Parkett"
+    }
   },
   "stage2": {
     "completedAt": "2026-11-05T14:45:00Z",
     "coverageDecision": "nicht gedeckt",
-    "reasoning": "Der Schaden betrifft die vom Versicherungsnehmer selbst genutzte Wohnung. Die Gebäudehaftpflicht deckt nur Schäden Dritter."
+    "reasoning": "Der Schaden betrifft die vom Versicherungsnehmer selbst genutzte Wohnung. Die Gebäudehaftpflicht deckt nur Schäden Dritter; zuständig ist die Wohngebäudeversicherung.",
+    "deductible": 250.0
   },
   "stage3": {
     "completedAt": "2026-11-05T15:10:00Z",
-    "assessedAmount": 0.0
+    "assessedAmount": 0.0,
+    "calculation": "Keine Bewertung mangels Deckung.",
+    "provisional": false
   }
 }

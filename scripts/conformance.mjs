@@ -5,9 +5,10 @@
 // Geprüft wird pro Akte:
 //   - Ausgabe ist gegen den gebauten Contract valide
 //   - claimId und meta bleiben gleich, nur meta.currentStage rückt vor
-//   - fremde Blöcke bleiben unverändert, nichts wird gelöscht
+//   - fremde Blöcke und die Meldung (report) bleiben unverändert, nichts wird gelöscht
 //   - genau ein neuer Trace-Eintrag der eigenen Stage, bestehende bleiben unverändert
 //   - eigener Block ist gesetzt, oder die Akte ist mit error und "abgebrochen" beendet
+// Bricht eine Musterakte ab, die laut fixtures/ weiterlaufen soll, gibt es eine Warnung (kein Fehler).
 // Eine Stage, die noch "nicht implementiert" wirft, gilt als offen, nicht als Fehler.
 import { isDeepStrictEqual } from "node:util";
 import { existsSync, readFileSync } from "node:fs";
@@ -50,6 +51,7 @@ export function violations(stage, input, output, validate) {
       v.push(`fremder Block ${block} wurde geändert`);
     }
   }
+  if (!isDeepStrictEqual(input.report, output.report)) v.push("die Meldung (report) wurde geändert");
   if (input.error && !isDeepStrictEqual(input.error, output.error)) v.push("bestehender error wurde geändert");
 
   const inTrace = input.trace ?? [];
@@ -74,7 +76,21 @@ export function violations(stage, input, output, validate) {
   return v;
 }
 
-export async function checkStage(stage, run, inputs, validate) {
+/** Musterakte nach dieser Stage, z. B. für Stage 2 die Akte aus fixtures/2-3/. */
+export function expectedAfter(stage, testCase, fixtures) {
+  const boundary = stage === 4 ? "4-ende" : `${stage}-${stage + 1}`;
+  return fixtures.find((f) => f.boundary === boundary && f.testCase === testCase)?.claim;
+}
+
+/** Warnung, wenn eine Akte abbricht, obwohl die Musterakte danach weiterläuft. */
+export function abortWarning(stage, testCase, output, fixtures) {
+  if (output?.trace?.at(-1)?.action !== "abgebrochen") return undefined;
+  const expected = expectedAfter(stage, testCase, fixtures);
+  if (!expected || expected.trace?.at(-1)?.action === "abgebrochen") return undefined;
+  return `bricht ab (${output.error?.code ?? "ohne Code"}), laut fixtures/ läuft diese Akte weiter. Fehlt eine Angabe im Eingang?`;
+}
+
+export async function checkStage(stage, run, inputs, validate, fixtures) {
   const results = [];
   for (const { boundary, testCase, claim } of inputs) {
     const input = structuredClone(claim);
@@ -87,7 +103,8 @@ export async function checkStage(stage, run, inputs, validate) {
       continue;
     }
     const problems = violations(stage, input, output, validate);
-    results.push({ boundary, testCase, status: problems.length ? "fehler" : "ok", problems });
+    const warning = fixtures ? abortWarning(stage, testCase, output, fixtures) : undefined;
+    results.push({ boundary, testCase, status: problems.length ? "fehler" : "ok", problems, ...(warning ? { warning } : {}) });
   }
   return results;
 }
@@ -106,13 +123,13 @@ async function main() {
 
   for (const stage of wanted.length ? wanted : STAGES) {
     const mod = await import(pathToFileURL(join(ROOT, `packages/stage${stage}/src/index.ts`)).href);
-    const results = await checkStage(stage, mod.run, inputsFor(stage, fixtures), validate);
+    const results = await checkStage(stage, mod.run, inputsFor(stage, fixtures), validate, fixtures);
     if (results[0]?.status === "offen") {
       console.log(`○ Stage ${stage}: noch nicht implementiert`);
       continue;
     }
     for (const r of results) {
-      if (r.status === "ok") console.log(`✓ Stage ${stage} · ${r.boundary}/${r.testCase}`);
+      if (r.status === "ok") console.log(`✓ Stage ${stage} · ${r.boundary}/${r.testCase}${r.warning ? `\n    ⚠ ${r.warning}` : ""}`);
       else {
         failed++;
         console.log(`✗ Stage ${stage} · ${r.boundary}/${r.testCase}`);

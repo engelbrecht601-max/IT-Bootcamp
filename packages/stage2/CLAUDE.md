@@ -11,6 +11,8 @@ Prüft, ob für den gemeldeten Schaden Versicherungsschutz besteht.
 ## Eingang und Übergabe
 
 - **Eingang:** `fixtures/1-2/` mit je einem Standardfall, Grenzfall und Ablehnungskandidaten. Entwickelt wird dagegen, niemand wartet auf die Station davor.
+- **Stammdaten:** Die Verträge (Laufzeit, Versicherungsnehmer, Hausverwaltung, Selbstbehalt) stehen in `stammdaten/vertragsbestand.json`. Eine Nummer, die dort fehlt, ist unbekannt.
+- **Was die Schadenbewertung von dir braucht:** `coverageDecision` (auch „unter Vorbehalt“), den Selbstbehalt in `deductible` und Hinweise für die Bewertung in `hints`.
 - **Ziel:** So kann die Akte nach dieser Stage aussehen: `fixtures/2-3/`. Eine mögliche Lösung, nicht die einzig richtige; was gilt, sagt die Fachperson.
 - **Übergabe an:** Schadenbewertung (Task 3). Die Ausgabe muss gegen `contracts/claim.schema.json` valide sein. `meta.currentStage` zeigt danach auf die nächste Stage.
 - **Trace:** genau ein neuer Eintrag mit `stage: 2` und `action: "geprüft"`, oder `"abgebrochen"` zusammen mit einem `error`-Block.

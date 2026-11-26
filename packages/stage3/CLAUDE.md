@@ -11,6 +11,8 @@ Ermittelt die Höhe des ersatzfähigen Schadens.
 ## Eingang und Übergabe
 
 - **Eingang:** `fixtures/2-3/` mit je einem Standardfall, Grenzfall und Ablehnungskandidaten. Entwickelt wird dagegen, niemand wartet auf die Station davor.
+- **Diese Angaben kommen bei dir an:** aus der Schadenaufnahme `stage1.costEstimate` (Kostenvoranschlag, nicht dasselbe wie die Forderung `claimedAmount`), `damagedItem`, `injury`, `lossOfEarnings`; aus der Deckungsprüfung `stage2.coverageDecision`, `deductible` (Selbstbehalt) und `hints`. Optionale Angaben können fehlen.
+- **Guter Einstieg:** der Standardfall, Kostenvoranschlag minus Selbstbehalt. Die Rechnung gehört nach `calculation`, eine vorläufige Bewertung markiert `provisional`.
 - **Ziel:** So kann die Akte nach dieser Stage aussehen: `fixtures/3-4/`. Eine mögliche Lösung, nicht die einzig richtige; was gilt, sagt die Fachperson.
 - **Übergabe an:** Regulierung (Task 4). Die Ausgabe muss gegen `contracts/claim.schema.json` valide sein. `meta.currentStage` zeigt danach auf die nächste Stage.
 - **Trace:** genau ein neuer Eintrag mit `stage: 3` und `action: "bewertet"`, oder `"abgebrochen"` zusammen mit einem `error`-Block.

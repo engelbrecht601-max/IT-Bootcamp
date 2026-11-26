@@ -2,8 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://it-bootcamp.local/contracts/claim.schema.json",
   "title": "Claim-Envelope Gebäudehaftpflicht",
-  "description": "Ein Vorgang, vier Schreibtische: Die Schadenakte wandert durch Schadenaufnahme, Deckungsprüfung, Schadenbewertung und Regulierung. Jede Stage schreibt nur in ihren eigenen Block.",
-  "x-contractVersion": "1.0.0",
+  "description": "Ein Vorgang, vier Schreibtische: Die Schadenakte wandert durch Schadenaufnahme, Deckungsprüfung, Schadenbewertung und Regulierung. Am Anfang steht die Meldung (report). Jede Stage schreibt nur in ihren eigenen Block.",
+  "x-contractVersion": "1.1.0",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -86,6 +86,40 @@
         }
       }
     },
+    "report": {
+      "description": "Die Meldung, wie sie eingegangen ist: per Formular, Telefon oder Brief, mit den Angaben in den Worten der meldenden Person. Gehört keiner Stage; das Meldeformular (Task 6) legt sie an, die Schadenaufnahme liest sie und übernimmt die Angaben geprüft in stage1. Danach ändert sie niemand mehr.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "receivedAt",
+        "channel",
+        "answers"
+      ],
+      "properties": {
+        "receivedAt": {
+          "description": "Zeitpunkt, zu dem die Meldung eingegangen ist.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "channel": {
+          "description": "Weg, auf dem die Meldung kam.",
+          "type": "string",
+          "enum": [
+            "Formular",
+            "Telefon",
+            "Brief",
+            "E-Mail"
+          ]
+        },
+        "answers": {
+          "description": "Angaben der meldenden Person, so wie sie gemacht wurden, ungeprüft und ohne Korrektur (z. B. \"gh 4711023\", \"1.11.2026\", \"2.340 €\"). Übliche Angaben: policyNumber, incidentDate, description, claimantName, claimantContact, claimedAmount, costEstimate, damagedItem, injury, lossOfEarnings. Fehlt eine Angabe, fehlt der Eintrag.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "stage1": {
       "description": "Schadenaufnahme (Gruppe 1): Meldung des Schadens und Grunddaten des Vorgangs.",
       "type": "object",
@@ -144,12 +178,74 @@
               "description": "Vor- und Nachname oder Firma.",
               "type": "string",
               "minLength": 1
+            },
+            "contact": {
+              "description": "Telefonnummer oder E-Mail-Adresse für Rückfragen.",
+              "type": "string",
+              "minLength": 1
             }
           }
         },
         "claimedAmount": {
           "$ref": "#/$defs/amountEur",
           "description": "Vom Anspruchsteller geforderter Betrag, falls bekannt."
+        },
+        "costEstimate": {
+          "$ref": "#/$defs/amountEur",
+          "description": "Betrag des Kostenvoranschlags, falls einer beiliegt. Nicht dasselbe wie claimedAmount: Die Forderung nennt der Anspruchsteller, der Kostenvoranschlag kommt von einer Werkstatt oder einem Handwerksbetrieb."
+        },
+        "damagedItem": {
+          "description": "Was beschädigt wurde, bei Sachschaden. Grundlage für Abzüge in der Schadenbewertung.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "description": "Art der beschädigten Sache.",
+              "type": "string",
+              "enum": [
+                "Fahrzeug",
+                "Einrichtungsgegenstand",
+                "Gebäudeteil",
+                "Sonstiges"
+              ]
+            },
+            "ageYears": {
+              "description": "Alter der Sache in vollen Jahren, falls bekannt.",
+              "type": "integer",
+              "minimum": 0
+            },
+            "label": {
+              "description": "Kurze Bezeichnung, z. B. \"Einbauküche\".",
+              "type": "string"
+            }
+          }
+        },
+        "injury": {
+          "description": "Art der Verletzung in Stichworten, bei Personenschaden, z. B. \"Handgelenk gebrochen\".",
+          "type": "string",
+          "minLength": 1
+        },
+        "lossOfEarnings": {
+          "description": "Geltend gemachter Verdienstausfall, bei Personenschaden.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "amount",
+            "proofProvided"
+          ],
+          "properties": {
+            "amount": {
+              "$ref": "#/$defs/amountEur",
+              "description": "Geforderter Verdienstausfall."
+            },
+            "proofProvided": {
+              "description": "true, wenn ein Nachweis (z. B. Lohnbescheinigung) beiliegt.",
+              "type": "boolean"
+            }
+          }
         }
       }
     },
@@ -166,16 +262,29 @@
           "$ref": "#/$defs/completedAt"
         },
         "coverageDecision": {
-          "description": "Ergebnis der Deckungsprüfung.",
+          "description": "Ergebnis der Deckungsprüfung. \"unter Vorbehalt\" heißt: gedeckt, aber eine Obliegenheitsverletzung (z. B. Spätmeldung) ist festgehalten und in reasoning begründet.",
           "type": "string",
           "enum": [
             "gedeckt",
+            "unter Vorbehalt",
             "nicht gedeckt"
           ]
         },
         "reasoning": {
           "description": "Begründung der Entscheidung in wenigen Sätzen.",
           "type": "string"
+        },
+        "deductible": {
+          "$ref": "#/$defs/amountEur",
+          "description": "Selbstbehalt aus dem Vertrag. Die Deckungsprüfung gibt ihn weiter, abgezogen wird er in der Schadenbewertung."
+        },
+        "hints": {
+          "description": "Hinweise an die Schadenbewertung, je ein Satz, z. B. \"Winterdienst war per Mietvertrag an die Mieter übertragen.\"",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     },
@@ -194,6 +303,15 @@
         "assessedAmount": {
           "$ref": "#/$defs/amountEur",
           "description": "Ersatzfähiger Schaden nach Bewertung."
+        },
+        "provisional": {
+          "description": "true, wenn die Bewertung vorläufig ist (z. B. Gutachter beauftragt). Die Regulierung zahlt dann nicht.",
+          "type": "boolean"
+        },
+        "calculation": {
+          "description": "Die Rechnung hinter assessedAmount in einem Satz, z. B. \"2.340,00 € KVA − 250,00 € SB = 2.090,00 €\".",
+          "type": "string",
+          "minLength": 1
         }
       }
     },
@@ -210,16 +328,17 @@
           "$ref": "#/$defs/completedAt"
         },
         "settlementDecision": {
-          "description": "Wie der Vorgang abgeschlossen wird.",
+          "description": "Wie der Vorgang abgeschlossen wird. \"in Freigabe\" heißt: Die Zahlung wartet auf die Zweitfreigabe, der Vorgang ist weder bezahlt noch abgelehnt.",
           "type": "string",
           "enum": [
             "Zahlung",
-            "Ablehnung"
+            "Ablehnung",
+            "in Freigabe"
           ]
         },
         "payoutAmount": {
           "$ref": "#/$defs/amountEur",
-          "description": "Ausgezahlter Betrag, nur bei Zahlung."
+          "description": "Ausgezahlter oder zur Freigabe vorgelegter Betrag, nur bei \"Zahlung\" und \"in Freigabe\"."
         }
       }
     }

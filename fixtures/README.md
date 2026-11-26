@@ -1,6 +1,6 @@
 # Musterakten
 
-Drei erfundene Vorgänge, abgelegt als Schnappschuss an jeder Stage-Grenze. Jeder Task entwickelt gegen seinen Eingang, ohne auf den vorherigen Task zu warten. `pnpm contracts:build` validiert alle Akten gegen den gebauten Contract.
+Drei erfundene Vorgänge, abgelegt als Schnappschuss an jeder Stage-Grenze. Jede Akte trägt die Meldung (`report`), so wie sie eingegangen ist; die Verträge dazu stehen in `stammdaten/vertragsbestand.json`. Jeder Task entwickelt gegen seinen Eingang, ohne auf den vorherigen Task zu warten. `pnpm contracts:build` validiert alle Akten gegen den gebauten Contract.
 
 | Ordner | Zustand | Eingang für |
 |---|---|---|
@@ -11,9 +11,9 @@ Drei erfundene Vorgänge, abgelegt als Schnappschuss an jeder Stage-Grenze. Jede
 
 | Datei | Vorgang | Verlauf |
 |---|---|---|
-| `standardfall.json` | Dachziegel fällt bei Sturm auf das Auto des Nachbarn | gedeckt → 2.340 € → Zahlung |
-| `grenzfall.json` | Paketzusteller stürzt auf vereistem Gehweg; Meldung elf Monate später, Winterdienst an Mieter übertragen | gedeckt mit Vorbehalt → 4.750 € → Zahlung |
-| `ablehnungskandidat.json` | Rohrbruch in der selbst genutzten Wohnung des Versicherungsnehmers (Eigenschaden) | nicht gedeckt → 0 € → Ablehnung |
+| `standardfall.json` | Dachziegel fällt bei Sturm auf das Auto des Nachbarn; Formular, Kostenvoranschlag 2.340 € | gedeckt → 2.340 € − 250 € Selbstbehalt = 2.090 € → Zahlung |
+| `grenzfall.json` | Paketzusteller bricht sich auf vereistem Gehweg das Handgelenk; Brief vom Anwalt elf Monate später, Winterdienst an Mieter übertragen | unter Vorbehalt → 3.000 € × 50 % − 250 € = 1.250 € → Zahlung, Regress geprüft |
+| `ablehnungskandidat.json` | Rohrbruch in der selbst genutzten Wohnung; die Hausverwaltung des Versicherungsnehmers meldet telefonisch (Eigenschaden) | nicht gedeckt → 0 € → Ablehnung |
 
 `pnpm akten` legt daraus für jeden Arbeitsplatz eine Sicht an, passend zu seinem Zuschnitt: `akten/eingang/` und `akten/ziel/`. Bei zusammengelegten Stages gilt der Eingang der ersten und das Ziel der letzten Stage; die Schadenaufnahme bekommt die Meldung ohne den Block `stage1`. Das passiert von selbst, sobald die Gruppe gestartet ist. `akten/` ist nur zum Ansehen und wird nicht versioniert, Tests lesen aus `fixtures/`.
 

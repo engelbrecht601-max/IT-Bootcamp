@@ -10,7 +10,7 @@ export const BUILT_SCHEMA = join(CONTRACTS, "claim.schema.json");
 export const PATCHES = join(CONTRACTS, "patches");
 
 const STAGE_TASKS = { stage1: 1, stage2: 2, stage3: 3, stage4: 4 };
-const ESCALATE_KEYS = new Set(["meta", "trace", "error"]);
+const ESCALATE_KEYS = new Set(["meta", "trace", "error", "report"]);
 const REQUEST_ID = /^T([1-6])-CR-[0-9]{3}$/;
 const REQUIREMENT_ID = /^T([1-6])-REQ-[0-9]{3}$/;
 const FIELD_NAME = /^[a-z][a-zA-Z0-9]*$/;
