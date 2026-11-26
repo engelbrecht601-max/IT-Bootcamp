@@ -60,11 +60,13 @@ Die Gruppenbranches heißen bewusst `workshop/gruppe<N>`, damit sie nicht mit de
 
 ### Bekannter Stand
 
-- **Noch nicht mit echtem Claude Code durchgespielt:** Aufteilung, Zyklus, Sichern und Contract-Automatik sind per Test und Simulation geprüft. Dass die Hooks in der Claude-Code-Version des Images so greifen wie beschrieben (vor allem `UserPromptSubmit` bei `/weiter` und `SessionStart` nach `/clear`), braucht einen Probelauf auf dem Server vor dem Workshop.
-- Das automatische Öffnen des Terminals im Browser (`.vscode/tasks.json`) ist ebenfalls ungetestet. Fallback: Menü ☰ → Terminal → New Terminal.
+- **Mit echtem Claude Code durchgespielt am 26.11.** (zwei Läufe mit drei und vier Personen auf dem Server, Standardfall bis zur Freigabe an allen Stationen): Anmeldung, Aufteilung, Zyklus, Sichern, `/clear`-Pflicht und Kontextgrenzen greifen. Bedient wurden die Terminals per tmux, nicht über den Browser.
+- Das automatische Öffnen des Terminals im Browser (`.vscode/tasks.json`) ist ungetestet. Fallback: Menü ☰ → Terminal → New Terminal.
+- Subagenten laufen im Hintergrund: Claude Code 2.1.285 entfernt `run_in_background`, bevor der Hook es sieht. Claude wartet auf das Ergebnis, es funktioniert, sieht nur unruhiger aus.
 - Die Fachperson für das Meldeformular (Task 6) ist die der Schadenaufnahme. Ob ihre Persona Fragen zum Formular gut beantwortet, ist nicht geprüft.
-- Der Subagent `test-author` liefert schwankende Qualität. Seit immer nur eine Anforderung in Arbeit ist, überschreiben sich parallele Läufe nicht mehr.
-- Stage 1 hat keine eigenen Eingangsmeldungen unter `fixtures/`. `akten/eingang/` und `pnpm conformance` leiten sie aus `fixtures/1-2/` ab (Akte ohne Block `stage1`).
+- Der Subagent `test-author` liefert schwankende Qualität. Er schreibt jetzt je Anforderung einen Test mit abgewandelter Akte, und der Prüfer sucht fest eingetragene Werte.
+- Der Eingang von Stage 1 ist die Meldung im Block `report`, so wie sie eingegangen ist. `akten/eingang/` und `pnpm conformance` nehmen dafür die Akten aus `fixtures/1-2/` ohne den Block `stage1`.
+- Jede Station kann für sich verifiziert sein, und die Kette reißt trotzdem, wenn eine Station eine Angabe nicht weitergibt, die die nächste braucht. `pnpm conformance` warnt dann mit ⚠; die ganze Kette prüft `pnpm uebergabe` in Level 5.
 
 ## Schnellstart
 
