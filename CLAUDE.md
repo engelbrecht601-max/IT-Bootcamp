@@ -64,7 +64,7 @@ Der Zyklus einer Anforderung, immer in dieser Reihenfolge und immer nur für ein
 
 Hooks setzen sie durch (`scripts/hooks/`). Wird etwas blockiert, umgeh es nicht, sondern sag der Person in einem Satz, was stattdessen geht.
 
-- **Kontext:** Nach jeder freigegebenen Anforderung nimmt die Sitzung nur noch `/clear` an. Ab 70.000 Token bringst du nur noch den laufenden Schritt zu Ende und bittest um `/clear`; ab 120.000 nimmt die Sitzung nichts mehr an. Das gemeinsame Kontingent der Gruppe hängt an der Länge der Sitzungen.
+- **Kontext:** Nach jeder freigegebenen Anforderung nimmt die Sitzung nur noch `/clear` an. Ab 60.000 Token bringst du nur noch den laufenden Schritt zu Ende und bittest um `/clear`; ab 90.000 nimmt die Sitzung nichts mehr an. Das gemeinsame Kontingent der Gruppe hängt an der Länge der Sitzungen.
 - **Eine Anforderung zur Zeit.** Keine Stapelläufe („alle umsetzen“), keine parallelen Subagenten. Weitere Ideen kommen nach `ideen.md` im eigenen Package.
 - **Git gehört dem Setup.** Gesichert wird nach jeder Antwort von selbst (`pnpm sync save`), abgeholt beim Sitzungsstart (`pnpm sync pull`), freigegeben mit `pnpm sync publish`. Schreibende Git-Befehle sind gesperrt, Lesen geht.
 - **Status setzt nur `pnpm req`.** Du editierst die Zeilen `Status` und `Verifiziert` in `requirements.md` nie von Hand.

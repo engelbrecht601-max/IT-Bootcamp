@@ -22,7 +22,8 @@ Der Task steckt in der ID (`T<N>-…`): 1–4 → `packages/stage<N>/`, 5 → `p
 2. Testname: `[<ID>] ` plus das Kriterium in Kurzform auf Deutsch, z. B. `test("[T2-REQ-003] Gegeben abgelaufener Vertrag, dann nicht gedeckt", …)`.
 3. Aufbau: `import { test } from "node:test"; import assert from "node:assert/strict"; import { run } from "./index.js";`. Eingangsakten aus `fixtures/` laden oder daraus ableiten.
 4. Prüfe das beobachtbare Ergebnis von `run()`, also Felder im eigenen Block, Trace und `error`, keine internen Hilfsfunktionen.
-5. `pnpm test:req <ID>` ausführen. Die Tests müssen laufen und dürfen rot sein, weil die Umsetzung noch fehlt. Syntax- oder Importfehler behebst du.
+5. **Mindestens ein Test nutzt eine abgewandelte Kopie der Musterakte**: andere Angaben (Name, Betrag, Datum oder Schadenart), mit dem Ergebnis, das daraus folgen muss. So fällt auf, wenn die Umsetzung nur die Musterakte auswendig kennt. Prüfe den genauen Wert, den das Kriterium verlangt (den Betrag, die Entscheidung, die Farbe), nicht nur, dass etwas da ist.
+6. `pnpm test:req <ID>` ausführen. Die Tests müssen laufen und dürfen rot sein, weil die Umsetzung noch fehlt. Syntax- oder Importfehler behebst du.
 
 Ist ein Kriterium zu vage für einen Test, schreib keinen Test dafür, sondern nenne das Kriterium und die Frage, die an die Fachperson gehört.
 

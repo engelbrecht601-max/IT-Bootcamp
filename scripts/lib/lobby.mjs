@@ -5,14 +5,24 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { gitIdentity, writeTeam } from "./tasks.mjs";
-import { assignDesks, cleanName, desksDir, mainRoot, readState, slug, teamFromDesks, withLock, writeState } from "./desks.mjs";
+import { assignDesks, cleanName, desksDir, mainRoot, nameProblem, readState, slug, teamFromDesks, withLock, writeState } from "./desks.mjs";
 
 const same = (a, b) => cleanName(a).toLowerCase() === cleanName(b).toLowerCase();
 
-/** Trägt einen Namen in die Anmeldeliste ein. Gibt den gespeicherten Namen zurück. */
+/** Ist der Name schon in der Anmeldeliste? Gibt den gespeicherten Namen zurück. */
+export function registered(name, dir) {
+  return readState(dir).lobby.find((p) => same(p.name, name))?.name;
+}
+
+/**
+ * Trägt einen Namen in die Anmeldeliste ein. Gibt den gespeicherten Namen zurück.
+ * Steht der Name schon in der Liste, gilt das als dieselbe Person in einem weiteren Terminal.
+ * Ob das stimmt, fragt scripts/start.mjs vorher nach (registered).
+ */
 export function register(name, dir) {
   const clean = cleanName(name);
-  if (!clean) throw new Error("Bitte einen Vornamen eingeben.");
+  const problem = nameProblem(clean);
+  if (problem) throw new Error(problem);
   return withLock("state", () => {
     const state = readState(dir);
     if (state.started) throw new Error("Die Gruppe ist schon gestartet.");

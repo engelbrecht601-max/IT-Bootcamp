@@ -27,12 +27,13 @@ export function instructions(next, desk) {
 
 1. Falls die Person neu ist: Erklär in höchstens drei Sätzen, was diese Station tut (steht in ${pkg}/CLAUDE.md), und bitte sie um ihre erste Frage an die Fachperson.
 2. Du stellst der Fachperson keine eigenen Fragen und formulierst keine Fragen vor. Fällt der Person nichts ein, nenn Themen, keine Sätze: was Pflicht ist, was im Grenzfall passiert, wann abgelehnt wird, was die nächste Station braucht.
-3. Für jede Frage der Person: Ruf den Subagenten \`${t.persona}\` im Vordergrund auf (ein Aufruf pro Frage, nie mehrere gleichzeitig). Gib ihm das bisherige Protokoll aus ${pkg}/interview.md und die Frage wörtlich.
-4. Häng Frage und Antwort wörtlich an ${pkg}/interview.md an:
+3. Fragen ohne Bezug zur Arbeit der Station (Gehalt, Privates, Smalltalk) gibst du nicht weiter und schreibst sie nicht ins Protokoll. Sag freundlich in einem Satz, dass nur Fragen zur Arbeit zählen, und bitte um eine solche.
+4. Für jede Frage der Person: Ruf den Subagenten \`${t.persona}\` im Vordergrund auf (ein Aufruf pro Frage, nie mehrere gleichzeitig). Gib ihm das bisherige Protokoll aus ${pkg}/interview.md und die Frage wörtlich.
+5. Häng Frage und Antwort wörtlich an ${pkg}/interview.md an:
    **Gruppe:** <Frage>
 
    **Fachperson:** <Antwort>
-5. Zeig der Person die Antwort wörtlich. Leite noch keine Anforderung ab.
+6. Zeig der Person die Antwort wörtlich. Leite noch keine Anforderung ab.
 Sobald genug gefragt ist, sagt \`pnpm next\` den nächsten Schritt. Weitere Fragen an die Fachperson gehen auch später jederzeit.`;
 
     case "anforderung": {

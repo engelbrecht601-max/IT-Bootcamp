@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { readState } from "./desks.mjs";
-import { deskOf, joinDesk, register, startGroup, unregister } from "./lobby.mjs";
+import { deskOf, joinDesk, register, registered, startGroup, unregister } from "./lobby.mjs";
 import { save } from "../sync.mjs";
 
 function repo() {
@@ -30,6 +30,16 @@ test("anmelden: jeder Name einmal, Groß- und Kleinschreibung egal, abmelden geh
   unregister("BEN", dir);
   assert.deepEqual(readState(dir).lobby.map((p) => p.name), ["Anna"]);
   assert.throws(() => register("   ", dir), /Vornamen/);
+});
+
+test("anmelden: nur Vornamen, bei doppelten Namen mit Anfangsbuchstaben", () => {
+  const { dir } = repo();
+  for (const ok of ["Biggi", "Anna Lena", "Jan B.", "Hans-Peter", "Ayşe", "Mo"]) assert.equal(register(ok, dir), ok, ok);
+  for (const bad of ["Biggi Müller-Lüdenscheid ich bin von der Schadenabteilung", "Jan 2", "ich bin Kalle", "<script>", "Gruppe 1!"]) {
+    assert.throws(() => register(bad, dir), /Vornamen/, bad);
+  }
+  assert.equal(registered("jan b.", dir), "Jan B.");
+  assert.equal(registered("Jan", dir), undefined);
 });
 
 test("start: Aufteilung nach Kopfzahl, team.json im Gruppenbranch, ein Arbeitsstand pro Person", () => {
