@@ -67,7 +67,7 @@ Sag der Person in zwei Sätzen, welche Fälle jetzt geprüft werden. ${END}`;
 1. Sag der Person in höchstens zwei Sätzen, was du baust. Dann bau es, ohne auf ein Okay zu warten.
 2. Nur in ${pkg}/src/. ${UI_TASKS.includes(next.task) ? "Die Oberfläche liest Akten und schreibt nie in einen Stage-Block. Keine neuen Abhängigkeiten, kein eigener Server: Die Vorschau startet `pnpm vorschau`." : "Die Stage schreibt nur in ihren eigenen Block, hängt genau einen Trace-Eintrag an und löscht nichts."} Kommentar mit der ID an der Stelle, die sie umsetzt: \`// ${next.id}: …\`.
 3. Die Tests änderst du nicht. Hältst du einen Test für falsch, stopp und sag es der Person in einem Satz: Dann ist die Anforderung unklar.
-4. \`pnpm test:req ${next.id}\` muss grün sein.${next.task <= 4 ? ` Danach \`pnpm conformance ${next.task}\`.` : ""}
+4. \`pnpm test:req ${next.id}\` muss grün sein.${next.task <= 4 ? ` Danach \`pnpm conformance ${next.task}\`. Zeigt es ⚠ fehlende Angaben, sag der Person in einem Satz, welche das sind und dass die nächste Station sie vielleicht braucht. Bau sie nicht ungefragt ein: Daraus wird eine eigene Anforderung, wenn die Person das will.` : ""}
 5. \`pnpm req set ${next.id} umgesetzt <geänderte Dateien>\`. Auslegungsentscheidungen kommen als Zitatblock (\`> …\`) unter die Anforderung.
 ${END}`;
 

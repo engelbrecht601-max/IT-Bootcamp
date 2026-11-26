@@ -47,6 +47,9 @@ export function decide({ prompt, desk, status, contextTokens = 0, group, admin }
   const lines = [`[Workshop-Stand] ${desk.persons.join(" & ")} · ${deskTitle(desk)} · ${status.line}`];
   for (const h of status.next.hints) lines.push(`[Hinweis] ${h}`);
   if (status.wishes.answered.length) lines.push(`[Hinweis] Es gibt eine Antwort auf einen Wunsch dieses Arbeitsplatzes. pnpm next zeigt sie.`);
+  if (contextTokens > 0) {
+    lines.push(`[Sitzungsgröße] etwa ${Math.round(contextTokens / 1000)}.000 Token, gemessen. Fragt die Person nach ihrem Verbrauch, nenn diese Zahl und sonst keine; ab ${SOFT_LIMIT / 1000}.000 kommt /clear.`);
+  }
   if (contextTokens >= SOFT_LIMIT) {
     lines.push(`[Kontext] Die Sitzung ist groß (${Math.round(contextTokens / 1000)}k Token). Bring nur noch den laufenden Schritt zu Ende, sichere mit pnpm sync save und bitte die Person dann, /clear und danach /weiter zu tippen.`);
   }

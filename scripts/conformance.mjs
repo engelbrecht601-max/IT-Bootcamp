@@ -8,7 +8,8 @@
 //   - fremde Blöcke und die Meldung (report) bleiben unverändert, nichts wird gelöscht
 //   - genau ein neuer Trace-Eintrag der eigenen Stage, bestehende bleiben unverändert
 //   - eigener Block ist gesetzt, oder die Akte ist mit error und "abgebrochen" beendet
-// Bricht eine Musterakte ab, die laut fixtures/ weiterlaufen soll, gibt es eine Warnung (kein Fehler).
+// Warnungen (keine Fehler): Eine Musterakte bricht ab, die laut fixtures/ weiterläuft, oder im eigenen Block
+// fehlen Angaben, die die Musterakte nach dieser Stage hat (oft genau das, was die nächste Station braucht).
 // Eine Stage, die noch "nicht implementiert" wirft, gilt als offen, nicht als Fehler.
 import { isDeepStrictEqual } from "node:util";
 import { existsSync, readFileSync } from "node:fs";
@@ -90,6 +91,17 @@ export function abortWarning(stage, testCase, output, fixtures) {
   return `bricht ab (${output.error?.code ?? "ohne Code"}), laut fixtures/ läuft diese Akte weiter. Fehlt eine Angabe im Eingang?`;
 }
 
+/** Warnung, wenn im eigenen Block Angaben fehlen, die die Musterakte nach dieser Stage enthält. */
+export function missingWarning(stage, testCase, output, fixtures) {
+  if (output?.trace?.at(-1)?.action === "abgebrochen") return undefined;
+  const expected = expectedAfter(stage, testCase, fixtures)?.[`stage${stage}`];
+  const own = output?.[`stage${stage}`];
+  if (!expected || !own) return undefined;
+  const missing = Object.keys(expected).filter((k) => k !== "completedAt" && own[k] === undefined);
+  if (!missing.length) return undefined;
+  return `in der Musterakte danach stehen auch ${missing.join(", ")}, deine Stage liefert sie nicht. Braucht die nächste Station das? Dann fehlt eine Anforderung.`;
+}
+
 export async function checkStage(stage, run, inputs, validate, fixtures) {
   const results = [];
   for (const { boundary, testCase, claim } of inputs) {
@@ -103,7 +115,9 @@ export async function checkStage(stage, run, inputs, validate, fixtures) {
       continue;
     }
     const problems = violations(stage, input, output, validate);
-    const warning = fixtures ? abortWarning(stage, testCase, output, fixtures) : undefined;
+    const warning = fixtures
+      ? [abortWarning(stage, testCase, output, fixtures), missingWarning(stage, testCase, output, fixtures)].filter(Boolean).join(" ") || undefined
+      : undefined;
     results.push({ boundary, testCase, status: problems.length ? "fehler" : "ok", problems, ...(warning ? { warning } : {}) });
   }
   return results;

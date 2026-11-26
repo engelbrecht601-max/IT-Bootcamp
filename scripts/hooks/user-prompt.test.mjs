@@ -69,3 +69,8 @@ test("Kontextgröße kommt aus der letzten Antwort der Hauptsitzung", () => {
   assert.equal(contextTokens(join(tmpdir(), "gibt-es-nicht.jsonl")), 0);
   assert.equal(contextTokens(undefined), 0);
 });
+
+test("die gemessene Sitzungsgröße geht als Kontext mit", () => {
+  assert.match(ask("Wie viele Tokens habe ich verbraucht?", { contextTokens: 48_400 }).context, /\[Sitzungsgröße\] etwa 48\.000 Token/);
+  assert.doesNotMatch(ask("hallo", { contextTokens: 0 }).context, /Sitzungsgröße/);
+});

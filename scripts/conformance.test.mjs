@@ -100,3 +100,10 @@ test("Musterakten passen zu den Regeln der Fachpersonen", () => {
     assert.equal(f.claim.stage4.payoutAmount, f.claim.stage3.assessedAmount, f.testCase);
   }
 });
+
+test("fehlende Angaben gegenüber der Musterakte geben eine Warnung", async () => {
+  const run = (c) => ({ ...goodStage2(c), stage2: { completedAt: at, coverageDecision: c.stage2 ? "gedeckt" : "gedeckt" } });
+  const results = await checkStage(2, run, inputsFor(2, fixtures), validate, fixtures);
+  assert.ok(results.every((r) => r.status === "ok"), JSON.stringify(results));
+  assert.ok(results.every((r) => r.warning?.includes("deductible") && r.warning.includes("reasoning")), JSON.stringify(results));
+});
