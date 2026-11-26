@@ -26,9 +26,9 @@ export function instructions(next, desk) {
       return `INTERVIEW für ${t.name} (${pkg}). Es fehlen noch ${next.missing} eigene Frage(n) der Person an die Fachperson.
 
 1. Falls die Person neu ist: Erklär in höchstens drei Sätzen, was diese Station tut (steht in ${pkg}/CLAUDE.md), und bitte sie um ihre erste Frage an die Fachperson.
-2. Du stellst der Fachperson keine eigenen Fragen und formulierst keine Fragen vor. Fällt der Person nichts ein, nenn Themen, keine Sätze: was Pflicht ist, was im Grenzfall passiert, wann abgelehnt wird, was die nächste Station braucht.
-3. Fragen ohne Bezug zur Arbeit der Station (Gehalt, Privates, Smalltalk) gibst du nicht weiter und schreibst sie nicht ins Protokoll. Sag freundlich in einem Satz, dass nur Fragen zur Arbeit zählen, und bitte um eine solche.
-4. Für jede Frage der Person: Ruf den Subagenten \`${t.persona}\` im Vordergrund auf (ein Aufruf pro Frage, nie mehrere gleichzeitig). Gib ihm das bisherige Protokoll aus ${pkg}/interview.md und die Frage wörtlich.
+2. Du stellst der Fachperson keine eigenen Fragen und formulierst keine Fragen vor. Fällt der Person nichts ein, nenn Themen, keine Sätze und keine Beispielfragen: was Pflicht ist, was im Grenzfall passiert, wann abgelehnt wird, was die nächste Station braucht.
+3. Fragen ohne Bezug zur Arbeit der Station (Gehalt, Privates, Smalltalk) gibst du nicht weiter und schreibst sie nicht ins Protokoll. Sag freundlich in einem Satz, dass nur Fragen zur Arbeit zählen, und bitte um eine solche, ohne selbst eine vorzuschlagen.
+4. Für jede Frage der Person: Ruf den Subagenten \`${t.persona}\` im Vordergrund auf (Parameter \`run_in_background: false\`) (ein Aufruf pro Frage, nie mehrere gleichzeitig). Gib ihm das bisherige Protokoll aus ${pkg}/interview.md und die Frage wörtlich.
 5. Häng Frage und Antwort wörtlich an ${pkg}/interview.md an:
    **Gruppe:** <Frage>
 
@@ -56,7 +56,7 @@ ${END}`;
 2. Braucht die Anforderung ein Feld, das im Contract fehlt (\`pnpm contracts:build\`, dann contracts/claim.schema.json)? Dann leg es selbst an, ohne die Person nach Feldnamen zu fragen:
    echo '{"requirementId":"${next.id}","rationale":"<ein Satz>","fragment":{"properties":{"stage${next.task}":{"properties":{"<feld>":{"description":"<deutsch>","type":"<typ>"}}}}}}' | pnpm contracts:add -
    ${UI_TASKS.includes(next.task) ? "Dieser Task hat keinen eigenen Block. Fehlt eine Angabe: `pnpm wunsch add <Task 1–4> \"<was fehlt und wofür>\"` und ohne das Feld weiterarbeiten." : "Liegt das Feld im Block einer anderen Station, schickt das Skript von selbst einen Wunsch dorthin. Dann ohne das Feld weiterarbeiten."}
-3. Ruf den Subagenten \`test-author\` mit genau der ID ${next.id} im Vordergrund auf. Schreib die Tests nicht selbst.
+3. Ruf den Subagenten \`test-author\` mit genau der ID ${next.id} im Vordergrund auf (Parameter \`run_in_background: false\`). Schreib die Tests nicht selbst.
 4. \`pnpm test:req ${next.id}\`: Die Tests müssen laufen und rot sein, weil die Umsetzung fehlt. Syntax- und Importfehler lässt du den test-author beheben.
 5. \`pnpm req set ${next.id} spezifiziert\`.
 Sag der Person in zwei Sätzen, welche Fälle jetzt geprüft werden. ${END}`;
@@ -74,7 +74,7 @@ ${END}`;
     case "pruefen":
       return `PRÜFEN LASSEN: ${next.id} (${pkg}).
 
-1. Ruf den Subagenten \`verifier\` mit genau der ID ${next.id} im Vordergrund auf. Er kennt den Bauverlauf nicht und versucht, die Umsetzung zu widerlegen. Er trägt sein Ergebnis selbst ein. Prüf nicht selbst.
+1. Ruf den Subagenten \`verifier\` mit genau der ID ${next.id} im Vordergrund auf (Parameter \`run_in_background: false\`). Er kennt den Bauverlauf nicht und versucht, die Umsetzung zu widerlegen. Er trägt sein Ergebnis selbst ein. Prüf nicht selbst.
 2. Kein Blocker: Sag der Person in einem Satz, was geprüft wurde. Sie tippt /weiter.
 3. Blocker: Erklär ihn in Alltagssprache und sag, was nachgebessert werden muss: die Anforderung, der Test oder der Code. Dass der Verifier etwas findet, ist sein Job, kein Fehlschlag.
    - Code: beheben, \`pnpm test:req ${next.id}\` grün, dann erneut den verifier aufrufen.

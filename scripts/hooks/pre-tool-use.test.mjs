@@ -73,10 +73,14 @@ test("abgeschaltete Werkzeuge: Veröffentlichen, Nachrichten zwischen Sessions, 
 
 test("Subagenten: nur Test-Autor, Prüfer und Fachperson, immer im Vordergrund", () => {
   const agent = (subagent_type, extra = {}) => ({ tool_name: "Agent", tool_input: { subagent_type, prompt: "x", ...extra } });
-  for (const type of ["test-author", "verifier", "persona-stage4", "persona-ui"]) assert.equal(check(agent(type), desk(4)), null, type);
+  const fg = { run_in_background: false };
+  for (const type of ["test-author", "verifier", "persona-stage4", "persona-ui"]) assert.equal(check(agent(type, fg), desk(4)), null, type);
   for (const type of ["general-purpose", "Explore", "", "claude"]) assert.match(check(agent(type), desk(4)) ?? "", /abgeschaltet/, type);
   // Claude Code startet Subagenten sonst im Hintergrund: Der Hook setzt run_in_background ausdrücklich auf false.
-  assert.equal(check(agent("verifier", { run_in_background: true }), desk(4)), null);
+  assert.match(check(agent("verifier", { run_in_background: true }), desk(4)), /run_in_background: false/);
+  assert.match(check(agent("verifier"), desk(4)), /run_in_background: false/);
+  assert.equal(check(agent("verifier"), admin), null);
+  assert.equal(check(agent("verifier", { run_in_background: "false" }), desk(4)), null);
   assert.equal(adjust(agent("verifier", { run_in_background: true }), desk(4)).run_in_background, false);
   assert.deepEqual(adjust(agent("test-author"), desk(4)), { subagent_type: "test-author", prompt: "x", run_in_background: false });
   assert.equal(adjust(agent("verifier", { run_in_background: false }), desk(4)), null);
