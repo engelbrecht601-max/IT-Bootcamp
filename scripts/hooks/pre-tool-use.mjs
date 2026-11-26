@@ -7,7 +7,7 @@
 //   sind am Arbeitsplatz gesperrt (kein add, commit, reset, push, merge …)
 // - Werkzeuge, die vom Auftrag wegführen oder das Kontingent leeren, sind abgeschaltet: Veröffentlichen
 //   (Artifact), Nachrichten zwischen Sessions, geplante Aufgaben, Websuche, freie Subagenten,
-//   eigene Server und npx; Subagenten nur mit run_in_background: false (sonst startet Claude Code sie im Hintergrund)
+//   eigene Server und npx
 // - keine KI im Produkt: nichts unter .claude/ anlegen und keine KI-Pakete installieren
 // Workshop-Leitung setzt BOOTCAMP_ADMIN=1, um contracts/ und fremde Packages direkt zu bearbeiten.
 // Exit-Code 2 blockiert den Aufruf; die Meldung auf stderr sieht Claude.
@@ -45,8 +45,8 @@ export function check(input, ctx = fromEnv()) {
     if (tool === "Agent" || tool === "Task") {
       const type = String(args.subagent_type ?? "");
       if (!ALLOWED_AGENTS.test(type)) return `Der Subagent "${type || "ohne Typ"}" ${OFF} Erlaubt sind nur test-author, verifier und die Fachperson.`;
-      // Claude Code startet Subagenten sonst im Hintergrund und übernimmt eine Korrektur durch den Hook dafür nicht.
-      if (!foreground(args)) return "Subagenten laufen im Vordergrund: Ruf ihn noch einmal auf, diesmal mit run_in_background: false. Der Person sagst du dazu nichts.";
+      // Nicht nach run_in_background blockieren: Claude Code 2.1.285 entfernt den Schalter, bevor der Hook ihn sieht.
+      // Ein Block würde jeden Subagenten sperren. Die Schrittanweisungen nennen den Schalter, adjust() setzt ihn.
       return null;
     }
   }
@@ -61,8 +61,8 @@ export function check(input, ctx = fromEnv()) {
 /**
  * Korrigiert einen erlaubten Aufruf, statt ihn zu blockieren. Gibt das geänderte tool_input zurück oder null.
  * Claude Code startet Subagenten von sich aus im Hintergrund, wenn run_in_background nicht ausdrücklich false
- * ist. check() blockiert solche Aufrufe; diese Korrektur ist nur die zweite Absicherung (Claude Code 2.1.285
- * übernimmt sie für Subagenten nicht).
+ * ist. Diese Korrektur ist ein Versuch für neuere Versionen: Claude Code 2.1.285 entfernt den Schalter vor dem
+ * Hook und übernimmt die Korrektur nicht. Subagenten laufen dort im Hintergrund, Claude wartet auf ihr Ergebnis.
  */
 export function adjust(input, ctx = fromEnv()) {
   const admin = Boolean(ctx.admin);
@@ -72,9 +72,6 @@ export function adjust(input, ctx = fromEnv()) {
   if ((tool === "Agent" || tool === "Task") && args.run_in_background !== false) return { ...args, run_in_background: false };
   return null;
 }
-
-/** Claude übergibt den Schalter mal als Wahrheitswert, mal als Text. */
-const foreground = (args) => args.run_in_background === false || String(args.run_in_background).toLowerCase() === "false";
 
 function fromEnv(env = process.env) {
   let tasks = [];
