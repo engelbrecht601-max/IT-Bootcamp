@@ -16,7 +16,8 @@ failed=0
 for n in "${groups[@]}"; do
   svc="gruppe$n"
   out=$(timeout --foreground 60 docker compose exec -T "$svc" bash -c '
-    cd ~/workspace
+    # Außerhalb des Repos: Dort greifen die Workshop-Hooks nicht, die Sitzungen ohne Arbeitsplatz ablehnen.
+    cd /tmp
     if   [ -n "${ANTHROPIC_API_KEY:-}" ];       then echo "MODE=API-Key"
     elif [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then echo "MODE=Abo-Token"
     else echo "MODE=keine"; fi
