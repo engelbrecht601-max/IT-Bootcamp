@@ -1,5 +1,6 @@
-// Die fünf Tasks einer Gruppe und die Teamliste (team.json).
-// Jede Gruppe baut die komplette App; innerhalb der Gruppe übernimmt jede Person einen Task.
+// Die Tasks einer Gruppe und die Teamliste (team.json).
+// Jede Gruppe baut die komplette App. Wie die Tasks auf die Personen verteilt werden, hängt von der
+// Kopfzahl ab und steht in scripts/lib/desks.mjs (ein Arbeitsplatz kann mehrere Tasks tragen).
 // Diese Datei ist die einzige Stelle, die Task-Nummer, Package und Persona zuordnet.
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -13,23 +14,39 @@ export const TASKS = {
   3: { pkg: "stage3", name: "Schadenbewertung", persona: "persona-stage3" },
   4: { pkg: "stage4", name: "Regulierung", persona: "persona-stage4" },
   5: { pkg: "ui", name: "Oberfläche", persona: "persona-ui" },
+  // Nur bei sechs Personen: die Oberfläche wird geteilt. Das Meldeformular gehört fachlich zur
+  // Schadenaufnahme, deshalb dieselbe Fachperson wie Task 1.
+  6: { pkg: "intake", name: "Meldeformular", persona: "persona-stage1" },
 };
 
+/** Tasks ohne eigenen Block im Claim: Sie lesen Akten, schreiben aber in keinen Stage-Block. */
+export const UI_TASKS = [5, 6];
+/** Regex-Baustein für alle Task-Nummern, z. B. in T<N>-REQ-<NNN>. */
+export const TASK_DIGIT = `[${Object.keys(TASKS).join("")}]`;
+
 /**
- * Tasks, die es in dieser Gruppe gibt. Der Workshop-Server setzt BOOTCAMP_TASKS pro Gruppe
- * (z. B. "1,2,3,4" für Gruppen ohne Oberfläche); ohne die Variable gibt es alle fünf.
+ * Tasks, die es in dieser Gruppe gibt: die aus team.json, sobald die Gruppe gestartet ist.
+ * Davor (und außerhalb des Workshop-Servers) die Tasks 1 bis 5; Task 6 gibt es nur bei sechs Personen.
  */
-export function activeTasks(env = process.env) {
-  const list = String(env.BOOTCAMP_TASKS ?? "").split(",").map((t) => taskNumber(t)).filter(Boolean);
-  return list.length ? [...new Set(list)].sort((a, b) => a - b) : Object.keys(TASKS).map(Number);
+export function activeTasks(team = readTeamSafe()) {
+  const taken = Object.keys(team?.tasks ?? {}).map((t) => taskNumber(t)).filter(Boolean);
+  return taken.length ? [...new Set(taken)].sort((a, b) => a - b) : [1, 2, 3, 4, 5];
+}
+
+function readTeamSafe() {
+  try {
+    return readTeam();
+  } catch {
+    return undefined;
+  }
 }
 
 /** Zahlwort für die Teamgröße in Texten. */
 export function countWord(n) {
-  return ["null", "eine", "zwei", "drei", "vier", "fünf"][n] ?? String(n);
+  return ["null", "eine", "zwei", "drei", "vier", "fünf", "sechs"][n] ?? String(n);
 }
 
-/** Task-Nummer (1–5) aus Zahl oder String, sonst undefined. */
+/** Task-Nummer (1–6) aus Zahl oder String, sonst undefined. */
 export function taskNumber(value) {
   const n = Number(String(value ?? "").trim());
   return TASKS[n] ? n : undefined;
@@ -63,7 +80,7 @@ export function writeTeam(team, file = TEAM_FILE) {
  */
 export function assign(team, task, name, { force = false } = {}) {
   const n = taskNumber(task);
-  if (!n) throw new Error(`Task muss 1 bis 5 sein, nicht "${task}"`);
+  if (!n) throw new Error(`Task muss 1 bis 6 sein, nicht "${task}"`);
   const clean = String(name ?? "").trim().replace(/\s+/g, " ");
   if (!clean) throw new Error("Name fehlt");
   if (clean.length > 40) throw new Error("Name ist zu lang (höchstens 40 Zeichen)");
@@ -81,7 +98,7 @@ export function validateTeam(team) {
   if ("group" in team && !(Number.isInteger(team.group) && team.group >= 1)) errors.push("group muss eine positive Zahl sein");
   if (!team.tasks || typeof team.tasks !== "object" || Array.isArray(team.tasks)) return [...errors, "tasks fehlt"];
   for (const [key, name] of Object.entries(team.tasks)) {
-    if (!taskNumber(key)) errors.push(`Task "${key}" gibt es nicht (1 bis 5)`);
+    if (!taskNumber(key)) errors.push(`Task "${key}" gibt es nicht (1 bis 6)`);
     if (typeof name !== "string" || !name.trim()) errors.push(`Task ${key}: Name fehlt`);
   }
   return errors;

@@ -1,7 +1,7 @@
 {
   "claimId": "SCH-2026-00102",
   "meta": {
-    "contractVersion": "1.0.0",
+    "contractVersion": "1.1.0",
     "createdAt": "2026-11-04T14:05:00Z",
     "currentStage": 3,
     "testCase": "Grenzfall"
@@ -11,15 +11,27 @@
       "stage": 1,
       "at": "2026-11-04T14:30:00Z",
       "action": "erfasst",
-      "note": "Meldung rund elf Monate nach dem Schaden, Forderungshöhe noch unbekannt."
+      "note": "Spätmeldung: rund elf Monate nach dem Schaden. Forderungshöhe noch unbekannt."
     },
     {
       "stage": 2,
       "at": "2026-11-06T16:20:00Z",
       "action": "geprüft",
-      "note": "Deckung mit Vorbehalt: späte Meldung, Winterdienst übertragen."
+      "note": "Deckung unter Vorbehalt wegen Spätmeldung, Hinweis zum Winterdienst an die Bewertung."
     }
   ],
+  "report": {
+    "receivedAt": "2026-11-04T14:05:00Z",
+    "channel": "Brief",
+    "answers": {
+      "policyNumber": "GH4711587",
+      "incidentDate": "19.12.2025",
+      "description": "Ein Paketzusteller ist im letzten Winter auf dem vereisten Gehweg vor dem Haus gestürzt und hat sich das Handgelenk gebrochen. Der Winterdienst war laut Mietvertrag an die Mieter im Erdgeschoss übertragen. Der Anwalt des Zustellers meldet sich erst jetzt.",
+      "claimantName": "Emre Yıldız",
+      "claimantContact": "Kanzlei Vogt, kanzlei.vogt@example.org",
+      "injury": "Handgelenk gebrochen"
+    }
+  },
   "stage1": {
     "completedAt": "2026-11-04T14:30:00Z",
     "policyNumber": "GH-4711587",
@@ -28,12 +40,18 @@
     "damageType": "Personenschaden",
     "description": "Ein Paketzusteller ist im letzten Winter auf dem vereisten Gehweg vor dem Haus gestürzt und hat sich das Handgelenk gebrochen. Der Winterdienst war laut Mietvertrag an die Mieter im Erdgeschoss übertragen. Der Anwalt des Zustellers meldet sich erst jetzt.",
     "claimant": {
-      "name": "Emre Yıldız"
-    }
+      "name": "Emre Yıldız",
+      "contact": "Kanzlei Vogt, kanzlei.vogt@example.org"
+    },
+    "injury": "Handgelenk gebrochen"
   },
   "stage2": {
     "completedAt": "2026-11-06T16:20:00Z",
-    "coverageDecision": "gedeckt",
-    "reasoning": "Vertrag bestand am Schadentag, die Meldung kam aber rund elf Monate später. Ob die Übertragung des Winterdienstes auf die Mieter den Versicherungsnehmer entlastet, ist offen und bei der Bewertung zu berücksichtigen."
+    "coverageDecision": "unter Vorbehalt",
+    "reasoning": "Der Vertrag bestand am Schadentag, der Schaden ist gedeckt. Gemeldet wurde er aber erst rund elf Monate später; diese Obliegenheitsverletzung halten wir fest.",
+    "deductible": 250.0,
+    "hints": [
+      "Winterdienst war per Mietvertrag an die Mieter im Erdgeschoss übertragen."
+    ]
   }
 }

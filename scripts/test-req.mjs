@@ -6,7 +6,7 @@ import { existsSync } from "node:fs";
 import { TASKS } from "./lib/tasks.mjs";
 
 const id = process.argv[2] ?? "";
-const m = /^T([1-5])-REQ-[0-9]{3}$/.exec(id);
+const m = /^T([1-6])-REQ-[0-9]{3}$/.exec(id);
 if (!m) {
   console.error("Aufruf: pnpm test:req T<N>-REQ-<NNN>");
   process.exit(64);

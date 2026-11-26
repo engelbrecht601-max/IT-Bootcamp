@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-// Richtet den Arbeitsplatz einer Gruppe ein: pnpm group:setup <N>
-// Jede Gruppe baut die komplette App (alle fünf Packages). Schreibt .claude/settings.local.json
-// (nicht versioniert) mit
-// - BOOTCAMP_GROUP, damit der Hook erst nach pnpm desk Schreibzugriffe in packages/ zulässt
-//   (welches Package, entscheidet der Task der einzelnen Session, siehe scripts/desk.mjs)
-// - einer Allow-Liste für die Befehle, die die Gruppe ständig braucht, damit Claude nicht bei jedem fragt
-// Pushen bleibt bewusst eine Rückfrage: Das entscheidet die Person, nicht Claude.
+// Richtet die Claude-Einstellungen eines Arbeitsstands ein: pnpm group:setup <N>
+// Schreibt .claude/settings.local.json (nicht versioniert) mit
+// - BOOTCAMP_GROUP, damit Hooks und Skripte wissen, dass sie im Gruppen-Arbeitsplatz laufen
+//   (welche Packages eine Session schreiben darf, entscheidet ihr Arbeitsplatz, siehe scripts/start.mjs)
+// - einer Allow-Liste für die Befehle des Ablaufs, damit Claude nicht bei jedem fragt
+// Läuft beim Container-Start für den Haupt-Checkout und beim ersten Öffnen jedes Arbeitsplatzes.
 // Permission-Syntax geprüft mit Claude Code 2.1.285 (Leerzeichen-Form "Bash(cmd *)").
 import { writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
@@ -19,25 +18,29 @@ export function settingsFor(group) {
     env: { BOOTCAMP_GROUP: String(n) },
     permissions: {
       allow: [
-        // Breit freigegeben; auf das eigene Package begrenzt der Hook anhand von BOOTCAMP_TASK.
+        // Breit freigegeben; auf die eigenen Packages begrenzt der Hook anhand des Arbeitsplatzes.
         // Edit(path) deckt auch Write ab; Write(path)-Regeln ignoriert Claude Code mit einer Warnung.
         "Edit(/packages/**)",
         "Edit(/.claude/tmp/**)",
+        "Bash(pnpm next)",
+        "Bash(pnpm stand)",
+        "Bash(pnpm req *)",
+        "Bash(pnpm sync *)",
+        "Bash(pnpm wunsch *)",
+        "Bash(pnpm contracts:add *)",
+        "Bash(pnpm contracts:build)",
+        "Bash(pnpm uebergabe)",
+        "Bash(pnpm vorschau)",
+        "Bash(pnpm akten)",
         "Bash(pnpm check)",
         "Bash(pnpm test)",
         "Bash(pnpm test:req *)",
         "Bash(pnpm typecheck)",
         "Bash(pnpm run doctor)",
-        "Bash(pnpm contracts:build)",
-        "Bash(pnpm contracts:request *)",
-        "Bash(pnpm contracts:decide *)",
         "Bash(pnpm conformance *)",
         "Bash(git status *)",
         "Bash(git diff *)",
         "Bash(git log *)",
-        "Bash(git add *)",
-        "Bash(git commit *)",
-        "Bash(git pull *)",
       ],
     },
   };
@@ -56,5 +59,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.error(`✗ ${err.message}. Aufruf: pnpm group:setup <N>`);
     process.exit(64);
   }
-  console.log(`✓ Arbeitsplatz für Gruppe ${group} eingerichtet. Jede Person startet ihren Task mit: pnpm desk <Task> <Vorname>`);
+  console.log(`✓ Claude-Einstellungen für Gruppe ${group} geschrieben.`);
 }

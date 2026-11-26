@@ -37,12 +37,12 @@ for n in "${groups[@]}"; do
     line=$(printf "%s" "$text" | sed ":a;N;\$!ba;s/\n/\r\n   /g")
     for t in /dev/pts/[0-9]*; do
       [ -w "$t" ] || continue
-      if ps -t "${t#/dev/}" -o args= 2>/dev/null | grep -qE "^claude|interview\.mjs|desk\.mjs|tutorial\.mjs"; then skipped=$((skipped + 1)); continue; fi
+      if ps -t "${t#/dev/}" -o args= 2>/dev/null | grep -qE "^claude|start\.mjs"; then skipped=$((skipped + 1)); continue; fi
       printf "\a\r\n\033[1;30;43m Nachricht der Workshop-Leitung \033[0m \033[1;33m%s\033[0m\r\n" "$line" >"$t" 2>/dev/null && terms=$((terms + 1))
     done
     echo "$windows $terms $skipped"
   ' _ "$text" </dev/null 2>/dev/null)
   if [ -z "$out" ]; then echo "✗ Gruppe $n · Container nicht erreichbar"; continue; fi
   read -r windows terms skipped <<<"$out"
-  echo "✓ Gruppe $n · ${windows} Browser-Verbindungen (auch kürzlich geschlossene) · Zeile in ${terms} Terminals · ${skipped} mit laufendem Claude/Interview/Tutorial ausgelassen"
+  echo "✓ Gruppe $n · ${windows} Browser-Verbindungen (auch kürzlich geschlossene) · Zeile in ${terms} Terminals · ${skipped} mit laufender Anmeldung oder Claude-Sitzung ausgelassen"
 done

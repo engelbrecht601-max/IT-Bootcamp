@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Startet den Arbeitsplatz einer Gruppe. Jede Gruppe baut die komplette App auf ihrem eigenen Branch,
-# fünf Personen teilen sich diesen Container (je ein Browser-Tab, ein Terminal, ein Task).
+# Startet den Arbeitsplatz einer Gruppe. Jede Gruppe baut die komplette App auf ihrem eigenen Branch.
+# Alle Personen der Gruppe teilen sich diesen Container (je ein Browser-Tab mit einem Terminal), aber
+# nicht den Arbeitsstand: Nach der Anmeldung bekommt jede Person einen eigenen git worktree unter
+# ~/desks/<name> (scripts/start.mjs). ~/workspace ist der Gruppenstand; dort arbeitet niemand direkt.
 # Ablauf: Repo klonen (nur beim ersten Start), Gruppenbranch auschecken, Abhängigkeiten aus dem
 # vorgewärmten Store, Personas und Gruppen-Settings einspielen, Claude Code vorbereiten, code-server.
 set -euo pipefail
@@ -13,7 +15,7 @@ BRANCH="${GROUP_BRANCH_PREFIX:-workshop/gruppe}${BOOTCAMP_GROUP}"
 
 # Leere Variablen aus compose.yaml gelten für Claude Code als gesetzt. Weg damit, sonst überdeckt ein
 # leerer API-Key das Abo-Token.
-for v in ANTHROPIC_API_KEY CLAUDE_CODE_OAUTH_TOKEN ANTHROPIC_MODEL GIT_PUSH_TOKEN; do
+for v in ANTHROPIC_API_KEY CLAUDE_CODE_OAUTH_TOKEN ANTHROPIC_MODEL GIT_PUSH_TOKEN CLAUDE_CODE_AUTO_COMPACT_WINDOW; do
   if [ -z "${!v:-}" ]; then unset "$v"; fi
 done
 
@@ -34,7 +36,7 @@ if [ "$(git branch --show-current)" != "$BRANCH" ]; then
     git checkout --quiet -b "$BRANCH"
   fi
 fi
-git config user.name "Gruppe $BOOTCAMP_GROUP"          # Fallback; pnpm desk setzt pro Person Name und Adresse
+git config user.name "Gruppe $BOOTCAMP_GROUP"          # Fallback; am Arbeitsplatz setzt das Start-Skript Name und Adresse der Person
 git config user.email "gruppe${BOOTCAMP_GROUP}@${DOMAIN:-localhost}"
 git config pull.rebase true
 git config push.default current                         # git push geht immer auf den eigenen Branch
@@ -54,7 +56,7 @@ pnpm install --frozen-lockfile --offline || pnpm install --frozen-lockfile
 if [ -n "$(ls -A /opt/personas 2>/dev/null)" ]; then
   pnpm personas:install /opt/personas
 else
-  echo "! Keine Personas unter /opt/personas, /interview funktioniert so nicht."
+  echo "! Keine Personas unter /opt/personas, das Interview mit der Fachperson funktioniert so nicht."
 fi
 pnpm group:setup "$BOOTCAMP_GROUP" --force
 pnpm contracts:build || true
@@ -65,32 +67,43 @@ node scripts/seed-claude.mjs "$WS"
 
 # code-server: Terminals als große Tabs statt im schmalen Panel, keine Willkommensseite, keine
 # eingebauten KI-Funktionen (Chat, Copilot-Hinweis): Im Workshop arbeitet ihr mit Claude Code.
+# task.allowAutomaticTasks lässt .vscode/tasks.json beim Öffnen des Browser-Tabs von selbst ein
+# Terminal mit der Anmeldung starten. Die Einstellungen werden bei jedem Start ergänzt, nicht ersetzt.
 CS_SETTINGS="$HOME/.local/share/code-server/User/settings.json"
-if [ ! -f "$CS_SETTINGS" ]; then
-  mkdir -p "$(dirname "$CS_SETTINGS")"
-  cat > "$CS_SETTINGS" <<'JSON'
-{
-  "workbench.startupEditor": "none",
-  "terminal.integrated.defaultLocation": "editor",
-  "terminal.integrated.initialHint": false,
-  "chat.disableAIFeatures": true,
-  "workbench.secondarySideBar.defaultVisibility": "hidden"
-}
-JSON
-fi
+mkdir -p "$(dirname "$CS_SETTINGS")"
+node -e '
+  const fs = require("fs");
+  const file = process.argv[1];
+  let current = {};
+  try { current = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+  fs.writeFileSync(file, JSON.stringify({
+    ...current,
+    "workbench.startupEditor": "none",
+    "terminal.integrated.defaultLocation": "editor",
+    "terminal.integrated.initialHint": false,
+    "chat.disableAIFeatures": true,
+    "workbench.secondarySideBar.defaultVisibility": "hidden",
+    "task.allowAutomaticTasks": "on",
+  }, null, 2) + "\n");
+' "$CS_SETTINGS"
 
-# Tutorial beim Öffnen eines Terminals: solange noch Tasks frei sind, Begrüßung mit Angebot zum
-# geführten Einstieg, danach nur ein kurzer Hinweis. Nicht in Claude-Sessions (CLAUDECODE).
-if ! grep -q '>>> bootcamp-tutorial' "$HOME/.bashrc" 2>/dev/null; then
+# Jedes neue Terminal startet die Anmeldung: Vorname eingeben, warten bis alle da sind, dann öffnet
+# sich Claude am eigenen Arbeitsplatz. Nicht in Claude-Sessions (CLAUDECODE) und nicht für die
+# Workshop-Leitung (BOOTCAMP_ADMIN=1). Wieder aufrufen mit: start
+sed -i '/# >>> bootcamp-tutorial >>>/,/# <<< bootcamp-tutorial <<</d' "$HOME/.bashrc" 2>/dev/null || true
+if ! grep -q '>>> bootcamp-start' "$HOME/.bashrc" 2>/dev/null; then
   cat >> "$HOME/.bashrc" <<'RC'
-# >>> bootcamp-tutorial >>>
-alias tutorial='node "$HOME/workspace/scripts/tutorial.mjs"'
+# >>> bootcamp-start >>>
+alias start='node "$HOME/workspace/scripts/start.mjs"'
+alias leitung='export BOOTCAMP_ADMIN=1; cd "$HOME/workspace"; echo "Workshop-Leitung: Schreibschutz aufgehoben. Übersicht: pnpm stand"'
 export CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL=1   # sonst "IDE extension install failed" in jeder Session
 export DISABLE_AUTOUPDATER=1                 # Version kommt aus dem Image; sonst "Auto-update failed"
-if [[ $- == *i* ]] && [ -z "${CLAUDECODE:-}" ] && [ -f "$HOME/workspace/scripts/tutorial.mjs" ]; then
-  node "$HOME/workspace/scripts/tutorial.mjs" --auto
+if [[ $- == *i* ]] && [ -z "${CLAUDECODE:-}" ] && [ -z "${BOOTCAMP_ADMIN:-}" ] && [ -z "${BOOTCAMP_STARTED:-}" ] && [ -f "$HOME/workspace/scripts/start.mjs" ]; then
+  export BOOTCAMP_STARTED=1
+  node "$HOME/workspace/scripts/start.mjs"
+  echo 'Zurück an den Arbeitsplatz: start'
 fi
-# <<< bootcamp-tutorial <<<
+# <<< bootcamp-start <<<
 RC
 fi
 

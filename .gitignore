@@ -5,5 +5,4 @@ dist/
 *.tsbuildinfo
 .DS_Store
 .claude/tmp/
-# Entwürfe von /contract-change (das Skript löscht sie nach dem Antrag)
-.contract-draft.json
+akten/

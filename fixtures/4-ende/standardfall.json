@@ -1,7 +1,7 @@
 {
   "claimId": "SCH-2026-00101",
   "meta": {
-    "contractVersion": "1.0.0",
+    "contractVersion": "1.1.0",
     "createdAt": "2026-11-03T08:12:00Z",
     "currentStage": 4,
     "testCase": "Standardfall"
@@ -17,13 +17,13 @@
       "stage": 2,
       "at": "2026-11-04T10:15:00Z",
       "action": "geprüft",
-      "note": "Deckung bestätigt."
+      "note": "Deckung bestätigt, Selbstbehalt 250 €."
     },
     {
       "stage": 3,
       "at": "2026-11-06T13:40:00Z",
       "action": "bewertet",
-      "note": "Kostenvoranschlag plausibel, Betrag vollständig anerkannt."
+      "note": "Fahrzeugreparatur ohne Abzug, Selbstbehalt abgezogen."
     },
     {
       "stage": 4,
@@ -32,6 +32,20 @@
       "note": "Zahlung an den Anspruchsteller angewiesen."
     }
   ],
+  "report": {
+    "receivedAt": "2026-11-03T08:12:00Z",
+    "channel": "Formular",
+    "answers": {
+      "policyNumber": "gh 4711023",
+      "incidentDate": "1.11.2026",
+      "description": "Bei Sturm hat sich ein Dachziegel von unserem Mehrfamilienhaus gelöst und ist auf das geparkte Auto des Nachbarn gefallen. Die Motorhaube ist eingedellt, die Windschutzscheibe gesprungen.",
+      "claimantName": "Jonas Albers",
+      "claimantContact": "jonas.albers@example.org",
+      "claimedAmount": "2.340 €",
+      "costEstimate": "2.340,00 € (Kostenvoranschlag Autohaus Brandt)",
+      "damagedItem": "Auto, Baujahr 2021"
+    }
+  },
   "stage1": {
     "completedAt": "2026-11-03T08:40:00Z",
     "policyNumber": "GH-4711023",
@@ -40,22 +54,32 @@
     "damageType": "Sachschaden",
     "description": "Bei Sturm hat sich ein Dachziegel von unserem Mehrfamilienhaus gelöst und ist auf das geparkte Auto des Nachbarn gefallen. Die Motorhaube ist eingedellt, die Windschutzscheibe gesprungen.",
     "claimant": {
-      "name": "Jonas Albers"
+      "name": "Jonas Albers",
+      "contact": "jonas.albers@example.org"
     },
-    "claimedAmount": 2340.0
+    "claimedAmount": 2340.0,
+    "costEstimate": 2340.0,
+    "damagedItem": {
+      "kind": "Fahrzeug",
+      "ageYears": 5,
+      "label": "Auto"
+    }
   },
   "stage2": {
     "completedAt": "2026-11-04T10:15:00Z",
     "coverageDecision": "gedeckt",
-    "reasoning": "Vertrag bestand am Schadentag. Ein vom Gebäude herabfallender Dachziegel ist ein typischer Gebäudehaftpflichtschaden gegenüber Dritten."
+    "reasoning": "Vertrag bestand am Schadentag. Ein vom Gebäude herabfallender Dachziegel ist ein typischer Gebäudehaftpflichtschaden gegenüber Dritten.",
+    "deductible": 250.0
   },
   "stage3": {
     "completedAt": "2026-11-06T13:40:00Z",
-    "assessedAmount": 2340.0
+    "assessedAmount": 2090.0,
+    "calculation": "2.340,00 € KVA − 250,00 € SB = 2.090,00 €",
+    "provisional": false
   },
   "stage4": {
     "completedAt": "2026-11-07T09:05:00Z",
     "settlementDecision": "Zahlung",
-    "payoutAmount": 2340.0
+    "payoutAmount": 2090.0
   }
 }

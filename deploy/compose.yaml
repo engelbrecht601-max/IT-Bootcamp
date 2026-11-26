@@ -1,5 +1,6 @@
 # Workshop-Server: Caddy plus fünf Arbeitsplätze, einer pro Gruppe. Jede Gruppe baut die komplette App
-# auf ihrem eigenen Branch, fünf Personen teilen sich einen Arbeitsplatz (je ein Task, siehe pnpm desk).
+# auf ihrem eigenen Branch. Die Personen einer Gruppe teilen sich den Container, jede bekommt nach der
+# Anmeldung ihren eigenen Arbeitsstand. Die Aufteilung der Tasks richtet sich nach der Kopfzahl (scripts/start.mjs).
 #   cd deploy && ./init-env.sh && docker compose up -d --build
 # Secrets stehen nur in deploy/.env (nicht versioniert), siehe .env.example.
 name: aifactory
@@ -22,6 +23,8 @@ x-env: &env
   GIT_PUSH_TOKEN: ${GIT_PUSH_TOKEN:-}
   # Optional: Modell für alle Sessions festlegen, z. B. sonnet, um ein Abo-Kontingent zu strecken.
   ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-}
+  # Ab so vielen Token fasst Claude den Verlauf zusammen (leer: 100000). Kleiner schont das Kontingent.
+  CLAUDE_CODE_AUTO_COMPACT_WINDOW: ${CLAUDE_CODE_AUTO_COMPACT_WINDOW:-}
 
 services:
   caddy:
@@ -60,7 +63,6 @@ services:
     environment:
       <<: *env
       BOOTCAMP_GROUP: "2"
-      BOOTCAMP_TASKS: "1,2,3,4"   # ohne Oberfläche (Task 5)
       PASSWORD: ${GRUPPE2_PASSWORD:?GRUPPE2_PASSWORD in .env setzen}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE2:-${ANTHROPIC_API_KEY:-}}
       CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN_GRUPPE2:-${CLAUDE_CODE_OAUTH_TOKEN:-}}
@@ -74,7 +76,6 @@ services:
     environment:
       <<: *env
       BOOTCAMP_GROUP: "3"
-      BOOTCAMP_TASKS: "1,2,3,4"   # ohne Oberfläche (Task 5)
       PASSWORD: ${GRUPPE3_PASSWORD:?GRUPPE3_PASSWORD in .env setzen}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE3:-${ANTHROPIC_API_KEY:-}}
       CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN_GRUPPE3:-${CLAUDE_CODE_OAUTH_TOKEN:-}}
@@ -88,7 +89,6 @@ services:
     environment:
       <<: *env
       BOOTCAMP_GROUP: "4"
-      # Gruppe 4 baut seit dem Workshop-Nachmittag zusätzlich die Oberfläche: alle fünf Tasks
       PASSWORD: ${GRUPPE4_PASSWORD:?GRUPPE4_PASSWORD in .env setzen}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY_GRUPPE4:-${ANTHROPIC_API_KEY:-}}
       CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN_GRUPPE4:-${CLAUDE_CODE_OAUTH_TOKEN:-}}

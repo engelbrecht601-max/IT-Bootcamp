@@ -1,61 +1,93 @@
 #!/usr/bin/env node
 // PreToolUse-Hook für Claude Code. Setzt die Workshop-Regeln mechanisch durch, statt sie nur zu erbitten:
-// - contracts/ ist schreibgeschützt; der einzige Schreibweg ist pnpm contracts:request / contracts:decide
-// - mit BOOTCAMP_TASK (1–5, setzt pnpm desk) schreibt eine Person nur in das Package ihres Tasks
-// - in einem Gruppen-Arbeitsplatz (BOOTCAMP_GROUP) ohne BOOTCAMP_TASK schreibt niemand in packages/:
-//   erst mit pnpm desk <Task> <Name> eintragen
-// - im geteilten Checkout stagt jede Person nur eigene Dateien (kein git add -A / commit -a)
-// - kein Force-Push, kein reset --hard, kein Umgehen des Pre-Push-Gates
-// - im Gruppen-Arbeitsplatz keine KI im Produkt: nichts unter .claude/ anlegen (Subagenten, Befehle)
-//   und keine KI-Pakete installieren (@anthropic-ai/*, openai, langchain, ai, …)
+// - contracts/ ist schreibgeschützt; der einzige Schreibweg ist pnpm contracts:add
+// - eine Session am Arbeitsplatz (BOOTCAMP_DESK, gesetzt vom Start-Skript) schreibt nur in die Packages
+//   ihrer Tasks; im Gruppen-Arbeitsplatz ohne Arbeitsplatz schreibt niemand in packages/
+// - Git gehört dem Setup: Sichern, Abholen und Freigeben laufen über pnpm sync. Schreibende Git-Befehle
+//   sind am Arbeitsplatz gesperrt (kein add, commit, reset, push, merge …)
+// - Werkzeuge, die vom Auftrag wegführen oder das Kontingent leeren, sind abgeschaltet: Veröffentlichen
+//   (Artifact), Nachrichten zwischen Sessions, geplante Aufgaben, Websuche, freie Subagenten,
+//   Subagenten im Hintergrund, eigene Server und npx
+// - keine KI im Produkt: nichts unter .claude/ anlegen und keine KI-Pakete installieren
 // Workshop-Leitung setzt BOOTCAMP_ADMIN=1, um contracts/ und fremde Packages direkt zu bearbeiten.
 // Exit-Code 2 blockiert den Aufruf; die Meldung auf stderr sieht Claude.
 import { resolve, relative, sep } from "node:path";
 import { TASKS, taskNumber } from "../lib/tasks.mjs";
+import { currentDesk, readState } from "../lib/desks.mjs";
 
 const ROOT = resolve(process.env.CLAUDE_PROJECT_DIR ?? new URL("../../", import.meta.url).pathname);
 const PACKAGES = Object.values(TASKS).map((t) => t.pkg);
 const NO_CLAUDE_DIR = ".claude/ gehört der Workshop-Leitung: keine eigenen Subagenten, Befehle oder Einstellungen. Die App enthält keine KI-Agenten.";
 // Pakete, mit denen eine App Sprachmodelle aufruft oder Agenten baut.
 const AI_PACKAGES = /^(@anthropic-ai\/.+|openai|@openai\/.+|langchain|@langchain\/.+|ai|@ai-sdk\/.+|ollama|@google\/(generative-ai|genai)|cohere-ai|@mistralai\/.+|llamaindex|@llamaindex\/.+|@huggingface\/.+)$/;
-const NO_DESK = "Erst eintragen und den eigenen Schreibtisch starten: pnpm desk <Task> <Vorname> (im Terminal, nicht in Claude).";
+const NO_DESK = "Diese Sitzung gehört zu keinem Arbeitsplatz und darf nichts schreiben. Die Person tippt /exit, öffnet ein neues Terminal und meldet sich dort mit ihrem Vornamen an.";
+const GIT_OFF = "Git übernimmt das Setup. Sichern: pnpm sync save. Stand der Gruppe holen: pnpm sync pull. Fertige Anforderung freigeben: pnpm sync publish. Lesen geht weiter (git status, git diff, git log).";
+const OFF = "ist im Workshop abgeschaltet. Bleib beim aktuellen Schritt (pnpm next zeigt ihn) und sag der Person in einem Satz, dass das hier nicht geht.";
+// Werkzeuge, die am Samstag vom Auftrag weggeführt oder das gemeinsame Kontingent geleert haben.
+const BLOCKED_TOOLS = /^(Artifact|ArtifactData|ArtifactComments|SendMessage|ListAgents|CronCreate|CronDelete|CronList|ScheduleWakeup|RemoteTrigger|PushNotification|WebSearch|WebFetch|EnterWorktree|ExitWorktree|Workflow|TeamCreate|TeamDelete|mcp__.*)$/;
+const ALLOWED_AGENTS = /^(test-author|verifier|persona-[a-z0-9]+)$/;
+const GIT_WRITE = /(^|[;&|(]\s*)git\s+(?:-C\s+\S+\s+)?(add|commit|push|pull|fetch|merge|rebase|reset|checkout|switch|stash|restore|worktree|branch|cherry-pick|revert|clean|rm|mv|tag|apply|am|config|remote|init|clone)\b/;
 
 /**
  * Prüft einen Tool-Aufruf. Gibt eine Meldung zurück, wenn er blockiert wird, sonst null.
- * ctx.task: Task der Session (1–5), ctx.group: Gruppen-Arbeitsplatz gesetzt, ctx.admin: Workshop-Leitung.
+ * ctx.tasks: Tasks des Arbeitsplatzes (oder ctx.task für einen einzelnen), ctx.group: Gruppen-Arbeitsplatz
+ * gesetzt, ctx.admin: Workshop-Leitung.
  */
 export function check(input, ctx = fromEnv()) {
   const admin = Boolean(ctx.admin);
-  const task = admin ? undefined : taskNumber(ctx.task);
-  // Im Gruppen-Arbeitsplatz ohne Schreibtisch gehört der Session kein Package.
-  const locked = !admin && !task && Boolean(ctx.group);
+  const tasks = admin ? [] : [...(ctx.tasks ?? []), ctx.task].map(taskNumber).filter(Boolean);
+  // Im Gruppen-Arbeitsplatz ohne Arbeitsplatz gehört der Session kein Package.
+  const locked = !admin && !tasks.length && Boolean(ctx.group);
+  const desk = tasks.length > 0 || locked;
   const { tool_name: tool, tool_input: args = {} } = input;
-  if (tool === "Bash") return checkBash(String(args.command ?? ""), { task, locked, admin });
+  if (desk) {
+    if (BLOCKED_TOOLS.test(tool ?? "")) return `${tool} ${OFF}`;
+    if (tool === "Agent" || tool === "Task") {
+      const type = String(args.subagent_type ?? "");
+      if (!ALLOWED_AGENTS.test(type)) return `Der Subagent "${type || "ohne Typ"}" ${OFF} Erlaubt sind nur test-author, verifier und die Fachperson.`;
+      if (args.run_in_background) return "Subagenten laufen im Vordergrund, einer nach dem anderen (run_in_background weglassen). So wartet niemand auf Antworten, die noch ausstehen.";
+      return null;
+    }
+  }
+  if (tool === "Bash") return checkBash(String(args.command ?? ""), { tasks, locked, admin });
+  // Der Hook sieht jetzt alle Werkzeuge; Pfadregeln gelten nur für die, die schreiben. Lesen bleibt überall erlaubt.
+  if (!/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool ?? "")) return null;
   const file = args.file_path ?? args.notebook_path;
   if (!file || admin) return null;
-  return checkPath(relative(ROOT, resolve(ROOT, file)), { task, locked });
+  return checkPath(relative(ROOT, resolve(ROOT, file)), { tasks, locked });
 }
 
 function fromEnv(env = process.env) {
-  return { task: env.BOOTCAMP_TASK, group: env.BOOTCAMP_GROUP, admin: env.BOOTCAMP_ADMIN === "1" };
+  let tasks = [];
+  try {
+    tasks = currentDesk(readState(), env, ROOT)?.tasks ?? [];
+  } catch {}
+  return { tasks, task: env.BOOTCAMP_TASK, group: env.BOOTCAMP_GROUP, admin: env.BOOTCAMP_ADMIN === "1" };
 }
 
-function checkPath(rel, { task, locked }) {
+const ownPackages = (tasks) => tasks.map((t) => TASKS[t].pkg);
+const ownText = (tasks) => ownPackages(tasks).map((p) => `packages/${p}/`).join(" und ");
+
+function checkPath(rel, { tasks, locked }) {
   const parts = rel.split(sep);
   if (parts[0] === "contracts") {
-    return "contracts/ ist schreibgeschützt. Änderungswünsche laufen über /contract-change.";
+    return "contracts/ ist schreibgeschützt. Ein fehlendes Feld legt pnpm contracts:add an.";
   }
-  // .claude/tmp/ ist Ablage für Entwürfe (/contract-change), alles andere unter .claude/ bleibt zu.
-  if (parts[0] === ".claude" && parts[1] !== "tmp" && (task || locked)) return NO_CLAUDE_DIR;
+  // .claude/tmp/ ist Ablage für Entwürfe, alles andere unter .claude/ bleibt zu.
+  if (parts[0] === ".claude" && parts[1] !== "tmp" && (tasks.length || locked)) return NO_CLAUDE_DIR;
   if (parts[0] === "packages" && parts[1]) {
     if (locked) return NO_DESK;
-    const own = task && TASKS[task].pkg;
-    if (own && parts[1] !== own) return `Task ${task} schreibt nur in packages/${own}/, nicht in packages/${parts[1]}/.`;
+    if (tasks.length && !ownPackages(tasks).includes(parts[1])) return `Dieser Arbeitsplatz schreibt nur in ${ownText(tasks)}, nicht in packages/${parts[1]}/.`;
+    // Status und Nachweise setzt nur pnpm req; requirements.md selbst bleibt editierbar (neue Anforderungen, Kriterien).
+  } else if (tasks.length && parts[0] !== ".claude" && parts[0] !== ".." && !rel.startsWith("akten")) {
+    // Am Arbeitsplatz entsteht alles im eigenen Package: keine Dashboards oder Übergabe-Dateien an der Wurzel.
+    if (!rel.startsWith("/") && parts[0] !== "tmp") return `Dieser Arbeitsplatz schreibt nur in ${ownText(tasks)}. Ideen und Notizen gehören nach ideen.md im eigenen Package.`;
   }
   return null;
 }
 
-function checkBash(cmd, { task, locked, admin }) {
+function checkBash(cmd, { tasks, locked, admin }) {
+  const task = tasks[0];
   // Nur die erste Zeile jedes Befehls zählt, damit Heredoc-Inhalte keine Fehlalarme auslösen.
   const lines = cmd.split("\n").filter((l) => !/^\s*(#|$)/.test(l));
   const first = lines.slice(0, 1).concat(lines.filter((l) => /^\s*(git|rm|mv|cp|tee|touch|sed)\b/.test(l)));
@@ -64,20 +96,21 @@ function checkBash(cmd, { task, locked, admin }) {
   if (/git\s+reset\b[^;&|\n]*--hard/.test(text)) return "git reset --hard ist verboten: es verwirft Arbeit ohne Rückfrage.";
   if (/git\b[^;&|\n]*--no-verify\b/.test(text)) return "--no-verify umgeht das Gate pnpm check und ist verboten.";
   if (!admin && writesTo(text, "contracts/")) {
-    return "contracts/ ist schreibgeschützt. Nur pnpm contracts:request und contracts:decide schreiben dorthin.";
+    return "contracts/ ist schreibgeschützt. Ein fehlendes Feld legt pnpm contracts:add an.";
   }
   if (task || locked) {
+    if (GIT_WRITE.test(text)) return GIT_OFF;
+    if (/(^|[;&|(]\s*)(npx|pnpm\s+dlx|bunx)\b/.test(text)) return `npx ${OFF}`;
+    if (/\bhttp\.server\b|\bhttp-server\b|\bcreateServer\s*\(|(^|[;&|(]\s*)(serve|live-server|vite)\b/.test(text)) {
+      return "Eigene Server gibt es im Workshop nicht. Die Vorschau der Oberfläche startet pnpm vorschau.";
+    }
+    if (/(^|[;&|(]\s*)(curl|wget)\s[^\n]*https?:\/\/(?!localhost|127\.0\.0\.1)/.test(text)) return `Zugriff aufs Internet ${OFF}`;
     if (writesTo(text, ".claude/(?!tmp/)")) return NO_CLAUDE_DIR;
     const pkg = aiPackage(text);
     if (pkg) return `${pkg} ist ein KI-Paket. Die App enthält keine KI-Agenten und ruft keine Sprachmodelle auf; KI ist euer Werkzeug, nicht Teil des Produkts. Fragen dazu: Workshop-Leitung.`;
-    const own = task && TASKS[task].pkg;
-    const other = PACKAGES.find((pkg) => pkg !== own && writesTo(text, `packages/${pkg}/`));
-    if (other) return locked ? NO_DESK : `Task ${task} schreibt nur in packages/${own}/.`;
-    // Fünf Personen teilen einen Checkout: Wer alles stagt, committet die halbe Arbeit der anderen mit.
-    if (/\bgit\s+add\b[^;&|\n]*\s(-A\b|--all\b|\.(?=\s|$)|-u\b|--update\b)/.test(text) ||
-        /\bgit\s+commit\b[^;&|\n]*\s(-a\b|-am\b|--all\b)/.test(text)) {
-      return `Im geteilten Checkout nur eigene Dateien stagen: git add ${own ? `packages/${own}` : "<Pfad>"}, dann git commit.`;
-    }
+    const own = ownPackages(tasks);
+    const other = PACKAGES.find((pkg) => !own.includes(pkg) && writesTo(text, `packages/${pkg}/`));
+    if (other) return locked ? NO_DESK : `Dieser Arbeitsplatz schreibt nur in ${ownText(tasks)}.`;
   }
   return null;
 }

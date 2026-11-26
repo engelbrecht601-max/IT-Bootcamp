@@ -68,3 +68,35 @@ test("Stage 1 bekommt die Akten ohne eigenen Block und ohne Trace", () => {
   assert.equal(inputs.length, 3);
   assert.ok(inputs.every((i) => !("stage1" in i.claim) && i.claim.trace.length === 0 && i.claim.meta.currentStage === 1));
 });
+
+test("Änderung an der Meldung fällt auf", async () => {
+  const run = (c) => ({ ...goodStage2(c), report: { ...c.report, answers: { ...c.report.answers, policyNumber: "GH-0000000" } } });
+  const [r] = await checkStage(2, run, inputsFor(2, fixtures), validate);
+  assert.ok(r.problems.some((p) => p.includes("Meldung (report)")), JSON.stringify(r.problems));
+});
+
+test("Abbruch einer Musterakte, die weiterlaufen soll, gibt eine Warnung", async () => {
+  const run = (c) => ({
+    ...c,
+    trace: [...c.trace, { stage: 3, at, action: "abgebrochen" }],
+    error: { stage: 3, code: "KOSTENVORANSCHLAG_FEHLT", message: "Kein Kostenvoranschlag." },
+  });
+  const results = await checkStage(3, run, inputsFor(3, fixtures), validate, fixtures);
+  assert.ok(results.every((r) => r.status === "ok"), JSON.stringify(results));
+  assert.ok(results.every((r) => r.warning?.includes("KOSTENVORANSCHLAG_FEHLT")), JSON.stringify(results));
+});
+
+test("Musterakten passen zu den Regeln der Fachpersonen", () => {
+  const at34 = (tc) => fixtures.find((f) => f.boundary === "3-4" && f.testCase === tc).claim;
+  const std = at34("standardfall");
+  assert.equal(std.stage3.assessedAmount, std.stage1.costEstimate - std.stage2.deductible);
+  const grenz = at34("grenzfall");
+  assert.equal(grenz.stage2.coverageDecision, "unter Vorbehalt");
+  assert.equal(grenz.stage3.assessedAmount, 3000 * 0.5 - grenz.stage2.deductible);
+  for (const f of fixtures.filter((x) => x.boundary !== "1-2")) {
+    assert.ok(typeof f.claim.stage2.deductible === "number", `${f.boundary}/${f.testCase} ohne Selbstbehalt`);
+  }
+  for (const f of fixtures.filter((x) => x.boundary === "4-ende" && x.claim.stage4.settlementDecision === "Zahlung")) {
+    assert.equal(f.claim.stage4.payoutAmount, f.claim.stage3.assessedAmount, f.testCase);
+  }
+});

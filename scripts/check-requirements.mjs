@@ -7,6 +7,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 import { TASKS } from "./lib/tasks.mjs";
+import { hasOpenFence } from "./lib/requirements.mjs";
 
 const ROOT = new URL("../", import.meta.url).pathname;
 
@@ -23,7 +24,12 @@ for (const [pkg, group] of Object.entries(PACKAGES)) {
     errors.push(`${pkg}: requirements.md fehlt`);
     continue;
   }
-  const text = readFileSync(file, "utf8").replace(/```[\s\S]*?```/g, ""); // Vorlagen in Codeblöcken ignorieren
+  const raw = readFileSync(file, "utf8");
+  if (hasOpenFence(raw)) {
+    errors.push(`${relative(ROOT, file)} → ein Codeblock (\`\`\`) ist nicht geschlossen; dahinter werden keine Anforderungen erkannt`);
+    continue;
+  }
+  const text = raw.replace(/```[\s\S]*?```/g, ""); // Vorlagen in Codeblöcken ignorieren
   const sections = text.split(/^### /m).slice(1);
   const defined = new Set();
 

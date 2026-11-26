@@ -10,9 +10,10 @@ Diese Datei ist Auftrag, Testvorlage und Nachweis zugleich. `pnpm check` prüft 
 - Akzeptanzkriterien stehen als Gegeben/Wenn/Dann da, so konkret, dass ein Test sie wörtlich prüfen kann.
 - Die ID steht im Code-Kommentar an der Stelle, die die Anforderung umsetzt, und im Namen des Tests, der sie prüft: `test("[T5-REQ-001] …")`.
 - Ab Status `umgesetzt` braucht jede Anforderung mindestens einen Test mit ihrer ID, sonst schlägt `pnpm check` fehl.
-- `Verifiziert` trägt ein, wer die Tests gefahren hat: was beobachtet wurde, mit Befehl und Lücken. Wer baut, verifiziert nicht selbst.
+- Status und `Verifiziert` setzt nur `pnpm req`, niemand von Hand. Geprüft wird von einem unabhängigen Prüfer (Subagent `verifier`), den ihr aus eurer eigenen Sitzung startet.
+- Es ist immer nur eine Anforderung in Arbeit. Weitere Ideen stehen in `ideen.md`.
 - Auslegungsentscheidungen, die beim Bauen fallen, kommen als Zitatblock direkt unter die Anforderung.
-- Ein Änderungsantrag an den Contract (`/contract-change`) nennt immer eine ID aus dieser Datei.
+- Fehlt ein Feld im Contract, legt Claude es mit `pnpm contracts:add` an und nennt dabei eine ID aus dieser Datei.
 
 Status: `offen` → `spezifiziert` → `umgesetzt` → `verifiziert`, oder `gestrichen`.
 

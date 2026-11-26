@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Teil von pnpm check: prüft team.json.
-// Im Gruppen-Arbeitsplatz (BOOTCAMP_GROUP gesetzt) muss die Aufteilung existieren, bevor gepusht wird:
-// Wer welchen Task übernimmt, legt die Gruppe am Anfang fest (pnpm desk <Task> <Vorname>).
+// Die Aufteilung entsteht beim Start der Gruppe (scripts/start.mjs): Sobald alle angemeldet sind,
+// verteilt das Setup die Tasks nach Kopfzahl. Vorher gibt es kein team.json, und das ist in Ordnung.
 import { TEAM_FILE, readTeam, validateTeam, activeTasks } from "./lib/tasks.mjs";
 
 let team;
@@ -12,11 +12,7 @@ try {
   process.exit(1);
 }
 if (!team) {
-  if (process.env.BOOTCAMP_GROUP) {
-    console.error("✗ team.json fehlt. Jede Person trägt sich am Anfang ein: pnpm desk <Task> <Vorname>");
-    process.exit(1);
-  }
-  console.log("✓ Kein team.json (kein Gruppen-Arbeitsplatz)");
+  console.log("✓ Kein team.json (Gruppe noch nicht gestartet)");
   process.exit(0);
 }
 const errors = validateTeam(team);
@@ -24,6 +20,5 @@ if (errors.length) {
   console.error(errors.map((e) => `✗ team.json: ${e}`).join("\n"));
   process.exit(1);
 }
-const taken = Object.keys(team.tasks).length;
-const total = activeTasks().length;
-console.log(`✓ team.json: ${taken} von ${total} Tasks vergeben`);
+const people = new Set(Object.values(team.tasks)).size;
+console.log(`✓ team.json: ${activeTasks(team).length} Tasks auf ${people} Arbeitsplätze verteilt`);

@@ -1,0 +1,38 @@
+[
+  {
+    "policyNumber": "GH-4711023",
+    "policyHolder": "Marta Albrecht",
+    "propertyManager": null,
+    "property": "Mehrfamilienhaus Am Kirchberg 7",
+    "start": "2019-03-01",
+    "end": null,
+    "deductible": 250.0
+  },
+  {
+    "policyNumber": "GH-4711587",
+    "policyHolder": "Wohnungseigentümergemeinschaft Lindenweg 12",
+    "propertyManager": "Verwaltung Seidel Immobilien",
+    "property": "Wohnhaus Lindenweg 12",
+    "start": "2021-01-15",
+    "end": null,
+    "deductible": 250.0
+  },
+  {
+    "policyNumber": "GH-4712390",
+    "policyHolder": "Heinrich Kramer",
+    "propertyManager": "Hausverwaltung Kramer & Söhne GbR",
+    "property": "Zweifamilienhaus mit Einliegerwohnung, Mühlenstraße 3",
+    "start": "2020-07-01",
+    "end": null,
+    "deductible": 250.0
+  },
+  {
+    "policyNumber": "GH-4700001",
+    "policyHolder": "Gisela Hoffmann",
+    "propertyManager": null,
+    "property": "Reihenhaus Birkenallee 21",
+    "start": "2015-01-01",
+    "end": "2023-12-31",
+    "deductible": 250.0
+  }
+]
