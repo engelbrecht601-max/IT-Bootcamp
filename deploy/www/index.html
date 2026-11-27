@@ -13,12 +13,137 @@
   ol li { margin-bottom: .4rem; }
   .hint { color: #555; font-size: .95em; }
   @media (prefers-color-scheme: dark) { .hint { color: #aaa; } }
+
+  /* Kette: Farben für hell und dunkel */
+  :root { --k-bg:#f3f6f7; --k-surface:#fff; --k-ink:#14212b; --k-muted:#5b6b78; --k-line:#c9d4da; --k-accent:#0b6e7f; --k-accent-soft:#e0eff2;
+          --k-ok:#2f7d4a; --k-ok-soft:#e3f2e8; --k-warn:#9a6300; --k-warn-soft:#fbefd9; --k-bad:#b23a3a; --k-bad-soft:#f8e3e3; }
+  @media (prefers-color-scheme: dark) { :root { --k-bg:#0f171c; --k-surface:#16222a; --k-ink:#e3ebef; --k-muted:#93a4b0; --k-line:#2d3d47;
+          --k-accent:#55b9c9; --k-accent-soft:#17343b; --k-ok:#6cc58f; --k-ok-soft:#173326; --k-warn:#e3a944; --k-warn-soft:#3a2c12; --k-bad:#ea7a7a; --k-bad-soft:#3d1d1d; } }
+  .kette { width:min(72rem, calc(100vw - 2rem)); position:relative; left:50%; transform:translateX(-50%); margin:1rem 0 1.5rem; }
+  .kette .scroll { overflow-x:auto; background:var(--k-surface); border:1px solid var(--k-line); border-radius:6px; padding:12px; }
+  .kette svg { display:block; width:100%; height:auto; min-width:820px; }
+  .kette figcaption { max-width:40rem; margin:.6rem auto 0; font-size:.95em; }
+  .box{fill:var(--k-surface);stroke:var(--k-line);stroke-width:1.2}
+  .box-in{fill:var(--k-accent-soft);stroke:var(--k-accent);stroke-width:1.2}
+  .box-ref{fill:var(--k-bg);stroke:var(--k-line);stroke-width:1.2;stroke-dasharray:5 4}
+  .t-title{font:600 14px system-ui,sans-serif;fill:var(--k-ink)}
+  .t-person{font:500 12px system-ui,sans-serif;fill:var(--k-accent)}
+  .t-small{font:400 11.5px system-ui,sans-serif;fill:var(--k-muted)}
+  .t-mono{font:400 11px ui-monospace,Menlo,Consolas,monospace;fill:var(--k-ink)}
+  .t-label{font:500 11px ui-monospace,Menlo,Consolas,monospace;fill:var(--k-muted)}
+  .t-num{font:700 12px ui-monospace,Menlo,Consolas,monospace;fill:var(--k-accent)}
+  .flow{stroke:var(--k-ink);stroke-width:1.6;fill:none}
+  .read{stroke:var(--k-muted);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+  .head{fill:var(--k-ink)} .head-muted{fill:var(--k-muted)}
+  .chip-ok{fill:var(--k-ok-soft);stroke:var(--k-ok)} .chip-warn{fill:var(--k-warn-soft);stroke:var(--k-warn)} .chip-bad{fill:var(--k-bad-soft);stroke:var(--k-bad)}
+  .c-ok{font:600 11.5px system-ui,sans-serif;fill:var(--k-ok)} .c-warn{font:600 11.5px system-ui,sans-serif;fill:var(--k-warn)} .c-bad{font:600 11.5px system-ui,sans-serif;fill:var(--k-bad)}
+  body { overflow-x:hidden; }
 </style>
 </head>
 <body>
 <h1>IT-Bootcamp Track 1: agentic Coding am Schadenfall</h1>
 <p>Jede Gruppe baut die komplette Schadensabwicklung. Euer Arbeitsplatz läuft im Browser, das Passwort
 bekommt ihr von der Workshop-Leitung. Alle aus eurer Gruppe öffnen denselben Arbeitsplatz, jede Person in einem eigenen Tab.</p>
+<h2>Was ihr baut: die Kette</h2>
+<p>Eine Schadenmeldung wird zur Akte und läuft durch vier Stationen. Jede Person in eurer Gruppe baut eine davon,
+eine Person die Oberfläche, die jede Akte anzeigt.</p>
+<figure class="kette">
+  <div class="scroll">
+<svg viewBox="0 0 1170 470" role="img" aria-label="Die Meldung geht an die Schadenaufnahme, dann an Deckungsprüfung, Schadenbewertung und Regulierung bis zum Abschluss. Jede Station hängt einen Verlaufseintrag an. Aufnahme und Deckung lesen den Vertragsbestand, die Oberfläche liest jede Akte.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="head"/></marker>
+          <marker id="arm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="head-muted"/></marker>
+        </defs>
+
+        <!-- Stammdaten oben -->
+        <rect x="206" y="16" width="356" height="52" rx="6" class="box-ref"/>
+        <text x="222" y="38" class="t-title">Vertragsbestand</text>
+        <text x="222" y="56" class="t-small">Versicherungsnehmer, Laufzeit, Selbstbehalt</text>
+        <line x1="286" y1="68" x2="286" y2="128" class="read" marker-end="url(#arm)"/>
+        <line x1="482" y1="68" x2="482" y2="128" class="read" marker-end="url(#arm)"/>
+        <text x="292" y="104" class="t-label">liest</text>
+        <text x="488" y="104" class="t-label">liest</text>
+
+        <!-- Meldung -->
+        <rect x="10" y="130" width="160" height="170" rx="6" class="box-in"/>
+        <text x="24" y="156" class="t-title">Meldung</text>
+        <text x="24" y="175" class="t-small">Formular · Telefon · Brief</text>
+        <text x="24" y="204" class="t-small">ungeprüft, wie gemeldet:</text>
+        <text x="24" y="224" class="t-mono">„gh 4711023“</text>
+        <text x="24" y="242" class="t-mono">„1.11.2026“</text>
+        <text x="24" y="260" class="t-mono">„2.340 €“</text>
+        <text x="24" y="286" class="t-small">kommt von außen</text>
+
+        <!-- Stationen -->
+        <rect x="206" y="130" width="160" height="170" rx="6" class="box"/>
+        <text x="220" y="154" class="t-num">1</text><text x="234" y="154" class="t-title">Schadenaufnahme</text>
+        <text x="220" y="173" class="t-person">Sabine Krüger</text>
+        <text x="220" y="202" class="t-small">legt an und prüft:</text>
+        <text x="220" y="221" class="t-mono">Police, Schadentag,</text>
+        <text x="220" y="238" class="t-mono">Art, Anspruchsteller,</text>
+        <text x="220" y="255" class="t-mono">Forderung, Kosten-</text>
+        <text x="220" y="272" class="t-mono">voranschlag</text>
+
+        <rect x="402" y="130" width="160" height="170" rx="6" class="box"/>
+        <text x="416" y="154" class="t-num">2</text><text x="430" y="154" class="t-title">Deckungsprüfung</text>
+        <text x="416" y="173" class="t-person">Dr. Thomas Weber</text>
+        <text x="416" y="202" class="t-small">entscheidet:</text>
+        <text x="416" y="221" class="t-mono">gedeckt · unter Vor-</text>
+        <text x="416" y="238" class="t-mono">behalt · nicht gedeckt</text>
+        <text x="416" y="255" class="t-mono">+ Selbstbehalt</text>
+        <text x="416" y="272" class="t-mono">+ Hinweise</text>
+
+        <rect x="598" y="130" width="160" height="170" rx="6" class="box"/>
+        <text x="612" y="154" class="t-num">3</text><text x="626" y="154" class="t-title">Schadenbewertung</text>
+        <text x="612" y="173" class="t-person">Ayşe Demir</text>
+        <text x="612" y="202" class="t-small">rechnet:</text>
+        <text x="612" y="221" class="t-mono">Betrag</text>
+        <text x="612" y="238" class="t-mono">+ Rechnung dazu</text>
+        <text x="612" y="255" class="t-mono">+ vorläufig ja/nein</text>
+
+        <rect x="794" y="130" width="160" height="170" rx="6" class="box"/>
+        <text x="808" y="154" class="t-num">4</text><text x="822" y="154" class="t-title">Regulierung</text>
+        <text x="808" y="173" class="t-person">Klaus Brenner</text>
+        <text x="808" y="202" class="t-small">schließt ab:</text>
+        <text x="808" y="221" class="t-mono">Ergebnis</text>
+        <text x="808" y="238" class="t-mono">+ Auszahlung</text>
+        <text x="808" y="255" class="t-mono">+ Schreiben, Empfänger</text>
+
+        <!-- Abschluss -->
+        <rect x="990" y="130" width="170" height="170" rx="6" class="box"/>
+        <text x="1004" y="156" class="t-title">Abschluss</text>
+        <rect x="1004" y="172" width="80" height="24" rx="12" class="chip-ok"/><text x="1044" y="188" text-anchor="middle" class="c-ok">Zahlung</text>
+        <rect x="1004" y="204" width="96" height="24" rx="12" class="chip-warn"/><text x="1052" y="220" text-anchor="middle" class="c-warn">in Freigabe</text>
+        <rect x="1004" y="236" width="88" height="24" rx="12" class="chip-bad"/><text x="1048" y="252" text-anchor="middle" class="c-bad">Ablehnung</text>
+        <text x="1004" y="284" class="t-small">oder vorher abgebrochen</text>
+
+        <!-- Fluss mit Verlaufseinträgen -->
+        <line x1="170" y1="215" x2="204" y2="215" class="flow" marker-end="url(#ar)"/>
+        <line x1="366" y1="215" x2="400" y2="215" class="flow" marker-end="url(#ar)"/>
+        <line x1="562" y1="215" x2="596" y2="215" class="flow" marker-end="url(#ar)"/>
+        <line x1="758" y1="215" x2="792" y2="215" class="flow" marker-end="url(#ar)"/>
+        <line x1="954" y1="215" x2="988" y2="215" class="flow" marker-end="url(#ar)"/>
+        <text x="286" y="320" text-anchor="middle" class="t-label">Verlauf: erfasst</text>
+        <text x="482" y="320" text-anchor="middle" class="t-label">Verlauf: geprüft</text>
+        <text x="678" y="320" text-anchor="middle" class="t-label">Verlauf: bewertet</text>
+        <text x="874" y="320" text-anchor="middle" class="t-label">Verlauf: reguliert</text>
+
+        <!-- Oberfläche unten -->
+        <rect x="206" y="396" width="748" height="58" rx="6" class="box-ref"/>
+        <text x="222" y="420" class="t-title">5 Oberfläche</text>
+        <text x="330" y="420" class="t-person">Petra Lange</text>
+        <text x="222" y="440" class="t-small">liest jede Akte in jedem Zustand und zeigt sie an. Ändert nichts.</text>
+        <line x1="286" y1="394" x2="286" y2="332" class="read" marker-end="url(#arm)"/>
+        <line x1="482" y1="394" x2="482" y2="332" class="read" marker-end="url(#arm)"/>
+        <line x1="678" y1="394" x2="678" y2="332" class="read" marker-end="url(#arm)"/>
+        <line x1="874" y1="394" x2="874" y2="332" class="read" marker-end="url(#arm)"/>
+        <text x="1004" y="420" class="t-small">liest = gestrichelt</text>
+      </svg>
+  </div>
+  <figcaption class="hint">Jede Station bekommt die Akte, ergänzt ihren eigenen Teil und gibt sie weiter. Was eine Station nicht
+  weitergibt, fehlt der nächsten: Ohne Kostenvoranschlag aus der Aufnahme kann die Bewertung nicht rechnen. Sprecht euch am Tisch ab,
+  wer was von wem braucht. Die Fachperson für eure Station befragt ihr gleich zu Beginn.</figcaption>
+</figure>
 <h2>So geht es los</h2>
 <ol>
   <li>Öffnet den Arbeitsplatz eurer Gruppe (unten), jede Person in einem eigenen Tab, und gebt das Passwort ein.</li>
