@@ -48,7 +48,9 @@ Habt ihr das Terminal geschlossen, öffnet ein neues und gebt denselben Vornamen
   document.getElementById("tasks").innerHTML = tasks.map(([pkg, name], i) =>
     `<tr><td>${i + 1}</td><td><code>packages/${pkg}</code></td><td>${name}</td></tr>`).join("");
   const host = location.host;
-  document.getElementById("gruppen").innerHTML = [1, 2, 3, 4].map((n) => {
+  // Gruppen, die heute laufen. Bei mehr Gruppen hier ergänzen (Gruppe 4 ist regulär, Gruppe 5 Reserve).
+  const gruppen = [1, 2, 3];
+  document.getElementById("gruppen").innerHTML = gruppen.map((n) => {
     return `<tr><td>Gruppe ${n}</td>` +
       `<td><a href="https://gruppe${n}.${host}/">gruppe${n}.${host}</a></td></tr>`;
   }).join("");
