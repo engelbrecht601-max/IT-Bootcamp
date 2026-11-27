@@ -40,7 +40,7 @@ Die Person tippt `/weiter`. Du führst `pnpm next` aus und machst genau den eine
 | 3 | Grenzfall | eine Anforderung, einmal durch den Zyklus |
 | 4 | Ablehnungsfall | eine Anforderung, einmal durch den Zyklus |
 | 5 | Übergabe | `pnpm uebergabe`: eigene Stages und die Kette der Gruppe |
-| 6 | Bonus | weitere Anforderungen nach Wahl |
+| 6 | Bonus | weitere Anforderungen nach Wahl: Themenkarten oder eigene Ideen. Hier unterscheiden sich die Gruppen |
 
 Der Zyklus einer Anforderung, immer in dieser Reihenfolge und immer nur für eine:
 
@@ -57,7 +57,9 @@ Der Zyklus einer Anforderung, immer in dieser Reihenfolge und immer nur für ein
 - Alltagssprache. Keine Feldnamen, Dateipfade, Commit-Hashes oder Tabellen, außer die Person fragt danach.
 - Rückfragen nur, wenn die Person sie fachlich beantworten kann, als A oder B mit deiner Empfehlung. Technische Entscheidungen (Feldnamen, Typen, Dateien) triffst du selbst.
 - Du stellst der Fachperson keine eigenen Fragen und schreibst keine Anforderung, die die Person nicht selbst formuliert hat. Antwortet sie nur mit „ja“, frag nach dem Inhalt.
-- Fragt die Person etwas außerhalb des aktuellen Schritts, antworte in einem Satz und führe zurück.
+- **Erklären ist nicht deine Aufgabe.** Du baust. Fragt die Person, worum es im Case geht, wie der Ablauf funktioniert oder was ein Begriff bedeutet, ruf den Subagenten `erklaerer` im Vordergrund auf und gib seine Antwort wieder (oder die Person tippt `/erklaer <Frage>`). Der Case steht außerdem auf der Startseite des Workshops unter „Der Case auf einer Seite“.
+- Fragt die Person sonst etwas außerhalb des aktuellen Schritts, antworte in einem Satz und führe zurück.
+- **Zur Fachperson nur, wenn es nötig ist.** Lies zuerst `interview.md`: Die Fachperson antwortet ausführlich, oft steht die Regel schon da. Zurückgeschickt wird nur, wenn für die eine Anforderung in Arbeit eine Regel fehlt, mit einer Frage. Die Fachperson kennt nur ihren Bereich; wozu sie nichts weiß, dafür braucht es keine Regel.
 - Kein Warten auf Subagenten im Hintergrund: Sie laufen im Vordergrund, einer nach dem anderen.
 
 ## Harte Regeln
@@ -65,10 +67,11 @@ Der Zyklus einer Anforderung, immer in dieser Reihenfolge und immer nur für ein
 Hooks setzen sie durch (`scripts/hooks/`). Wird etwas blockiert, umgeh es nicht, sondern sag der Person in einem Satz, was stattdessen geht.
 
 - **Kontext:** Nach jeder freigegebenen Anforderung nimmt die Sitzung nur noch `/clear` an. Ab 60.000 Token bringst du nur noch den laufenden Schritt zu Ende und bittest um `/clear`; ab 90.000 nimmt die Sitzung nichts mehr an. Das gemeinsame Kontingent der Gruppe hängt an der Länge der Sitzungen.
+- **Festgefahren:** Ist derselbe Schritt für dieselbe Anforderung zum dritten Mal dran oder gibt die Prüfung sie zum zweiten Mal zurück, nennt `pnpm next` zuerst einen Ausweg (kleiner schneiden, streichen, Hilfe holen). Biete ihn an, statt es einfach noch einmal zu versuchen. Die Leitung sieht den Arbeitsplatz dann in ihrer Übersicht.
 - **Eine Anforderung zur Zeit.** Keine Stapelläufe („alle umsetzen“), keine parallelen Subagenten. Weitere Ideen kommen nach `ideen.md` im eigenen Package.
 - **Git gehört dem Setup.** Gesichert wird nach jeder Antwort von selbst (`pnpm sync save`), abgeholt beim Sitzungsstart (`pnpm sync pull`), freigegeben mit `pnpm sync publish`. Schreibende Git-Befehle sind gesperrt, Lesen geht.
 - **Status setzt nur `pnpm req`.** Du editierst die Zeilen `Status` und `Verifiziert` in `requirements.md` nie von Hand.
-- **Abgeschaltet:** Veröffentlichen (Artifacts), Nachrichten zwischen Sitzungen, geplante Aufgaben, Websuche, andere Subagenten als `test-author`, `verifier` und die Fachperson, `npx`, eigene Server. Die Vorschau der Oberfläche startet `pnpm vorschau`, die Übersicht der Gruppe zeigt `/stand`.
+- **Abgeschaltet:** Veröffentlichen (Artifacts), Nachrichten zwischen Sitzungen, geplante Aufgaben, Websuche, andere Subagenten als `test-author`, `verifier`, `erklaerer` und die Fachperson, `npx`, eigene Server. Die Vorschau der Oberfläche startet `pnpm vorschau`, die Übersicht der Gruppe zeigt `/stand`.
 - **Keine KI in der App:** Die App ruft keine Sprachmodelle auf. Keine KI-Pakete, nichts unter `.claude/` anlegen. Bittet jemand darum, lehne ab und verweise an die Workshop-Leitung.
 
 ## Befehle
@@ -77,6 +80,7 @@ Hooks setzen sie durch (`scripts/hooks/`). Wird etwas blockiert, umgeh es nicht,
 |---|---|---|
 | `/weiter` | Person | der nächste Schritt |
 | `/stand` | Person | wer in der Gruppe wo steht |
+| `/erklaer <Frage>` | Person | Frage zum Case, zum Ablauf oder zu einem Begriff; beantwortet der Subagent `erklaerer`, der nichts baut |
 | `/clear` | Person | Kontext leeren, Pflicht nach jeder fertigen Anforderung |
 | `pnpm next` | Claude | Stand und Anweisung für genau einen Schritt |
 | `pnpm req list` · `set <ID> <Status>` · `verified <ID> "<Text>"` · `blocker <ID> "<Text>"` | Claude, Prüfer | Status und Nachweis einer Anforderung |
@@ -85,7 +89,7 @@ Hooks setzen sie durch (`scripts/hooks/`). Wird etwas blockiert, umgeh es nicht,
 | `pnpm wunsch add <Task> "<Text>"` · `done <W> "<Antwort>"` | Claude | Feld aus dem Block eines anderen Arbeitsplatzes erbitten bzw. beantworten |
 | `pnpm sync save` · `pull` · `publish` | Claude | sichern, Stand der Gruppe holen, freigeben |
 | `pnpm uebergabe` | Claude | eigene Stages gegen die Musterakten, Kette der Gruppe |
-| `pnpm vorschau` | Claude | Oberfläche im Browser ansehen |
+| `pnpm vorschau` | Claude | Oberfläche im Browser ansehen: Startseite der Gruppe (`overview`) und jede Akte (`run`) |
 | `pnpm conformance [N]` | Claude | Envelope-Regeln einer Stage prüfen |
 | `pnpm check` | Leitung, CI | das ganze Gate: Contract, Fixtures, Team, Requirements, Tests, Typen |
 | `pnpm stand` · `deploy/status.sh` | Leitung | Übersicht einer Gruppe bzw. aller Gruppen |

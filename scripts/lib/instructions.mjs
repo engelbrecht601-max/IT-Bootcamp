@@ -2,6 +2,7 @@
 // Claude bekommt immer nur den Schritt zu sehen, der dran ist.
 import { TASKS, UI_TASKS } from "./tasks.mjs";
 import { boundariesFor } from "./desks.mjs";
+import { bonusCards } from "./bonus.mjs";
 
 const today = () => new Date().toISOString().slice(0, 10);
 const END = "Danach ist dieser Schritt fertig. Sag der Person in einem Satz, was jetzt da ist, und dass sie /weiter tippt.";
@@ -15,7 +16,28 @@ function akten(task) {
   return parts.join("; ");
 }
 
-export function instructions(next, desk) {
+/**
+ * Ausweg, wenn ein Schritt sich festgefahren hat: derselbe Schritt zum dritten Mal oder zweiter Blocker.
+ * Steht vor der eigentlichen Anweisung. Die Person entscheidet, Claude versucht es nicht einfach noch einmal.
+ */
+function wayOut(next, stuck) {
+  const why = stuck.blockers >= 2 ? `Die Prüfung hat ${next.id} schon ${stuck.blockers}-mal zurückgegeben.` : `Dieser Schritt ist für ${next.id} zum ${stuck.count}. Mal dran.`;
+  return `ZUERST: AUSWEG ANBIETEN. ${why}
+Versuch es nicht einfach noch einmal. Sag der Person in einem Satz, woran es hängt, und biete genau diese drei Wege an (A empfohlen). Warte auf ihre Wahl:
+A) Kleiner schneiden: nur das erste Akzeptanzkriterium bleibt, der Rest wandert als Idee nach ideen.md. Dann \`pnpm req set ${next.id} offen\`, und die Person tippt /weiter.
+B) Streichen: \`pnpm req set ${next.id} gestrichen\`. Mit /weiter kommt eine neue, einfachere Anforderung zum selben Fall.
+C) Hilfe: Die Workshop-Leitung sieht in ihrer Übersicht schon, dass es hier hängt. Die Person hebt die Hand.
+Wählt die Person keinen der Wege und will es noch einmal versuchen, gilt die Anweisung darunter.
+
+`;
+}
+
+export function instructions(next, desk, { stuck, verified = 0 } = {}) {
+  const body = stepInstructions(next, desk, verified);
+  return stuck && next.id ? wayOut(next, stuck) + body : body;
+}
+
+function stepInstructions(next, desk, verified) {
   const t = next.task ? TASKS[next.task] : undefined;
   const pkg = t ? `packages/${t.pkg}` : undefined;
   switch (next.step) {
@@ -25,7 +47,7 @@ export function instructions(next, desk) {
     case "interview":
       return `INTERVIEW für ${t.name} (${pkg}). Es fehlen noch ${next.missing} eigene Frage(n) der Person an die Fachperson.
 
-1. Falls die Person neu ist: Erklär in höchstens drei Sätzen, was diese Station tut (steht in ${pkg}/CLAUDE.md), und bitte sie um ihre erste Frage an die Fachperson.
+1. Falls die Person neu ist: Erklär den Case nicht selbst. Sag ihr in zwei Sätzen: Die Erklärung steht auf der Startseite des Workshops unter "Der Case auf einer Seite", und Fragen zum Case oder zum Ablauf beantwortet jederzeit \`/erklaer <Frage>\`. Sag ihr außerdem einmal: Die Fachperson kennt nur ihren eigenen Arbeitsbereich und kann nur begrenzt Auskunft geben. Wozu sie nichts weiß, dafür braucht die Station keine Regel. Dann bitte sie um ihre erste Frage an die Fachperson.
 2. Du stellst der Fachperson keine eigenen Fragen und formulierst keine Fragen vor. Fällt der Person nichts ein, nenn Themen, keine Sätze und keine Beispielfragen: was Pflicht ist, was im Grenzfall passiert, wann abgelehnt wird, was die nächste Station braucht.
 3. Fragen ohne Bezug zur Arbeit der Station (Gehalt, Privates, Smalltalk) gibst du nicht weiter und schreibst sie nicht ins Protokoll. Sag freundlich in einem Satz, dass nur Fragen zur Arbeit zählen, und bitte um eine solche, ohne selbst eine vorzuschlagen.
 4. Für jede Frage der Person: Ruf den Subagenten \`${t.persona}\` im Vordergrund auf (Parameter \`run_in_background: false\`) (ein Aufruf pro Frage, nie mehrere gleichzeitig). Gib ihm das bisherige Protokoll aus ${pkg}/interview.md und die Frage wörtlich.
@@ -33,7 +55,7 @@ export function instructions(next, desk) {
    **Gruppe:** <Frage>
 
    **Fachperson:** <Antwort>
-6. Zeig der Person die Antwort wörtlich. Leite noch keine Anforderung ab.
+6. Zeig der Person die Antwort wörtlich. Leite noch keine Anforderung ab. Die Fachperson antwortet ausführlich und nennt oft gleich, was an einer Regel dranhängt: Eine gute Frage reicht meist für eine ganze Anforderung.
 Sobald genug gefragt ist, sagt \`pnpm next\` den nächsten Schritt. Weitere Fragen an die Fachperson gehen auch später jederzeit.`;
 
     case "anforderung": {
@@ -41,9 +63,15 @@ Sobald genug gefragt ist, sagt \`pnpm next\` den nächsten Schritt. Weitere Frag
       return `EINE ANFORDERUNG AUFSCHREIBEN für ${t.name} (${pkg}), ${bonus ? "freie Wahl (Bonus)" : `Fall: ${next.testCase}`}.
 Musterakten: ${akten(next.task)}.
 
-1. Frag die Person: ${bonus ? '"Was soll die Station als Nächstes können?" (Ideen stehen in ' + pkg + "/ideen.md, falls es die Datei gibt.)" : `"Was soll im ${next.testCase} passieren?"`} Sie sagt es in ihren Worten.
+1. ${
+        bonus
+          ? `Zeig der Person diese Themenkarten, jede mit Titel und Frage, und dazu ihre eigenen Ideen aus ${pkg}/ideen.md, falls es die Datei gibt:
+${bonusCards(next.task, verified).map((c) => `   - ${c.title}: ${c.text}`).join("\n")}
+   Sie wählt eine Karte, eine eigene Idee oder etwas ganz anderes. Sag dazu: Im Bonus gibt es kein Richtig, hier darf eure Gruppe anders aussehen als die anderen. Die Karte nennt nur das Thema; was gilt, fragt die Person die Fachperson (Ablauf wie im Interview), dann sagt sie in ihren Worten, was die Station können soll.`
+          : `Frag die Person: "Was soll im ${next.testCase} passieren?" Sie sagt es in ihren Worten.`
+      }
 2. Bring es in Form und trag GENAU EINE Anforderung in ${pkg}/requirements.md ein: nächste freie ID, Vorlage aus der Datei, User Story, ein bis drei Akzeptanzkriterien (Gegeben/Wenn/Dann) mit konkreten Werten aus den Musterakten, Status offen, Quelle "Interview vom ${today()}".
-3. Fachliche Regeln kommen nur aus ${pkg}/interview.md. Fehlt eine Regel, bittest du die Person, die Fachperson zu fragen (Ablauf wie im Interview). Erfinde nichts.
+3. Fachliche Regeln kommen nur aus ${pkg}/interview.md. Lies das Protokoll zuerst ganz: Oft steht die Regel schon in einer früheren Antwort. Schick die Person nur dann zur Fachperson zurück, wenn genau für diese eine Anforderung eine Regel fehlt, und dann mit einer einzigen Frage (Ablauf wie im Interview). Was nur für spätere Anforderungen fehlt, kommt als Zeile unter "Offene Fragen an die Fachperson" in ${pkg}/requirements.md. Erfinde nichts.
 4. Zeig der Person die Anforderung in Alltagssprache und hol ihr Okay.
 5. Weitere Ideen der Person kommen als je eine Zeile nach ${pkg}/ideen.md, nicht als Anforderung. Es ist immer nur eine Anforderung in Arbeit.
 ${END}`;
@@ -106,6 +134,7 @@ Sag der Person in einem Satz, was entschieden ist. Sie tippt /weiter.`;
 1. \`pnpm uebergabe\`. Das Skript holt den Stand der Gruppe, schickt die Musterakten durch die eigenen Stages und lässt eine Akte durch alle Stationen laufen, die schon fertig sind.
 2. Erklär der Person das Ergebnis in Alltagssprache: Bis wohin kommt die Akte? Wo bricht sie ab, und liegt das an dieser Station oder an einer anderen?
 3. Liegt es an dieser Station: Das ist die nächste Anforderung (Bonus). Liegt es an einer anderen: Die Person sagt es der Kollegin am Tisch.
+4. Mach Lust auf den Bonus: Ab jetzt wählt die Person selbst, was ihre Station noch können soll. Es gibt Themenkarten, und hier unterscheiden sich die Gruppen.
 Die Person tippt /weiter für den Bonus.`;
 
     default:

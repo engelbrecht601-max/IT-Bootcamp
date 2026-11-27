@@ -92,3 +92,60 @@ test("spezifiziert ohne Tests: erst die Tests, egal wie der Status dahin kam", (
   withTests.active[0].tests = true;
   assert.equal(nextStep({ packages: [withTests] }).step, "bauen");
 });
+
+// ── Festgefahren: Zähler und Ausweg ──────────────────────────────────────────
+import { stuckInfo, trackAttempt, STUCK_AFTER } from "./steps.mjs";
+import { BONUS_CARDS, bonusCards } from "./bonus.mjs";
+
+test("trackAttempt zählt denselben Schritt derselben Anforderung hoch und beginnt sonst neu", () => {
+  const first = trackAttempt(undefined, { step: "bauen", id: "T3-REQ-002" }, "t0");
+  assert.deepEqual(first, { key: "bauen:T3-REQ-002", count: 1, since: "t0" });
+  const second = trackAttempt(first, { step: "bauen", id: "T3-REQ-002" }, "t1");
+  assert.deepEqual(second, { key: "bauen:T3-REQ-002", count: 2, since: "t0" });
+  assert.equal(trackAttempt(second, { step: "pruefen", id: "T3-REQ-002" }, "t2").count, 1);
+  assert.equal(trackAttempt(second, { step: "bauen", id: "T3-REQ-003" }, "t2").count, 1);
+});
+
+test("trackAttempt zählt Interview und Aufschreiben nicht", () => {
+  assert.equal(trackAttempt(undefined, { step: "interview", task: 1 }), undefined);
+  assert.equal(trackAttempt(undefined, { step: "anforderung", task: 1 }), undefined);
+  assert.equal(trackAttempt(undefined, { step: "clear" }), undefined);
+});
+
+test("stuckInfo meldet den dritten Anlauf und den zweiten Blocker", () => {
+  const next = { step: "pruefen", id: "T2-REQ-001" };
+  assert.equal(stuckInfo({ attempt: { key: "pruefen:T2-REQ-001", count: STUCK_AFTER - 1 } }, next), undefined);
+  assert.deepEqual(stuckInfo({ attempt: { key: "pruefen:T2-REQ-001", count: STUCK_AFTER } }, next), { count: STUCK_AFTER, blockers: 0 });
+  assert.deepEqual(stuckInfo({ blockers: { "T2-REQ-001": 2 } }, next), { count: 0, blockers: 2 });
+  assert.equal(stuckInfo({ blockers: { "T2-REQ-009": 5 }, attempt: { key: "bauen:T2-REQ-001", count: 9 } }, next), undefined);
+  assert.equal(stuckInfo({ blockers: { "T2-REQ-001": 2 } }, { step: "anforderung", task: 2 }), undefined);
+});
+
+test("instructions stellt den Ausweg vor die Anweisung, wenn es hängt", () => {
+  const next = { step: "bauen", id: "T3-REQ-002", task: 3 };
+  const plain = instructions(next, {});
+  assert.ok(plain.startsWith("UMSETZEN"));
+  const stuck = instructions(next, {}, { stuck: { count: 3, blockers: 0 } });
+  assert.ok(stuck.startsWith("ZUERST: AUSWEG ANBIETEN"));
+  assert.match(stuck, /pnpm req set T3-REQ-002 offen/);
+  assert.match(stuck, /pnpm req set T3-REQ-002 gestrichen/);
+  assert.ok(stuck.endsWith(plain));
+  assert.match(instructions({ step: "pruefen", id: "T3-REQ-002", task: 3 }, {}, { stuck: { count: 1, blockers: 2 } }), /schon 2-mal zurückgegeben/);
+});
+
+test("Bonus: jede Station hat Themenkarten, die Anweisung zeigt drei davon reihum", () => {
+  for (const task of [1, 2, 3, 4, 5, 6]) assert.ok(BONUS_CARDS[task].length >= 4, `Task ${task}`);
+  assert.deepEqual(bonusCards(3, 0).map((c) => c.title), BONUS_CARDS[3].slice(0, 3).map((c) => c.title));
+  assert.equal(bonusCards(3, 4)[1].title, BONUS_CARDS[3][0].title);
+  const text = instructions({ step: "anforderung", task: 5, testCase: "Bonus" }, {}, { verified: 3 });
+  assert.match(text, /Themenkarten/);
+  assert.match(text, new RegExp(BONUS_CARDS[5][3].title));
+  assert.doesNotMatch(instructions({ step: "anforderung", task: 5, testCase: "Grenzfall" }, {}), /Themenkarten/);
+});
+
+test("Interview: Die bauende Sitzung erklärt den Case nicht selbst und nennt die Grenzen der Fachperson", () => {
+  const text = instructions({ step: "interview", task: 2, missing: 3 }, {});
+  assert.match(text, /Erklär den Case nicht selbst/);
+  assert.match(text, /\/erklaer/);
+  assert.match(text, /nur begrenzt Auskunft/);
+});

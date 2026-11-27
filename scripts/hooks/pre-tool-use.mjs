@@ -27,7 +27,7 @@ const GIT_OFF = "Git übernimmt das Setup. Sichern: pnpm sync save. Stand der Gr
 const OFF = "ist im Workshop abgeschaltet. Bleib beim aktuellen Schritt (pnpm next zeigt ihn) und sag der Person in einem Satz, dass das hier nicht geht.";
 // Werkzeuge, die am Samstag vom Auftrag weggeführt oder das gemeinsame Kontingent geleert haben.
 const BLOCKED_TOOLS = /^(Artifact|ArtifactData|ArtifactComments|SendMessage|ListAgents|CronCreate|CronDelete|CronList|ScheduleWakeup|RemoteTrigger|PushNotification|WebSearch|WebFetch|EnterWorktree|ExitWorktree|Workflow|TeamCreate|TeamDelete|mcp__.*)$/;
-const ALLOWED_AGENTS = /^(test-author|verifier|persona-[a-z0-9]+)$/;
+const ALLOWED_AGENTS = /^(test-author|verifier|erklaerer|persona-[a-z0-9]+)$/;
 const GIT_WRITE = /(^|[;&|(]\s*)git\s+(?:-C\s+\S+\s+)?(add|commit|push|pull|fetch|merge|rebase|reset|checkout|switch|stash|restore|worktree|branch|cherry-pick|revert|clean|rm|mv|tag|apply|am|config|remote|init|clone)\b/;
 
 /**
@@ -46,7 +46,7 @@ export function check(input, ctx = fromEnv()) {
     if (BLOCKED_TOOLS.test(tool ?? "")) return `${tool} ${OFF}`;
     if (tool === "Agent" || tool === "Task") {
       const type = String(args.subagent_type ?? "");
-      if (!ALLOWED_AGENTS.test(type)) return `Der Subagent "${type || "ohne Typ"}" ${OFF} Erlaubt sind nur test-author, verifier und die Fachperson.`;
+      if (!ALLOWED_AGENTS.test(type)) return `Der Subagent "${type || "ohne Typ"}" ${OFF} Erlaubt sind nur test-author, verifier, erklaerer und die Fachperson.`;
       // Nicht nach run_in_background blockieren: Claude Code 2.1.285 entfernt den Schalter, bevor der Hook ihn sieht.
       // Ein Block würde jeden Subagenten sperren. Die Schrittanweisungen nennen den Schalter, adjust() setzt ihn.
       return null;

@@ -21,8 +21,11 @@ Der Ablauf ist als Schlauch gebaut, ohne Abzweigungen:
 
 1. **Anmelden:** Im Browser öffnet sich ein Terminal und fragt nach dem Vornamen. Sind alle aus der Gruppe da, tippt eine Person `start`.
 2. **Aufteilen:** Das Setup verteilt die Tasks nach Kopfzahl (bei drei oder vier Personen werden Stages zusammengelegt, bei sechs wird die Oberfläche geteilt), legt jeder Person einen eigenen Arbeitsstand an und stellt die passenden Musterakten bereit.
-3. **Arbeiten:** Claude öffnet sich am eigenen Arbeitsplatz. Die Person tippt `/weiter` und bekommt genau einen nächsten Schritt: Interview, eine Anforderung aufschreiben, Tests zuerst, umsetzen, prüfen lassen, sichern, `/clear`.
-4. **Zusammenführen:** Jede geprüfte Anforderung landet von selbst im Stand der Gruppe. Git, Terminal-Befehle und Contract-Anträge braucht niemand.
+3. **Verstehen:** Der Case steht auf einer Seite (`deploy/www/case.html`, verlinkt von der Startseite). Fragen zum Case und zum Ablauf beantwortet `/erklaer`, ein eigener Subagent, der nichts baut. Die Sitzung, die baut, erklärt nicht.
+4. **Arbeiten:** Claude öffnet sich am eigenen Arbeitsplatz. Die Person tippt `/weiter` und bekommt genau einen nächsten Schritt: Interview, eine Anforderung aufschreiben, Tests zuerst, umsetzen, prüfen lassen, sichern, `/clear`.
+5. **Zusammenführen:** Jede geprüfte Anforderung landet von selbst im Stand der Gruppe. Git, Terminal-Befehle und Contract-Anträge braucht niemand.
+
+Wer sich festfährt, bekommt einen Ausweg: Ist derselbe Schritt für dieselbe Anforderung zum dritten Mal dran oder gibt die Prüfung sie zum zweiten Mal zurück, bietet `/weiter` an, die Anforderung kleiner zu schneiden oder zu streichen, und `deploy/status.sh --haengt` zeigt der Leitung den Arbeitsplatz. Nach dem Pflichtprogramm kommt der Bonus mit Themenkarten je Station; dort sollen die Gruppen auseinanderlaufen.
 
 Wer vom Weg abkommt, bekommt es vom Setup gesagt: Terminal-Befehle im Chat, Stapelaufträge, Abstecher zu Dashboards und überlange Sitzungen fangen Hooks ab (`scripts/hooks/`).
 
@@ -38,8 +41,9 @@ In dieser Reihenfolge lesen:
 4. `scripts/start.mjs` und `scripts/lib/desks.mjs`: Anmeldung, Aufteilung nach Kopfzahl, eigener Arbeitsstand pro Person
 5. `scripts/lib/steps.mjs` und `scripts/lib/instructions.mjs`: der Schlauch, also welcher Schritt wann dran ist und was Claude dann tut
 6. `scripts/hooks/`: die Sperren (Schreibschutz, Git, abgeschaltete Werkzeuge, Pflicht zum `/clear`)
-7. `.claude/commands/` und `.claude/agents/`: `/weiter`, `/stand`, Test-Autor und Prüfer
-8. `deploy/README.md`: der Workshop-Server
+7. `.claude/commands/` und `.claude/agents/`: `/weiter`, `/stand`, `/erklaer`, Test-Autor, Prüfer und Erklärer
+8. `scripts/lib/bonus.mjs`: die Themenkarten für den Bonus
+9. `deploy/README.md`: der Workshop-Server, `deploy/www/case.html`: der Case auf einer Seite für die Teilnehmenden
 
 ### Branches
 

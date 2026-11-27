@@ -74,7 +74,7 @@ test("abgeschaltete Werkzeuge: Veröffentlichen, Nachrichten zwischen Sessions, 
 test("Subagenten: nur Test-Autor, Prüfer und Fachperson", () => {
   const agent = (subagent_type, extra = {}) => ({ tool_name: "Agent", tool_input: { subagent_type, prompt: "x", ...extra } });
   const fg = { run_in_background: false };
-  for (const type of ["test-author", "verifier", "persona-stage4", "persona-ui"]) assert.equal(check(agent(type, fg), desk(4)), null, type);
+  for (const type of ["test-author", "verifier", "erklaerer", "persona-stage4", "persona-ui"]) assert.equal(check(agent(type, fg), desk(4)), null, type);
   for (const type of ["general-purpose", "Explore", "", "claude"]) assert.match(check(agent(type), desk(4)) ?? "", /abgeschaltet/, type);
   // Kein Block nach run_in_background: Claude Code entfernt den Schalter, bevor der Hook ihn sieht.
   assert.equal(check(agent("verifier"), desk(4)), null);

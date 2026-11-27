@@ -14,6 +14,7 @@ Claude Code ist dabei schon angemeldet (siehe [Anmeldung](#anmeldung-claude-code
 | Adresse | Ziel |
 |---------|------|
 | `https://aifactoryworkshop.de` | Startseite mit Links zu allen Gruppen |
+| `https://aifactoryworkshop.de/case.html` | Der Case auf einer Seite, für die Teilnehmenden |
 | `https://gruppe<N>.aifactoryworkshop.de` | code-server der Gruppe N (Passwort aus `.env`, ein Tab pro Person) |
 | `https://gruppe<N>.aifactoryworkshop.de/proxy/<Port>/` | Vorschau der Oberfläche eines Arbeitsplatzes (`pnpm vorschau`, Port 5173 plus Nummer des Arbeitsplatzes; die Adresse nennt das Skript) |
 | `https://app-gruppe<N>.aifactoryworkshop.de` | Port 5173 im Container der Gruppe N. Die Arbeitsplätze nutzen 5174 und höher, dort landet nur eine Vorschau, die die Leitung ohne Arbeitsplatz startet. Die Startseite verlinkt das deshalb nicht mehr |
@@ -207,6 +208,7 @@ docker compose ps
 docker compose restart gruppe3                  # Arbeitsplatz neu starten, Workspace bleibt erhalten
 docker compose rm -sf gruppe3 && docker volume rm aifactory_home3 && docker compose up -d gruppe3   # frisch klonen (Branch vom Remote bleibt)
 ./status.sh                                     # wer steht wo, wer hängt, wie groß sind die Sitzungen (watch -n 30 ./status.sh)
+watch -n 60 ./status.sh --haengt                # nur wer Hilfe braucht: 20 min ohne Fortschritt oder im Zyklus festgefahren
 docker compose exec gruppe3 bash -c 'cd ~/workspace && node scripts/start.mjs --status'   # Anmeldeliste und Aufteilung von Gruppe 3
 ./check-auth.sh 3                               # Anmeldung von Gruppe 3 prüfen
 docker compose down                             # alles stoppen, Volumes bleiben

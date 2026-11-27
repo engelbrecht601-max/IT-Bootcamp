@@ -11,6 +11,34 @@ export const MIN_QUESTIONS = 3;
 export const CASES = ["Standardfall", "Grenzfall", "Ablehnungskandidat"];
 export const LEVELS = ["Interview", "Standardfall", "Grenzfall", "Ablehnungsfall", "Übergabe", "Bonus"];
 
+/** Schritte, in denen man sich festfahren kann. Interview und Aufschreiben brauchen von Natur aus mehrere Anläufe. */
+export const LOOP_STEPS = new Set(["tests", "bauen", "pruefen", "sichern"]);
+/** Ab dem wievielten Anlauf desselben Schritts für dieselbe Anforderung der Ausweg angeboten wird. */
+export const STUCK_AFTER = 3;
+/** Ab wie vielen Blockern der Prüfung für dieselbe Anforderung der Ausweg angeboten wird. */
+export const STUCK_BLOCKERS = 2;
+/** Minuten ohne gesicherten Fortschritt, ab denen ein Arbeitsplatz in der Übersicht auffällt. */
+export const IDLE_WARN_MINUTES = 20;
+
+/**
+ * Zählt, wie oft derselbe Schritt für dieselbe Anforderung hintereinander dran war.
+ * Eingabe: der bisherige Merker { key, count, since } und der nächste Schritt. Ausgabe: der neue Merker.
+ */
+export function trackAttempt(prev, next, now = new Date().toISOString()) {
+  if (!LOOP_STEPS.has(next.step) || !next.id) return undefined;
+  const key = `${next.step}:${next.id}`;
+  return prev?.key === key ? { key, count: prev.count + 1, since: prev.since } : { key, count: 1, since: now };
+}
+
+/** Festgefahren: dritter Anlauf desselben Schritts oder zweiter Blocker der Prüfung. Gibt { count, blockers } oder undefined zurück. */
+export function stuckInfo(flags = {}, next = {}) {
+  const key = next.id ? `${next.step}:${next.id}` : undefined;
+  const count = key && flags.attempt?.key === key ? flags.attempt.count : 0;
+  const blockers = next.id ? (flags.blockers?.[next.id] ?? 0) : 0;
+  if (!LOOP_STEPS.has(next.step)) return undefined;
+  return count >= STUCK_AFTER || blockers >= STUCK_BLOCKERS ? { count, blockers } : undefined;
+}
+
 /** Stand eines Packages: Interviewfragen und Anforderungen nach Status. */
 export function packageState(root, task) {
   const pkg = TASKS[task].pkg;

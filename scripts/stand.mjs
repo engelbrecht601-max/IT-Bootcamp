@@ -5,6 +5,7 @@
 import { existsSync } from "node:fs";
 import { deskTitle } from "./lib/desks.mjs";
 import { deskStatus, die, session } from "./lib/session.mjs";
+import { IDLE_WARN_MINUTES, stuckInfo } from "./lib/steps.mjs";
 
 const { state } = session();
 if (!state?.started) die("Die Gruppe ist noch nicht gestartet.");
@@ -22,7 +23,9 @@ const rows = state.desks.map((desk) => {
     requirements: packages.reduce((n, p) => n + p.reqs.length, 0),
     idleMinutes: idle,
     contextTokens: flags.contextTokens ?? 0,
-    stuck: idle !== null && idle >= 40,
+    stuck: idle !== null && idle >= IDLE_WARN_MINUTES,
+    // Festgefahren im Zyklus: derselbe Schritt zum dritten Mal oder zweiter Blocker der Prüfung.
+    loop: stuckInfo(flags, next) ? { ...stuckInfo(flags, next), id: next.id } : null,
   };
 });
 
@@ -32,6 +35,7 @@ if (process.argv.includes("--json")) {
   console.log(`Gruppe${state.group ? ` ${state.group}` : ""}, gestartet ${new Date(state.started).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}\n`);
   for (const r of rows) {
     const idle = r.idleMinutes == null ? "" : ` · seit ${r.idleMinutes} min ohne Fortschritt${r.stuck ? " ⚠" : ""}`;
-    console.log(`${r.person.padEnd(16)} ${r.station.padEnd(34)} Level ${r.level} · fertig ${r.verified ?? 0} · ${r.step}${idle}`);
+    const loop = r.loop ? ` · HÄNGT an ${r.loop.id}: ${r.loop.count}. Anlauf${r.loop.blockers ? `, ${r.loop.blockers} Blocker` : ""} ⚠` : "";
+    console.log(`${r.person.padEnd(16)} ${r.station.padEnd(34)} Level ${r.level} · fertig ${r.verified ?? 0} · ${r.step}${idle}${loop}`);
   }
 }

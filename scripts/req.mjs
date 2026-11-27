@@ -12,6 +12,7 @@
 import { spawnSync } from "node:child_process";
 import { TASKS } from "./lib/tasks.mjs";
 import { STATUS, readRequirements, taskOfId, writeField } from "./lib/requirements.mjs";
+import { readFlags, updateFlags } from "./lib/desks.mjs";
 import { ROOT, die, session } from "./lib/session.mjs";
 
 const [cmd, id, ...rest] = process.argv.slice(2);
@@ -62,6 +63,12 @@ try {
   } else if (cmd === "blocker") {
     if (!note) die(`Blocker fehlt: pnpm req blocker ${id} "<Blocker in einem Satz>"`, 64);
     writeField(ROOT, id, "Verifiziert", `nein, ${today}: ${note}`);
+    // Wiederholte Blocker derselben Anforderung zählen: Beim zweiten bietet /weiter einen Ausweg an.
+    if (desk) {
+      const blockers = { ...(readFlags(desk.slug).blockers ?? {}) };
+      blockers[id] = (blockers[id] ?? 0) + 1;
+      updateFlags(desk.slug, { blockers });
+    }
     console.log(`✓ ${id}: Blocker notiert, Status bleibt ${req.status}`);
   } else {
     die("Aufruf: pnpm req list | set <ID> <Status> | verified <ID> <Text> | blocker <ID> <Text>", 64);

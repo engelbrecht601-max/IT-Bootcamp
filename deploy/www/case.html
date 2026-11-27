@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Der Case auf einer Seite · AI Factory Workshop</title>
+<style>
+  :root { --bg:#f3f6f7; --surface:#fff; --ink:#14212b; --muted:#5b6b78; --line:#c9d4da; --accent:#0b6e7f; --accent-soft:#e0eff2;
+          --ok:#2f7d4a; --ok-soft:#e3f2e8; --warn:#9a6300; --warn-soft:#fbefd9; --bad:#b23a3a; --bad-soft:#f8e3e3; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f171c; --surface:#16222a; --ink:#e3ebef; --muted:#93a4b0; --line:#2d3d47;
+          --accent:#55b9c9; --accent-soft:#17343b; --ok:#6cc58f; --ok-soft:#173326; --warn:#e3a944; --warn-soft:#3a2c12; --bad:#ea7a7a; --bad-soft:#3d1d1d; } }
+  * { box-sizing: border-box; }
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 0; color: var(--ink); background: var(--bg); }
+  main { max-width: 70rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  a { color: var(--accent); }
+  h1 { font-size: 1.7rem; line-height: 1.2; margin: .5rem 0 .4rem; text-wrap: balance; }
+  h2 { font-size: 1.05rem; margin: 0 0 .6rem; letter-spacing: .01em; }
+  h3 { font-size: 1rem; margin: 0 0 .15rem; }
+  p { margin: 0 0 .6rem; }
+  .lead { font-size: 1.1rem; max-width: 46rem; }
+  .muted { color: var(--muted); }
+  .small { font-size: .9rem; }
+  section { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 1rem 1.15rem; margin-top: 1rem; }
+  .grid { display: grid; gap: .75rem; }
+  .g5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cols { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1rem; }
+  .cols > section { margin-top: 0; }
+  .wrap { margin-top: 1rem; }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: .7rem .8rem; background: var(--bg); }
+  .card p { margin: 0; font-size: .93rem; }
+  .num { font: 700 .85rem ui-monospace, Menlo, Consolas, monospace; color: var(--accent); }
+  .who { color: var(--accent); font-size: .88rem; font-weight: 600; margin: 0 0 .3rem !important; }
+  .chip { display: inline-block; border: 1px solid currentColor; border-radius: 999px; padding: 0 .55rem; font-size: .82rem; font-weight: 600; white-space: nowrap; }
+  .ok { color: var(--ok); background: var(--ok-soft); } .warn { color: var(--warn); background: var(--warn-soft); } .bad { color: var(--bad); background: var(--bad-soft); }
+  ol.steps { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+  ol.steps li { counter-increment: s; display: grid; grid-template-columns: 1.7rem 1fr; gap: .1rem .5rem; padding: .35rem 0; border-top: 1px solid var(--line); }
+  ol.steps li:first-child { border-top: 0; }
+  ol.steps li::before { content: counter(s); font: 700 .85rem ui-monospace, Menlo, Consolas, monospace; color: var(--accent); padding-top: .15rem; }
+  ol.steps strong { display: block; }
+  ol.steps span { grid-column: 2; color: var(--muted); font-size: .92rem; }
+  .levels { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .4rem; margin: 0 0 .7rem; padding: 0; list-style: none; }
+  .levels li { border: 1px solid var(--line); border-radius: 6px; padding: .4rem .5rem; font-size: .88rem; background: var(--bg); }
+  .levels li b { display: block; font: 700 .8rem ui-monospace, Menlo, Consolas, monospace; color: var(--accent); }
+  .levels li.bonus { background: var(--accent-soft); border-color: var(--accent); }
+  dl.cmd { display: grid; grid-template-columns: max-content 1fr; gap: .35rem .9rem; margin: 0; }
+  dl.cmd dt { font: 600 .92rem ui-monospace, Menlo, Consolas, monospace; color: var(--accent); white-space: nowrap; }
+  dl.cmd dd { margin: 0; font-size: .95rem; }
+  ul.plain { margin: 0; padding-left: 1.1rem; }
+  ul.plain li { margin-bottom: .3rem; font-size: .95rem; }
+  .bonus-box { background: var(--accent-soft); border-color: var(--accent); }
+  @media (max-width: 60rem) { .g5 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cols, .g3 { grid-template-columns: 1fr; } .levels { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 34rem) { .g5, .g2 { grid-template-columns: 1fr; } .levels { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media print { body { background: #fff; font-size: 11.5px; } main { padding: 0; max-width: none; } section { break-inside: avoid; margin-top: .5rem; padding: .5rem .7rem; } .noprint { display: none; } }
+</style>
+</head>
+<body>
+<main>
+<p class="small noprint"><a href="./">← Startseite mit den Arbeitsplätzen</a></p>
+<h1>Der Case auf einer Seite</h1>
+<p class="lead">Ihr seid die Schadenabteilung einer Versicherung. Eine <strong>Gebäudehaftpflicht</strong> zahlt, wenn einem
+Dritten durch ein Gebäude ein Schaden entsteht: der Dachziegel auf dem Auto des Nachbarn, der Sturz auf dem vereisten Gehweg.
+Eure Gruppe baut die Software, die so einen Schaden von der Meldung bis zum Abschluss bearbeitet.</p>
+<p class="muted">Alle Daten sind erfunden. Ziel ist nicht, fertig zu werden, sondern den Weg zu üben: vom Gespräch mit der Fachperson zu geprüfter Software.</p>
+
+<section aria-labelledby="h-kette">
+  <h2 id="h-kette">Eine Akte, vier Schreibtische, eine Oberfläche</h2>
+  <p class="muted small">Die Schadenakte wandert von Station zu Station. Jede ergänzt ihren Teil und gibt weiter. Was eine Station nicht weitergibt, fehlt der nächsten.</p>
+  <div class="grid g5">
+    <div class="card"><span class="num">1</span><h3>Schadenaufnahme</h3><p class="who">Fachperson: Sabine Krüger</p><p>Macht aus der Meldung, wie sie eingetippt wurde, einen sauberen Vorgang.</p></div>
+    <div class="card"><span class="num">2</span><h3>Deckungsprüfung</h3><p class="who">Fachperson: Dr. Thomas Weber</p><p>Entscheidet, ob Versicherungsschutz besteht, und begründet es.</p></div>
+    <div class="card"><span class="num">3</span><h3>Schadenbewertung</h3><p class="who">Fachperson: Ayşe Demir</p><p>Rechnet aus, wie viel der Schaden wert ist, und schreibt die Rechnung dazu.</p></div>
+    <div class="card"><span class="num">4</span><h3>Regulierung</h3><p class="who">Fachperson: Klaus Brenner</p><p>Schließt ab: <span class="chip ok">Zahlung</span> <span class="chip warn">in Freigabe</span> <span class="chip bad">Ablehnung</span></p></div>
+    <div class="card"><span class="num">5</span><h3>Oberfläche</h3><p class="who">Fachperson: Petra Lange</p><p>Zeigt dem Team jeden Vorgang in jedem Zustand. Ändert nichts.</p></div>
+  </div>
+  <p class="small muted" style="margin:.6rem 0 0">In Gruppen mit sechs Personen kommt das Meldeformular als eigene Station dazu. Bei drei oder vier Personen übernimmt jemand zwei Stationen.</p>
+</section>
+
+<section aria-labelledby="h-faelle">
+  <h2 id="h-faelle">Drei Übungsfälle begleiten euch</h2>
+  <div class="grid g3">
+    <div class="card"><h3>Standardfall</h3><p>Bei Sturm fällt ein Dachziegel auf das Auto des Nachbarn. Die Werkstatt schickt einen Kostenvoranschlag.</p></div>
+    <div class="card"><h3>Grenzfall</h3><p>Ein Paketzusteller bricht sich auf dem vereisten Gehweg das Handgelenk. Sein Anwalt meldet sich elf Monate später.</p></div>
+    <div class="card"><h3>Ablehnungskandidat</h3><p>Rohrbruch in der Wohnung, die der Eigentümer selbst nutzt. Seine Hausverwaltung meldet den Schaden.</p></div>
+  </div>
+  <p class="small muted" style="margin:.6rem 0 0">Jede Station bekommt diese drei Akten so, wie sie bei ihr ankommen. Was mit ihnen passieren soll, steht nirgends: Das erfragt ihr.</p>
+</section>
+
+<div class="cols wrap">
+<section aria-labelledby="h-weg">
+  <h2 id="h-weg">Euer Weg</h2>
+  <ol class="levels" aria-label="Sechs Level">
+    <li><b>Level 1</b>Interview</li><li><b>Level 2</b>Standardfall</li><li><b>Level 3</b>Grenzfall</li>
+    <li><b>Level 4</b>Ablehnung</li><li><b>Level 5</b>Übergabe</li><li class="bonus"><b>Level 6</b>Bonus</li>
+  </ol>
+  <p class="small muted">Für jeden Fall schreibt ihr eine Anforderung und bringt sie einmal durch diesen Kreis, immer nur eine zur Zeit:</p>
+  <ol class="steps">
+    <li><strong>Aufschreiben</strong><span>Ihr sagt in euren Worten, was passieren soll. Claude bringt es in Form.</span></li>
+    <li><strong>Tests zuerst</strong><span>Ein eigener Agent schreibt Prüfungen nur aus eurem Text. Sie sind erst rot, weil noch nichts gebaut ist.</span></li>
+    <li><strong>Umsetzen</strong><span>Claude baut, bis die Prüfungen grün sind. Die Prüfungen bleiben, wie sie sind.</span></li>
+    <li><strong>Prüfen lassen</strong><span>Ein zweiter Agent, der den Bau nicht kennt, versucht das Ergebnis zu widerlegen.</span></li>
+    <li><strong>Freigeben</strong><span>Erst jetzt landet die Arbeit bei der Gruppe.</span></li>
+    <li><strong>Kontext leeren</strong><span>Ihr tippt <code>/clear</code>. Der Stand liegt in den Dateien, es geht nichts verloren.</span></li>
+  </ol>
+</section>
+
+<div class="grid" style="align-content:start">
+<section aria-labelledby="h-wer" style="margin-top:0">
+  <h2 id="h-wer">Wer macht was</h2>
+  <ul class="plain">
+    <li><strong>Ihr</strong> entscheidet fachlich: Ihr fragt, formuliert und sagt, ob es stimmt. Programmieren müsst ihr nicht.</li>
+    <li><strong>Die Fachperson</strong> eurer Station kennt die Regeln. Sie antwortet ausführlich, aber nur zu ihrem eigenen Bereich. Wozu sie nichts weiß, dafür braucht ihr keine Regel.</li>
+    <li><strong>Claude</strong> an eurem Platz baut. Es erklärt nicht und erfindet keine Regeln.</li>
+    <li><strong>Der Erklärer</strong> beantwortet Fragen zum Case und zum Ablauf. Er baut nichts.</li>
+    <li><strong>Test-Autor und Prüfer</strong> sorgen dafür, dass nichts als fertig gilt, nur weil es so aussieht.</li>
+  </ul>
+</section>
+<section aria-labelledby="h-cmd">
+  <h2 id="h-cmd">Vier Befehle reichen</h2>
+  <dl class="cmd">
+    <dt>/weiter</dt><dd>Der nächste Schritt. Immer richtig, wenn ihr nicht wisst, was dran ist.</dd>
+    <dt>/erklaer …</dt><dd>Eine Frage zum Case, zum Ablauf oder zu einem Begriff, zum Beispiel <code>/erklaer was ist ein Selbstbehalt</code>.</dd>
+    <dt>/stand</dt><dd>Wer in eurer Gruppe wo steht.</dd>
+    <dt>/clear</dt><dd>Kontext leeren, wenn Claude darum bittet. Danach <code>/weiter</code>.</dd>
+  </dl>
+  <p class="small muted" style="margin:.6rem 0 0">Sonst sprecht ihr in normalen Sätzen. Terminal-Befehle braucht ihr nicht.</p>
+</section>
+</div>
+</div>
+
+<section class="bonus-box" aria-labelledby="h-bonus">
+  <h2 id="h-bonus">Level 6: Der Bonus gehört euch</h2>
+  <p>Nach den drei Pflichtfällen wählt ihr selbst, was eure Station noch können soll. Dafür gibt es <strong>Themenkarten</strong>, oder ihr bringt eine eigene Idee mit.
+  Hier gibt es kein Richtig: Am Ende soll eure Lösung anders aussehen als die der anderen Gruppen.</p>
+  <div class="grid g5">
+    <div class="card"><h3>Aufnahme</h3><p>Was eilt? Wo ist es passiert? Wer hat es gesehen?</p></div>
+    <div class="card"><h3>Deckung</h3><p>Bekannter Mangel, falsche Versicherung, Glätte bei Nacht.</p></div>
+    <div class="card"><h3>Bewertung</h3><p>Mehr Verletzungen, sehr alte Sachen, das Auto in der Werkstatt.</p></div>
+    <div class="card"><h3>Regulierung</h3><p>Zahlschreiben, Regress in Zahlen, der gute Ton.</p></div>
+    <div class="card"><h3>Oberfläche</h3><p>Eigene Marke, Suchen, Zahlen auf einen Blick, Drucken.</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-hakt">
+  <h2 id="h-hakt">Wenn es hakt</h2>
+  <div class="grid g2">
+    <ul class="plain">
+      <li><strong>Ein Schritt klappt zum dritten Mal nicht:</strong> Claude bietet von selbst an, die Anforderung kleiner zu schneiden oder zu streichen. Kleiner ist fast immer die bessere Wahl.</li>
+      <li><strong>Der Prüfer findet etwas:</strong> Das ist seine Aufgabe und kein Fehlschlag. Claude sagt euch, was nachzubessern ist.</li>
+    </ul>
+    <ul class="plain">
+      <li><strong>Euch fehlt eine Angabe von einer anderen Station:</strong> Sagt es am Tisch. Claude schickt zusätzlich einen Wunsch dorthin.</li>
+      <li><strong>Gar nichts geht mehr:</strong> Hand heben. Die Workshop-Leitung sieht ohnehin, wo es hängt.</li>
+    </ul>
+  </div>
+</section>
+</main>
+</body>
+</html>
