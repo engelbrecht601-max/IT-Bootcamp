@@ -80,3 +80,15 @@ test("im Interview stellt die Person die Fragen, nicht Claude", () => {
   assert.match(text, /persona-stage1/);
   assert.match(text, /im Vordergrund/);
 });
+
+test("spezifiziert ohne Tests: erst die Tests, egal wie der Status dahin kam", () => {
+  const p = pkg(1, ["spezifiziert"]);
+  p.reqs[0].tests = false;
+  p.active[0].tests = false;
+  const next = nextStep({ packages: [p] });
+  assert.deepEqual([next.step, next.id], ["tests", "T1-REQ-001"]);
+  assert.match(next.hints.join(" "), /noch keine Tests/);
+  const withTests = pkg(1, ["spezifiziert"]);
+  withTests.active[0].tests = true;
+  assert.equal(nextStep({ packages: [withTests] }).step, "bauen");
+});

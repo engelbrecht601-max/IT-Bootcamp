@@ -1,7 +1,7 @@
 // Liest und ändert die requirements.md eines Packages. Status und Nachweise setzt nur dieses Modul
 // (über pnpm req), nie ein Sprachmodell per Texteditor: So landet nichts im Vorlagenblock und ein
 // kaputter Code-Zaun fällt sofort auf.
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { TASKS, TASK_DIGIT } from "./tasks.mjs";
 
@@ -45,6 +45,7 @@ export function parseRequirements(text) {
   for (const r of reqs) {
     const body = rows.slice(r.start, r.end).map((l) => l.line);
     r.status = /\*\*Status:\*\*\s*`?([a-zäöü]+)/i.exec(body.join("\n"))?.[1]?.toLowerCase();
+    r.verifiedNote = /\*\*Verifiziert:\*\*\s*(.*)/.exec(body.join("\n"))?.[1]?.trim() ?? "";
     r.criteria = body.filter((l) => /^\s+\d+\.\s/.test(l)).length;
   }
   return reqs;
@@ -88,4 +89,35 @@ export function interviewCount(root, pkg) {
   const file = join(root, "packages", pkg, "interview.md");
   if (!existsSync(file)) return 0;
   return (readFileSync(file, "utf8").match(/^\*\*Gruppe:\*\*/gm) ?? []).length;
+}
+
+/**
+ * Prüft eine Änderung an einer requirements.md, die nicht über pnpm req läuft (Texteditor).
+ * Erlaubt: neue Anforderungen mit Status "offen", Texte und Kriterien ändern. Nicht erlaubt: den Status
+ * oder die Zeile "Verifiziert" einer Anforderung ändern. Gibt eine Meldung zurück oder null.
+ * Grund: Am 27.11. setzte Claude beim Aufschreiben "spezifiziert", der Schritt "Tests zuerst" fiel weg.
+ */
+export function statusEditProblem(before, after) {
+  const old = new Map(parseRequirements(before ?? "").map((r) => [r.id, r]));
+  for (const r of parseRequirements(after ?? "")) {
+    const o = old.get(r.id);
+    if (!o) {
+      if (r.status && r.status !== "offen") return `${r.id}: Eine neue Anforderung beginnt mit "- **Status:** offen". Den Status setzt danach nur pnpm req.`;
+      continue;
+    }
+    if (o.status !== r.status) return `${r.id}: Den Status setzt nur pnpm req (pnpm req set ${r.id} <Status>), nie der Texteditor.`;
+    if (o.verifiedNote !== r.verifiedNote) return `${r.id}: Die Zeile "Verifiziert" setzt nur der Prüfer über pnpm req verified.`;
+  }
+  return null;
+}
+
+/** Gibt es unter packages/<pkg>/src eine Testdatei mit [id]? */
+export function hasTests(root, pkg, id) {
+  const dir = join(root, "packages", pkg, "src");
+  const walk = (d) =>
+    existsSync(d) &&
+    readdirSync(d, { withFileTypes: true }).some((e) =>
+      e.isDirectory() ? e.name !== "node_modules" && walk(join(d, e.name)) : e.name.endsWith(".test.ts") && readFileSync(join(d, e.name), "utf8").includes(`[${id}]`),
+    );
+  return Boolean(walk(dir));
 }

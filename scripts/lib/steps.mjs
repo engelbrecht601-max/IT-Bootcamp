@@ -3,7 +3,7 @@
 // Tests zuerst (rot), umsetzen (grün), unabhängig prüfen, sichern, Kontext leeren. Immer eine
 // Anforderung zur Zeit; erst wenn sie fertig ist, kommt die nächste.
 import { TASKS } from "./tasks.mjs";
-import { DONE, interviewCount, readRequirements } from "./requirements.mjs";
+import { DONE, hasTests, interviewCount, readRequirements } from "./requirements.mjs";
 
 /** So viele eigene Fragen an die Fachperson braucht ein Package, bevor Anforderungen entstehen. */
 export const MIN_QUESTIONS = 3;
@@ -14,7 +14,7 @@ export const LEVELS = ["Interview", "Standardfall", "Grenzfall", "Ablehnungsfall
 /** Stand eines Packages: Interviewfragen und Anforderungen nach Status. */
 export function packageState(root, task) {
   const pkg = TASKS[task].pkg;
-  const reqs = readRequirements(root, pkg);
+  const reqs = readRequirements(root, pkg).map((r) => (r.status === "spezifiziert" ? { ...r, tests: hasTests(root, pkg, r.id) } : r));
   return {
     task,
     pkg,
@@ -58,7 +58,12 @@ export function nextStep({ packages, flags = {}, wishes = [] }) {
   }
   if (active.length) {
     const r = active[0];
-    const step = { offen: "tests", spezifiziert: "bauen", umgesetzt: "pruefen" }[r.status] ?? "tests";
+    let step = { offen: "tests", spezifiziert: "bauen", umgesetzt: "pruefen" }[r.status] ?? "tests";
+    // "spezifiziert" ohne einen einzigen Test: Der Schritt "Tests zuerst" fehlt noch, egal wie der Status dahin kam.
+    if (step === "bauen" && r.tests === false) {
+      step = "tests";
+      hints.push(`${r.id} steht auf spezifiziert, es gibt aber noch keine Tests. Zuerst die Tests.`);
+    }
     return { ...base, step, id: r.id, task: r.task };
   }
 

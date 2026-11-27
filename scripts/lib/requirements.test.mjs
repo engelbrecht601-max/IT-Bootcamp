@@ -67,3 +67,17 @@ test("unbekannte ID und offener Codeblock fallen auf", () => {
   assert.equal(hasOpenFence(broken), true);
   assert.equal(parseRequirements(broken).length, 0, "hinter einem offenen Codeblock wird nichts erkannt");
 });
+
+test("Status und Verifiziert ändert nur pnpm req, neue Anforderungen beginnen offen", async () => {
+  const { statusEditProblem } = await import("./requirements.mjs");
+  const doc = (status, verified = "–", extra = "") =>
+    `# Anforderungen\n\n## Anforderungen\n### T1-REQ-001: Meldung\n\n- **Akzeptanzkriterien:**\n  1. Gegeben a, wenn b, dann c\n- **Status:** ${status}\n- **Verifiziert:** ${verified}\n${extra}`;
+  const second = (status) => `\n### T1-REQ-002: Zweite\n\n- **Status:** ${status}\n- **Verifiziert:** –\n`;
+  assert.equal(statusEditProblem(doc("offen"), doc("offen").replace("dann c", "dann d")), null);
+  assert.equal(statusEditProblem(doc("offen"), doc("offen", "–", second("offen"))), null);
+  assert.match(statusEditProblem(doc("offen"), doc("spezifiziert")), /pnpm req/);
+  assert.match(statusEditProblem(doc("offen"), doc("offen", "–", second("spezifiziert"))), /beginnt mit/);
+  assert.match(statusEditProblem(doc("umgesetzt"), doc("umgesetzt", "2026-11-27, alles gut")), /Prüfer/);
+  assert.equal(statusEditProblem("", doc("offen")), null);
+  assert.match(statusEditProblem("", doc("spezifiziert")), /beginnt mit/);
+});
