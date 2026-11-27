@@ -147,3 +147,21 @@ test("im Gruppen-Arbeitsplatz keine KI-Pakete installieren", () => {
   assert.equal(check(bash("pnpm add openai"), admin), null);
   assert.equal(aiPackage("pnpm add @ai-sdk/anthropic@1.2.0"), "@ai-sdk/anthropic");
 });
+
+test("requirements.md: Text und neue Anforderungen ja, Status von Hand nein", async () => {
+  const { mkdtempSync, mkdirSync, writeFileSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { checkRequirementsEdit } = await import("./pre-tool-use.mjs");
+  const dir = mkdtempSync(join(tmpdir(), "req-edit-"));
+  mkdirSync(join(dir, "packages/stage1"), { recursive: true });
+  const abs = join(dir, "packages/stage1/requirements.md");
+  const doc = "## Anforderungen\n### T1-REQ-001: Meldung\n\n- **Status:** offen\n- **Verifiziert:** –\n";
+  writeFileSync(abs, doc);
+  const rel = "packages/stage1/requirements.md";
+  assert.match(checkRequirementsEdit("Edit", { old_string: "**Status:** offen", new_string: "**Status:** spezifiziert" }, abs, rel), /pnpm req/);
+  assert.equal(checkRequirementsEdit("Edit", { old_string: "Meldung", new_string: "Meldung aufnehmen" }, abs, rel), null);
+  assert.match(checkRequirementsEdit("Write", { content: doc + "\n### T1-REQ-002: Neu\n\n- **Status:** umgesetzt\n" }, abs, rel), /beginnt mit/);
+  assert.equal(checkRequirementsEdit("Write", { content: doc + "\n### T1-REQ-002: Neu\n\n- **Status:** offen\n" }, abs, rel), null);
+  assert.equal(checkRequirementsEdit("Edit", { old_string: "x", new_string: "y" }, abs, "packages/stage1/src/index.ts"), null);
+});

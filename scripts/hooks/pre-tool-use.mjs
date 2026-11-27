@@ -14,6 +14,8 @@
 import { resolve, relative, sep } from "node:path";
 import { TASKS, taskNumber } from "../lib/tasks.mjs";
 import { currentDesk, readState } from "../lib/desks.mjs";
+import { existsSync, readFileSync } from "node:fs";
+import { statusEditProblem } from "../lib/requirements.mjs";
 
 const ROOT = resolve(process.env.CLAUDE_PROJECT_DIR ?? new URL("../../", import.meta.url).pathname);
 const PACKAGES = Object.values(TASKS).map((t) => t.pkg);
@@ -55,7 +57,8 @@ export function check(input, ctx = fromEnv()) {
   if (!/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool ?? "")) return null;
   const file = args.file_path ?? args.notebook_path;
   if (!file || admin) return null;
-  return checkPath(relative(ROOT, resolve(ROOT, file)), { tasks, locked });
+  const rel = relative(ROOT, resolve(ROOT, file));
+  return checkPath(rel, { tasks, locked }) ?? checkRequirementsEdit(tool, args, resolve(ROOT, file), rel);
 }
 
 /**
@@ -83,6 +86,19 @@ function fromEnv(env = process.env) {
 
 const ownPackages = (tasks) => tasks.map((t) => TASKS[t].pkg);
 const ownText = (tasks) => ownPackages(tasks).map((p) => `packages/${p}/`).join(" und ");
+
+/** Status und Nachweis in requirements.md setzt nur pnpm req, auch wenn der Rest der Datei frei editierbar ist. */
+export function checkRequirementsEdit(tool, args, abs, rel) {
+  if (!/^packages\/[^/]+\/requirements\.md$/.test(rel.split(sep).join("/"))) return null;
+  const before = existsSync(abs) ? readFileSync(abs, "utf8") : "";
+  let after = before;
+  const apply = (text, e) => (e.replace_all ? text.split(e.old_string ?? "").join(e.new_string ?? "") : text.replace(e.old_string ?? "", () => e.new_string ?? ""));
+  if (tool === "Write") after = String(args.content ?? "");
+  else if (tool === "Edit") after = apply(before, args);
+  else if (tool === "MultiEdit") after = (args.edits ?? []).reduce(apply, before);
+  else return null;
+  return statusEditProblem(before, after);
+}
 
 function checkPath(rel, { tasks, locked }) {
   const parts = rel.split(sep);
