@@ -177,6 +177,9 @@ function work(desk) {
         // Keine vorformulierten Eingaben (die Person stellt ihre Fragen selbst) und keine Umfragen mitten im Ablauf.
         CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION: "false",
         CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
+        // Ohne Mausverfolgung: Auf dem iPad (Touch) schickte das Browser-Terminal sonst Maus-Codes wie
+        // "aN;NaNM" als Text in die Eingabe. Markieren, Kopieren und Scrollen übernimmt dann das Terminal.
+        CLAUDE_CODE_DISABLE_MOUSE: "1",
         ...identityEnv(desk, group),
       },
     });

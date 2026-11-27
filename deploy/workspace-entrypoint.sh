@@ -98,6 +98,7 @@ alias start='node "$HOME/workspace/scripts/start.mjs"'
 alias leitung='export BOOTCAMP_ADMIN=1; cd "$HOME/workspace"; echo "Workshop-Leitung: Schreibschutz aufgehoben. Übersicht: pnpm stand"'
 export CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL=1   # sonst "IDE extension install failed" in jeder Session
 export DISABLE_AUTOUPDATER=1                 # Version kommt aus dem Image; sonst "Auto-update failed"
+export CLAUDE_CODE_DISABLE_MOUSE=1           # Touch-Geräte schicken sonst Maus-Codes ("aN;NaNM") als Text
 if [[ $- == *i* ]] && [ -z "${CLAUDECODE:-}" ] && [ -z "${BOOTCAMP_ADMIN:-}" ] && [ -z "${BOOTCAMP_STARTED:-}" ] && [ -f "$HOME/workspace/scripts/start.mjs" ]; then
   export BOOTCAMP_STARTED=1
   node "$HOME/workspace/scripts/start.mjs"
